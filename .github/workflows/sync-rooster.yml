@@ -1,0 +1,47 @@
+name: Sync RostarCAS rooster
+
+on:
+  schedule:
+    - cron: '0 5,12,18 * * *'   # 3x per dag (UTC) ~ 07/14/20 NL-tijd
+  workflow_dispatch:             # handmatige knop in het Actions-tabblad
+
+permissions:
+  contents: write                # nodig om schedule.ics te committen
+
+concurrency:
+  group: sync-rooster
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Haal RostarCAS-feed op en filter tot echte diensten
+        env:
+          ROSTAR_ICS_URL: ${{ secrets.ROSTAR_ICS_URL }}
+        run: |
+          if [ -z "$ROSTAR_ICS_URL" ]; then
+            echo "::error::Secret ROSTAR_ICS_URL ontbreekt."
+            exit 1
+          fi
+          curl -fsSL --retry 3 --retry-delay 5 "$ROSTAR_ICS_URL" -o raw.ics
+          node sync/filter-feed.js raw.ics schedule.ics
+          rm -f raw.ics
+
+      - name: Commit bij wijziging
+        run: |
+          git config user.name "rooster-sync-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- schedule.ics; then
+            echo "Geen wijziging in het rooster."
+          else
+            git add schedule.ics
+            git commit -m "Rooster automatisch bijgewerkt"
+            git push
+          fi

@@ -1,0 +1,1983 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Mijn Herstel Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+    
+    <!-- Import Map voor React en Iconen -->
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "lucide-react": "https://esm.sh/lucide-react@0.292.0"
+        }
+    }
+    </script>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+    </style>
+</head>
+<body class="bg-gray-50 text-slate-900">
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { 
+            Calendar as CalendarIcon, 
+            CheckCircle, 
+            Activity, 
+            Droplets, 
+            Trophy, 
+            ChevronLeft, 
+            ChevronRight, 
+            Plus, 
+            X, 
+            Save, 
+            Trash2, 
+            Briefcase, 
+            StickyNote, 
+            HardDrive,
+            FileJson,
+            FolderOpen,
+            ExternalLink,
+            Settings,
+            History,
+            RefreshCw,
+            Clock,
+            FlaskConical,
+            Upload,
+            FileText,
+            AlertCircle,
+            Check,
+            Heart,
+            Eye,
+            EyeOff,
+            Filter
+        } from 'lucide-react';
+
+        const App = () => {
+            const [currentDate, setCurrentDate] = useState(new Date());
+            const [viewDate, setViewDate] = useState(new Date());
+            
+            // --- HELPER VOOR DATUM FORMATTERING (LOKAAL) ---
+            const toLocalISOString = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            // --- SOBRIETY STATE MET HISTORIE ---
+            const [sobrietyHistory, setSobrietyHistory] = useState(() => {
+                const savedHistory = localStorage.getItem('sobriety_history');
+                if (savedHistory) {
+                    return JSON.parse(savedHistory).map(p => ({
+                        start: new Date(p.start),
+                        end: p.end ? new Date(p.end) : null
+                    }));
+                }
+                const oldSavedDate = localStorage.getItem('sobriety_start_date');
+                // Neutrale default (privacy): jouw echte startdatum komt uit je JSON-bestand / localStorage
+                const defaultDate = new Date();
+                return [{ start: oldSavedDate ? new Date(oldSavedDate) : defaultDate, end: null }];
+            });
+
+            const [daysSoberToday, setDaysSoberToday] = useState(0);
+            const [showSoberSettingsModal, setShowSoberSettingsModal] = useState(false);
+            const activeSoberPeriod = sobrietyHistory[sobrietyHistory.length - 1];
+            const [newSoberStartDate, setNewSoberStartDate] = useState(toLocalISOString(activeSoberPeriod.start));
+
+            // --- ARM TRAINING STATE MET HISTORIE & CYCLUS ---
+            const [armHistory, setArmHistory] = useState(() => {
+                const savedHistory = localStorage.getItem('arm_history');
+                if (savedHistory) {
+                    return JSON.parse(savedHistory).map(p => ({
+                        start: new Date(p.start),
+                        end: p.end ? new Date(p.end) : null,
+                        cycle: p.cycle || 3
+                    }));
+                }
+                const oldSavedDate = localStorage.getItem('arm_start_date');
+                // Neutrale default (privacy): jouw echte startdatum komt uit je JSON-bestand / localStorage
+                const defaultDate = new Date();
+                return [{ start: oldSavedDate ? new Date(oldSavedDate) : defaultDate, end: null, cycle: 3 }];
+            });
+
+            const [armStatus, setArmStatus] = useState("");
+            const [showArmSettingsModal, setShowArmSettingsModal] = useState(false);
+            const activeArmPeriod = armHistory[armHistory.length - 1];
+            const [newArmStartDate, setNewArmStartDate] = useState(toLocalISOString(activeArmPeriod.start));
+            const [newArmCycle, setNewArmCycle] = useState(activeArmPeriod.cycle || 3);
+
+            // --- MINOXIDIL STATE ---
+            const [minoxStartDate, setMinoxStartDate] = useState(() => {
+                const savedDate = localStorage.getItem('minox_start_date');
+                // Neutrale default (privacy): jouw echte startdatum komt uit je JSON-bestand / localStorage
+                return savedDate ? new Date(savedDate) : new Date();
+            });
+            const [minoxDisplay, setMinoxDisplay] = useState("");
+            const [showMinoxSettingsModal, setShowMinoxSettingsModal] = useState(false);
+            const [newMinoxStartDateInput, setNewMinoxStartDateInput] = useState(toLocalISOString(minoxStartDate));
+            
+            // Opslag status en File Handle
+            const [saveStatus, setSaveStatus] = useState("Niet gekoppeld");
+            const [fileHandle, setFileHandle] = useState(null);
+
+            // DATA
+            const [ortecShifts, setOrtecShifts] = useState({});
+            const [manualShifts, setManualShifts] = useState({});
+
+            // STATES
+            const [loadingShifts, setLoadingShifts] = useState(false);
+            const [showAddModal, setShowAddModal] = useState(false);
+            const [selectedDate, setSelectedDate] = useState(null);
+            const [newNote, setNewNote] = useState(""); 
+
+            // PDF UPLOAD STATES
+            const [showPdfModal, setShowPdfModal] = useState(false);
+            const [pdfParsing, setPdfParsing] = useState(false);
+            const [parsedShifts, setParsedShifts] = useState([]);
+            const [pdfError, setPdfError] = useState(null); 
+
+            // AMBER ROOSTER STATES
+            const [amberShifts, setAmberShifts] = useState(() => {
+                const saved = localStorage.getItem('amber_shifts');
+                return saved ? JSON.parse(saved) : {};
+            });
+            const [showAmberModal, setShowAmberModal] = useState(false);
+            const [amberMonth, setAmberMonth] = useState(new Date().getMonth());
+            const [amberYear, setAmberYear] = useState(new Date().getFullYear());
+            const [amberBulkInput, setAmberBulkInput] = useState("");
+            const [amberBulkParsed, setAmberBulkParsed] = useState([]);
+            const [amberAnalyzing, setAmberAnalyzing] = useState(false);
+            const [amberAnalyzeError, setAmberAnalyzeError] = useState(null);
+
+            // TIJDVAK ROOSTER STATES (G4S Connect voorlopige roosters)
+            const [tijdvakShifts, setTijdvakShifts] = useState(() => {
+                const saved = localStorage.getItem('tijdvak_shifts');
+                return saved ? JSON.parse(saved) : {};
+            });
+            const [showTijdvakModal, setShowTijdvakModal] = useState(false);
+            const [tijdvakMonth, setTijdvakMonth] = useState(new Date().getMonth());
+            const [tijdvakYear, setTijdvakYear] = useState(new Date().getFullYear());
+            const [tijdvakBulkInput, setTijdvakBulkInput] = useState("");
+            const [tijdvakBulkParsed, setTijdvakBulkParsed] = useState([]);
+
+            // KALENDER FILTER STATES
+            const [showFilters, setShowFilters] = useState(false);
+            const [calendarFilters, setCalendarFilters] = useState(() => {
+                const saved = localStorage.getItem('calendar_filters');
+                const defaults = {
+                    showSwimming: true,
+                    showTraining: true,
+                    showSobriety: true,
+                    showAmber: true,
+                    showWork: true,
+                    showNotes: true,
+                    showSalary: true,
+                    showTijdvak: true
+                };
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    return { ...defaults, ...parsed };
+                }
+                return defaults;
+            }); 
+
+            // CONFIGURATIE VAST
+            // Werkrooster komt uit RostarCAS (Trigion Schiphol). De privé feed-URL staat
+            // BEWUST NIET in deze client-code: een GitHub Action haalt de feed server-side
+            // op (met de URL in een beveiligde secret) en schrijft het resultaat naar
+            // ./schedule.ics naast dit dashboard. De browser laadt dat same-origin.
+            const poolScheduleUrl = "https://victoriabad.nl/tijden-en-tarieven/";
+            
+            const poolSchedule = {
+                0: { times: ["09:30 - 14:00"], label: "Zondag", isOpen: true },
+                1: { times: [], label: "Maandag", isOpen: false },
+                2: { times: ["10:00 - 13:00", "19:30 - 21:00"], label: "Dinsdag", isOpen: true },
+                3: { times: ["09:00 - 13:00", "19:00 - 21:00"], label: "Woensdag", isOpen: true },
+                4: { times: ["10:00 - 13:00"], label: "Donderdag", isOpen: true },
+                5: { times: ["09:00 - 13:00"], label: "Vrijdag", isOpen: true },
+                6: { times: ["09:00 - 13:00"], label: "Zaterdag", isOpen: true }
+            };
+
+            // SALARISDAGEN (RVNB 2026-2027)
+            const salaryDays = {
+                // 2026
+                '2026-01-28': { periode: 1, jaar: 2026 },
+                '2026-02-25': { periode: 2, jaar: 2026 },
+                '2026-03-25': { periode: 3, jaar: 2026 },
+                '2026-04-22': { periode: 4, jaar: 2026, note: 'Vak' },
+                '2026-05-20': { periode: 5, jaar: 2026 },
+                '2026-06-17': { periode: 6, jaar: 2026 },
+                '2026-07-15': { periode: 7, jaar: 2026 },
+                '2026-08-12': { periode: 8, jaar: 2026 },
+                '2026-09-09': { periode: 9, jaar: 2026 },
+                '2026-10-07': { periode: 10, jaar: 2026 },
+                '2026-11-04': { periode: 11, jaar: 2026, note: 'Bonus' },
+                '2026-12-02': { periode: 12, jaar: 2026 },
+                '2027-01-06': { periode: 13, jaar: 2026, note: 'incl wk 53' },
+                // 2027
+                '2027-02-03': { periode: 1, jaar: 2027 },
+                '2027-03-03': { periode: 2, jaar: 2027 },
+                '2027-03-31': { periode: 3, jaar: 2027 },
+            };
+
+            // Helper: Calculate days sober for a specific date based on history
+            const getDaySoberCount = (dateToCheck) => {
+                const checkTime = dateToCheck.getTime();
+                for (const period of sobrietyHistory) {
+                    const startTime = period.start.getTime();
+                    const endTime = period.end ? period.end.getTime() : Infinity;
+                    if (checkTime >= startTime && checkTime <= endTime) {
+                        const diffTime = checkTime - startTime;
+                        const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                        return days + 1; 
+                    }
+                }
+                return 0;
+            };
+
+            // Helper: Check if a date is an Arm Training day based on history
+            const isArmTrainingDay = (dateToCheck) => {
+                const checkTime = dateToCheck.getTime();
+                for (const period of armHistory) {
+                    const startTime = period.start.getTime();
+                    const endTime = period.end ? period.end.getTime() : Infinity;
+                    const cycleLen = period.cycle || 3; 
+                    
+                    if (checkTime >= startTime && checkTime <= endTime) {
+                        const diffTime = Math.floor((checkTime - startTime) / (1000 * 60 * 60 * 24));
+                        if (diffTime >= 0 && diffTime % cycleLen === 0) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            };
+
+            // Helper: Bereken de LAATSTE trainingsdag op basis van het huidige schema
+            const getLastScheduledArmDate = () => {
+                const currentPeriod = armHistory[armHistory.length - 1];
+                const startDate = currentPeriod.start;
+                const cycleLen = currentPeriod.cycle || 3;
+                const now = new Date();
+                const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                
+                const diffTime = startOfToday.getTime() - startDate.getTime();
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays < 0) return startDate; 
+                
+                const daysSinceTraining = diffDays % cycleLen;
+                
+                const lastTrainingDate = new Date(startOfToday);
+                lastTrainingDate.setDate(startOfToday.getDate() - daysSinceTraining);
+                
+                return lastTrainingDate;
+            };
+
+            const openArmSettings = () => {
+                const lastDate = getLastScheduledArmDate();
+                setNewArmStartDate(toLocalISOString(lastDate));
+                setNewArmCycle(activeArmPeriod.cycle || 3);
+                setShowArmSettingsModal(true);
+            };
+
+            useEffect(() => {
+                const now = new Date();
+                const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                
+                // 1. Sobriety Calculation
+                const currentSoberStreak = sobrietyHistory[sobrietyHistory.length - 1];
+                if (currentSoberStreak) {
+                    const diffTime = startOfToday - currentSoberStreak.start;
+                    const days = diffTime >= 0 ? Math.floor(diffTime / (1000 * 60 * 60 * 24)) : 0;
+                    setDaysSoberToday(days);
+                }
+
+                // 2. Arm Status
+                const currentArmPeriod = armHistory[armHistory.length - 1];
+                if (currentArmPeriod) {
+                    const armStartDate = currentArmPeriod.start;
+                    const cycleLen = currentArmPeriod.cycle || 3;
+                    const diffArmTime = Math.floor((startOfToday.getTime() - armStartDate.getTime()) / (1000 * 60 * 60 * 24));
+                    const dayInCycle = diffArmTime >= 0 ? diffArmTime % cycleLen : -1;
+                    
+                    if (diffArmTime < 0) {
+                        setArmStatus("Start binnenkort");
+                    } else if (dayInCycle === 0) {
+                        setArmStatus("VANDAAG TRAINEN!");
+                    } else {
+                        const daysLeft = cycleLen - dayInCycle;
+                        setArmStatus(`Rustdag (Nog ${daysLeft} dag${daysLeft > 1 ? 'en' : ''})`);
+                    }
+                }
+
+                // 3. Minoxidil Calculation
+                const diffMinox = Math.floor((startOfToday - minoxStartDate) / (1000 * 60 * 60 * 24));
+                if (diffMinox >= 0) {
+                    const weeks = Math.floor(diffMinox / 7);
+                    const days = diffMinox % 7;
+                    setMinoxDisplay(`${weeks} weken, ${days} dagen`);
+                } else {
+                    setMinoxDisplay("Start binnenkort");
+                }
+
+                // Save to local storage
+                localStorage.setItem('sobriety_history', JSON.stringify(sobrietyHistory));
+                localStorage.setItem('arm_history', JSON.stringify(armHistory));
+                localStorage.setItem('minox_start_date', minoxStartDate.toISOString());
+
+                const saved = localStorage.getItem('dashboard_manual_shifts');
+                if (saved) {
+                    try {
+                        setManualShifts(JSON.parse(saved));
+                        setSaveStatus("Lokale kopie geladen");
+                    } catch (e) { console.error("Fout laden data", e); }
+                }
+
+                fetchAndParseICS();
+            }, [sobrietyHistory, armHistory, minoxStartDate]);
+
+            // Save Amber shifts to localStorage + auto-save
+            useEffect(() => {
+                localStorage.setItem('amber_shifts', JSON.stringify(amberShifts));
+            }, [amberShifts]);
+
+            // Save Tijdvak shifts to localStorage
+            useEffect(() => {
+                localStorage.setItem('tijdvak_shifts', JSON.stringify(tijdvakShifts));
+            }, [tijdvakShifts]);
+
+            // Save calendar filters to localStorage
+            useEffect(() => {
+                localStorage.setItem('calendar_filters', JSON.stringify(calendarFilters));
+            }, [calendarFilters]);
+
+            // --- SETTINGS HANDLERS ---
+            const handleCorrectSoberDate = () => {
+                const newDate = new Date(newSoberStartDate + "T00:00:00");
+                if (isNaN(newDate)) return;
+                const updatedHistory = [...sobrietyHistory];
+                updatedHistory[updatedHistory.length - 1].start = newDate;
+                setSobrietyHistory(updatedHistory);
+                setShowSoberSettingsModal(false);
+            };
+
+            const handleRelapseSoberDate = () => {
+                const newDate = new Date(newSoberStartDate + "T00:00:00");
+                if (isNaN(newDate)) return;
+                const updatedHistory = [...sobrietyHistory];
+                const lastIdx = updatedHistory.length - 1;
+                const prevEndDate = new Date(newDate);
+                prevEndDate.setDate(prevEndDate.getDate() - 1);
+                
+                if (prevEndDate < updatedHistory[lastIdx].start) {
+                    alert("De nieuwe startdatum moet na de vorige startdatum liggen.");
+                    return;
+                }
+                updatedHistory[lastIdx].end = prevEndDate;
+                updatedHistory.push({ start: newDate, end: null });
+                setSobrietyHistory(updatedHistory);
+                setShowSoberSettingsModal(false);
+            };
+
+            const handleCorrectArmDate = () => {
+                const newDate = new Date(newArmStartDate + "T00:00:00");
+                if (isNaN(newDate)) return;
+                const updatedHistory = [...armHistory];
+                const lastIdx = updatedHistory.length - 1;
+                
+                updatedHistory[lastIdx].start = newDate;
+                updatedHistory[lastIdx].cycle = parseInt(newArmCycle);
+                
+                setArmHistory(updatedHistory);
+                setShowArmSettingsModal(false);
+            };
+
+            const handleNewArmCycle = () => {
+                const newDate = new Date(newArmStartDate + "T00:00:00");
+                if (isNaN(newDate)) return;
+                
+                const updatedHistory = [...armHistory];
+                const lastIdx = updatedHistory.length - 1;
+                const lastScheduled = getLastScheduledArmDate();
+                
+                let prevEndDate;
+
+                if (newDate > lastScheduled) {
+                    prevEndDate = new Date(lastScheduled);
+                    prevEndDate.setDate(prevEndDate.getDate() - 1);
+                } else {
+                    prevEndDate = new Date(newDate);
+                    prevEndDate.setDate(prevEndDate.getDate() - 1);
+                }
+
+                if (prevEndDate < updatedHistory[lastIdx].start) {
+                    updatedHistory[lastIdx].start = newDate;
+                    updatedHistory[lastIdx].cycle = parseInt(newArmCycle);
+                } else {
+                    updatedHistory[lastIdx].end = prevEndDate;
+                    updatedHistory.push({ start: newDate, end: null, cycle: parseInt(newArmCycle) });
+                }
+
+                setArmHistory(updatedHistory);
+                setShowArmSettingsModal(false);
+            };
+
+            const handleMinoxDateChange = () => {
+                const newDate = new Date(newMinoxStartDateInput + "T00:00:00");
+                if (isNaN(newDate)) return;
+                setMinoxStartDate(newDate);
+                setShowMinoxSettingsModal(false);
+            };
+
+
+            // --- FILE SYSTEM ACCESS API LOGICA ---
+            const handleSaveAs = async () => {
+                try {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: 'mijn_herstel_dashboard.json',
+                        types: [{
+                            description: 'JSON Data Bestand',
+                            accept: {'application/json': ['.json']},
+                        }],
+                    });
+                    setFileHandle(handle);
+                    const exportData = {
+                        shifts: manualShifts,
+                        sobriety: sobrietyHistory,
+                        armHistory: armHistory,
+                        minoxStart: minoxStartDate,
+                        amberShifts: amberShifts,
+                        tijdvakShifts: tijdvakShifts
+                    };
+                    await writeToFile(handle, exportData);
+                } catch (err) {
+                    console.error("Opslaan geannuleerd:", err);
+                }
+            };
+
+            const handleOpenFile = async () => {
+                try {
+                    const [handle] = await window.showOpenFilePicker({
+                        types: [{
+                            description: 'JSON Data Bestand',
+                            accept: {'application/json': ['.json']},
+                        }],
+                        multiple: false
+                    });
+                    
+                    const file = await handle.getFile();
+                    const contents = await file.text();
+                    const data = JSON.parse(contents);
+                    
+                    if (data.shifts) {
+                        setManualShifts(data.shifts);
+                        if(data.sobriety) setSobrietyHistory(data.sobriety.map(p => ({ start: new Date(p.start), end: p.end ? new Date(p.end) : null })));
+                        if(data.armHistory) {
+                            setArmHistory(data.armHistory.map(p => ({ start: new Date(p.start), end: p.end ? new Date(p.end) : null, cycle: p.cycle || 3 })));
+                        } else if(data.armStart) {
+                            setArmHistory([{ start: new Date(data.armStart), end: null, cycle: 3 }]);
+                        }
+                        if(data.minoxStart) setMinoxStartDate(new Date(data.minoxStart));
+                        if(data.amberShifts) setAmberShifts(data.amberShifts);
+                        if(data.tijdvakShifts) setTijdvakShifts(data.tijdvakShifts);
+                    } else {
+                        setManualShifts(data);
+                    }
+
+                    setFileHandle(handle);
+                    setSaveStatus("Gekoppeld & Ingeladen");
+                    localStorage.setItem('dashboard_manual_shifts', JSON.stringify(data.shifts || data));
+                    if(data.amberShifts) localStorage.setItem('amber_shifts', JSON.stringify(data.amberShifts));
+                    if(data.tijdvakShifts) localStorage.setItem('tijdvak_shifts', JSON.stringify(data.tijdvakShifts));
+                    
+                } catch (err) {
+                    console.error("Openen geannuleerd of mislukt:", err);
+                }
+            };
+
+            const writeToFile = async (handle, data) => {
+                if (!handle) return;
+                try {
+                    setSaveStatus("Aan het opslaan...");
+                    const writable = await handle.createWritable();
+                    await writable.write(JSON.stringify(data, null, 2));
+                    await writable.close();
+                    setSaveStatus("Bestand bijgewerkt");
+                } catch (err) {
+                    console.error("Fout bij wegschrijven:", err);
+                    setSaveStatus("Fout bij opslaan bestand!");
+                }
+            };
+
+            const saveData = (newShifts) => {
+                setManualShifts(newShifts);
+                localStorage.setItem('dashboard_manual_shifts', JSON.stringify(newShifts));
+
+                const exportData = {
+                    shifts: newShifts,
+                    sobriety: sobrietyHistory,
+                    armHistory: armHistory,
+                    minoxStart: minoxStartDate,
+                    amberShifts: amberShifts,
+                    tijdvakShifts: tijdvakShifts
+                };
+
+                if (fileHandle) {
+                    writeToFile(fileHandle, exportData);
+                } else {
+                    setSaveStatus("Alleen lokaal (browser)");
+                }
+            };
+
+            // --- KALENDER LOGICA ---
+            const handleDeleteShift = (dateKey, id) => {
+                const updatedShifts = { ...manualShifts };
+                if (updatedShifts[dateKey]) {
+                    updatedShifts[dateKey] = updatedShifts[dateKey].filter(s => s.id !== id);
+                    if (updatedShifts[dateKey].length === 0) delete updatedShifts[dateKey];
+                    saveData(updatedShifts);
+                }
+            };
+
+            const cleanSummary = (summary) => {
+                if (!summary) return "";
+                const cleaned = summary.replace(/^\d{1,2}:\d{2}\s*[-–]\s*\d{1,2}:\d{2}\s*/, '').trim();
+                if (cleaned.toLowerCase().includes('verlof naar rato')) return 'Verlof';
+                return cleaned;
+            };
+
+            const parseICS = (icsData) => {
+                const events = {};
+                const lines = icsData.split(/\r\n|\n|\r/);
+                let currentEvent = null;
+
+                const parseDate = (dateStr) => {
+                    if (!dateStr) return null;
+                    const clean = dateStr.trim();
+                    const y = parseInt(clean.substring(0, 4)), m = parseInt(clean.substring(4, 6)) - 1, d = parseInt(clean.substring(6, 8));
+                    
+                    if (clean.includes('T')) {
+                        const h = parseInt(clean.substring(9, 11));
+                        const min = parseInt(clean.substring(11, 13));
+                        const date = new Date(Date.UTC(y, m, d, h, min));
+                        return date;
+                    }
+                    return new Date(y, m, d);
+                };
+
+                lines.forEach(line => {
+                    if (line.startsWith('BEGIN:VEVENT')) currentEvent = { status: 'CONFIRMED' };
+                    else if (line.startsWith('END:VEVENT')) {
+                        if (currentEvent?.start) {
+                            const key = currentEvent.start.toLocaleDateString('en-CA');
+                            if (!events[key]) events[key] = [];
+                            events[key].push(currentEvent);
+                        }
+                        currentEvent = null;
+                    } else if (currentEvent) {
+                        if (line.startsWith('DTSTART')) currentEvent.start = parseDate(line.split(':')[1]);
+                        else if (line.startsWith('DTEND')) currentEvent.end = parseDate(line.split(':')[1]);
+                        else if (line.startsWith('SUMMARY')) currentEvent.summary = line.substring(8);
+                    }
+                });
+                return events;
+            };
+
+            const fetchAndParseICS = async () => {
+                setLoadingShifts(true);
+                try {
+                    // Same-origin laden: schedule.ics wordt server-side ververst door de
+                    // GitHub Action (RostarCAS -> schedule.ics). Geen CORS, geen proxy.
+                    // Cache-buster zodat we altijd de nieuwste versie krijgen.
+                    const res = await fetch(`./schedule.ics?t=${Date.now()}`, { cache: "no-store" });
+                    if (!res.ok) throw new Error("schedule.ics niet gevonden");
+                    const txt = await res.text();
+                    if (!txt.includes("BEGIN:VCALENDAR")) throw new Error("Geen geldige kalender");
+                    const parsedShifts = parseICS(txt);
+                    setOrtecShifts(parsedShifts);
+
+                    // Verwijder voorlopige tijdvakken tot en met de laatste definitieve roosterdatum
+                    const shiftDates = Object.keys(parsedShifts);
+                    if (shiftDates.length > 0) {
+                        const latestDate = shiftDates.reduce((latest, current) => current > latest ? current : latest);
+                        setTijdvakShifts(prev => {
+                            const updated = { ...prev };
+                            let removed = 0;
+                            Object.keys(updated).forEach(dateKey => {
+                                if (dateKey <= latestDate) { delete updated[dateKey]; removed++; }
+                            });
+                            if (removed > 0) console.log(`${removed} tijdvak(ken) verwijderd tot ${latestDate}`);
+                            return updated;
+                        });
+                    }
+                } catch (e) {
+                    console.log("Auto-rooster laadt niet:", e.message);
+                } finally {
+                    setLoadingShifts(false);
+                }
+            };
+
+            const formatTime = (d) => d ? d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }) : "";
+
+            // Maanfase berekening - retourneert 🌑 (nieuwe maan) of 🌕 (volle maan) of null
+            // Genereer alle maan datums van 2025-2050 bij eerste aanroep
+            const moonDatesCache = (() => {
+                const cache = {};
+                // Bekende nieuwe maan: 29 januari 2025 12:36 UTC
+                const knownNewMoon = Date.UTC(2025, 0, 29, 12, 36);
+                const synodicMonth = 29.53058867 * 24 * 60 * 60 * 1000; // in milliseconden
+
+                // Bereken alle nieuwe en volle manen van 2025-2050
+                const startDate = new Date(2025, 0, 1).getTime();
+                const endDate = new Date(2050, 11, 31).getTime();
+
+                // Vind eerste nieuwe maan voor 2025
+                let newMoonTime = knownNewMoon;
+                while (newMoonTime > startDate) newMoonTime -= synodicMonth;
+                while (newMoonTime < startDate) newMoonTime += synodicMonth;
+
+                // Genereer alle nieuwe manen
+                while (newMoonTime <= endDate) {
+                    const d = new Date(newMoonTime);
+                    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                    cache[key] = '🌑';
+                    newMoonTime += synodicMonth;
+                }
+
+                // Genereer alle volle manen (halverwege tussen nieuwe manen)
+                let fullMoonTime = knownNewMoon + (synodicMonth / 2);
+                while (fullMoonTime > startDate) fullMoonTime -= synodicMonth;
+                while (fullMoonTime < startDate) fullMoonTime += synodicMonth;
+
+                while (fullMoonTime <= endDate) {
+                    const d = new Date(fullMoonTime);
+                    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                    cache[key] = '🌕';
+                    fullMoonTime += synodicMonth;
+                }
+
+                return cache;
+            })();
+
+            const getMoonPhase = (date) => {
+                const dateKey = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+                return moonDatesCache[dateKey] || null;
+            };
+
+            const handleAddNote = () => {
+                if (!selectedDate || !newNote.trim()) return;
+                const updated = { ...manualShifts };
+                if (!updated[selectedDate]) updated[selectedDate] = [];
+                updated[selectedDate].push({
+                    id: Date.now(), 
+                    summary: newNote, 
+                    isManual: true, 
+                    isNote: true 
+                });
+                saveData(updated);
+                setShowAddModal(false);
+                setSelectedDate(null);
+                setNewNote("");
+            };
+
+            // --- PDF ROOSTER UPLOAD FUNCTIES ---
+            const handlePdfUpload = async (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                setPdfParsing(true);
+                setPdfError(null);
+                setParsedShifts([]);
+
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    
+                    let fullText = '';
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        const pageText = textContent.items.map(item => item.str).join(' ');
+                        fullText += pageText + '\n';
+                    }
+                    
+                    const shifts = parseG4SRooster(fullText);
+                    
+                    if (shifts.length === 0) {
+                        setPdfError("Geen diensten gevonden in dit PDF bestand. Zorg dat het een G4S tijdvakrooster is.");
+                    } else {
+                        setParsedShifts(shifts);
+                    }
+                } catch (err) {
+                    console.error("PDF parsing error:", err);
+                    setPdfError("Kon PDF niet lezen: " + err.message);
+                } finally {
+                    setPdfParsing(false);
+                }
+            };
+
+            const parseG4SRooster = (text) => {
+                const shifts = [];
+                
+                // Normaliseer de tekst
+                const normalized = text.replace(/\s+/g, ' ');
+                
+                // Regex patronen voor G4S rooster
+                // Format: datum (d-m-yyyy of dd-mm-yyyy) gevolgd door "Tijdvak" en dan tijden (hh:mm-hh:mm)
+                const dateTimePattern = /(\d{1,2}-\d{1,2}-\d{4})\s*Tijdvak\s*(\d{2}[:.]\d{2}[-–]\d{2}[:.]\d{2})/gi;
+                
+                let match;
+                while ((match = dateTimePattern.exec(normalized)) !== null) {
+                    const dateParts = match[1].split('-');
+                    const day = parseInt(dateParts[0]);
+                    const month = parseInt(dateParts[1]) - 1; // JS months are 0-indexed
+                    const year = parseInt(dateParts[2]);
+                    
+                    const timeStr = match[2].replace(/\./g, ':').replace('–', '-');
+                    
+                    const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const dateObj = new Date(year, month, day);
+                    
+                    // Skip invalid dates
+                    if (isNaN(dateObj.getTime())) continue;
+                    
+                    shifts.push({
+                        dateKey,
+                        dateDisplay: dateObj.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+                        time: timeStr,
+                        summary: `Dienst ${timeStr}`,
+                        selected: true
+                    });
+                }
+                
+                // Sorteer op datum
+                shifts.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+                
+                return shifts;
+            };
+
+            const toggleShiftSelection = (index) => {
+                setParsedShifts(prev => prev.map((shift, i) => 
+                    i === index ? { ...shift, selected: !shift.selected } : shift
+                ));
+            };
+
+            const selectAllShifts = (selected) => {
+                setParsedShifts(prev => prev.map(shift => ({ ...shift, selected })));
+            };
+
+            const importSelectedShifts = () => {
+                const selectedShifts = parsedShifts.filter(s => s.selected);
+                if (selectedShifts.length === 0) return;
+
+                const updated = { ...manualShifts };
+                
+                selectedShifts.forEach(shift => {
+                    if (!updated[shift.dateKey]) updated[shift.dateKey] = [];
+                    
+                    // Check of deze shift al bestaat (voorkom duplicaten)
+                    const exists = updated[shift.dateKey].some(
+                        s => s.summary === shift.summary || s.summary.includes(shift.time)
+                    );
+                    
+                    if (!exists) {
+                        updated[shift.dateKey].push({
+                            id: Date.now() + Math.random(),
+                            summary: shift.summary,
+                            isManual: true,
+                            isNote: false,
+                            isG4SShift: true
+                        });
+                    }
+                });
+
+                saveData(updated);
+                setShowPdfModal(false);
+                setParsedShifts([]);
+                setPdfError(null);
+            };
+
+            // --- AMBER ROOSTER FUNCTIES ---
+            const amberMNames = ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December"];
+
+            const decodeAmberShift = (code) => {
+                if (!code || code.length < 4) return null;
+                const cleanCode = code.toUpperCase().trim();
+                
+                const shiftMap = {
+                    'A080': { startTime: '07:00', endTime: '15:30', duration: 8.5 },
+                    'A070': { startTime: '07:00', endTime: '14:30', duration: 7.5 },
+                    'A040': { startTime: '07:00', endTime: '11:00', duration: 4 },
+                    'B080': { startTime: '08:00', endTime: '16:30', duration: 8.5 },
+                    'B070': { startTime: '08:00', endTime: '15:30', duration: 7.5 },
+                    'B040': { startTime: '08:00', endTime: '12:00', duration: 4 },
+                    'C080': { startTime: '09:00', endTime: '17:30', duration: 8.5 },
+                    'C070': { startTime: '09:00', endTime: '16:30', duration: 7.5 },
+                    'C040': { startTime: '09:00', endTime: '13:00', duration: 4 },
+                    'H280': { startTime: '14:30', endTime: '23:00', duration: 8.5 },
+                };
+                
+                return shiftMap[cleanCode] || null;
+            };
+
+            const parseAmberBulkInput = (input, month, year) => {
+                const results = [];
+                const pattern = /(\d{1,2})\s*[:\-\s]\s*([ABCH]\d{3})/gi;
+                let match;
+                
+                while ((match = pattern.exec(input)) !== null) {
+                    const day = parseInt(match[1]);
+                    const code = match[2].toUpperCase();
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                    
+                    if (day < 1 || day > daysInMonth) continue;
+                    
+                    const decoded = decodeAmberShift(code);
+                    if (decoded) {
+                        const dateObj = new Date(year, month, day);
+                        const dateKey = toLocalISOString(dateObj);
+                        results.push({
+                            day,
+                            dateKey,
+                            code,
+                            decoded,
+                            dateDisplay: dateObj.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' }),
+                            selected: true
+                        });
+                    }
+                }
+                
+                results.sort((a, b) => a.day - b.day);
+                return results;
+            };
+
+            const handleAmberBulkParse = () => {
+                const parsed = parseAmberBulkInput(amberBulkInput, amberMonth, amberYear);
+                setAmberBulkParsed(parsed);
+            };
+
+            const toggleAmberBulkSelection = (index) => {
+                setAmberBulkParsed(prev => prev.map((item, i) => 
+                    i === index ? { ...item, selected: !item.selected } : item
+                ));
+            };
+
+            const importAmberBulkShifts = () => {
+                const selected = amberBulkParsed.filter(s => s.selected);
+                if (selected.length === 0) return;
+
+                const updated = { ...amberShifts };
+
+                // Verwijder eerst alle bestaande shifts voor de geselecteerde maand
+                const month = amberMonth;
+                const year = amberYear;
+                Object.keys(updated).forEach(dateKey => {
+                    const d = new Date(dateKey);
+                    if (d.getMonth() === month && d.getFullYear() === year) {
+                        delete updated[dateKey];
+                    }
+                });
+
+                // Voeg nieuwe shifts toe
+                selected.forEach(entry => {
+                    updated[entry.dateKey] = [{
+                        id: Date.now() + Math.random(),
+                        code: entry.code,
+                        startTime: entry.decoded.startTime,
+                        endTime: entry.decoded.endTime
+                    }];
+                });
+
+                setAmberShifts(updated);
+                closeAmberModal();
+            };
+
+            const analyzeAmberScreenshot = async (file) => {
+                setAmberAnalyzing(true);
+                setAmberAnalyzeError(null);
+                
+                try {
+                    const base64Data = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            const base64 = reader.result.split(",")[1];
+                            resolve(base64);
+                        };
+                        reader.onerror = () => reject(new Error("Kon bestand niet lezen"));
+                        reader.readAsDataURL(file);
+                    });
+                    
+                    const mediaType = file.type || 'image/png';
+                    
+                    const response = await fetch("https://api.anthropic.com/v1/messages", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            model: "claude-sonnet-4-20250514",
+                            max_tokens: 1000,
+                            messages: [
+                                {
+                                    role: "user",
+                                    content: [
+                                        {
+                                            type: "image",
+                                            source: {
+                                                type: "base64",
+                                                media_type: mediaType,
+                                                data: base64Data,
+                                            }
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `Dit is een screenshot van een werkrooster. Analyseer de afbeelding en extract alle werkdagen met hun codes.
+
+De codes bestaan uit:
+- Een letter (A, B of C) voor de starttijd
+- Een getal (040, 070 of 080) voor de duur
+
+Voorbeelden: A080, B070, C040
+
+Geef ALLEEN de data terug in dit exacte formaat, niets anders:
+dag:code, dag:code, dag:code
+
+Bijvoorbeeld: 2:C040, 3:B070, 5:B070, 6:A080
+
+Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
+                                        }
+                                    ]
+                                }
+                            ]
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`API fout: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    const result = data.content[0].text.trim();
+                    
+                    if (result === "GEEN_DATA" || result.length < 3) {
+                        setAmberAnalyzeError("Geen rooster gevonden in de afbeelding.");
+                        return;
+                    }
+                    
+                    setAmberBulkInput(result);
+                    const parsed = parseAmberBulkInput(result, amberMonth, amberYear);
+                    if (parsed.length > 0) {
+                        setAmberBulkParsed(parsed);
+                    } else {
+                        setAmberAnalyzeError("Kon de gevonden data niet verwerken.");
+                    }
+                    
+                } catch (err) {
+                    // Geef duidelijkere foutmelding
+                    if (err.message.includes("fetch") || err.message.includes("network")) {
+                        setAmberAnalyzeError("AI analyse werkt alleen binnen Claude. Stuur de screenshot naar Claude in de chat en plak de code hieronder.");
+                    } else {
+                        setAmberAnalyzeError("Fout: " + err.message);
+                    }
+                } finally {
+                    setAmberAnalyzing(false);
+                }
+            };
+
+            const handleAmberScreenshotUpload = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                analyzeAmberScreenshot(file);
+            };
+
+            const openAmberModal = () => {
+                setAmberMonth(viewDate.getMonth());
+                setAmberYear(viewDate.getFullYear());
+                setAmberBulkInput("");
+                setAmberBulkParsed([]);
+                setAmberAnalyzeError(null);
+                setShowAmberModal(true);
+            };
+
+            const closeAmberModal = () => {
+                setShowAmberModal(false);
+                setAmberBulkInput("");
+                setAmberBulkParsed([]);
+                setAmberAnalyzeError(null);
+            };
+
+            const deleteAmberShift = (dateKey) => {
+                const updated = { ...amberShifts };
+                delete updated[dateKey];
+                setAmberShifts(updated);
+            };
+
+            // --- TIJDVAK ROOSTER FUNCTIES ---
+            const parseTijdvakBulkInput = (input, month, year) => {
+                const results = [];
+                const seenDates = new Set();
+
+                // Split input per regel of komma voor betere parsing
+                const lines = input.split(/[\n,]+/).map(l => l.trim()).filter(l => l.length > 0);
+
+                for (const line of lines) {
+                    let match;
+
+                    // Pattern 1: dd-mm-yyyy: hh:mm-hh:mm (volledige datum)
+                    match = line.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})\s*[:\s]\s*(\d{1,2}[:.]\d{2})\s*[-–]\s*(\d{1,2}[:.]\d{2})/i);
+                    if (match) {
+                        const day = parseInt(match[1]);
+                        const monthParsed = parseInt(match[2]) - 1;
+                        const yearParsed = parseInt(match[3]);
+                        const startTime = match[4].replace('.', ':');
+                        const endTime = match[5].replace('.', ':');
+
+                        const dateObj = new Date(yearParsed, monthParsed, day);
+                        if (!isNaN(dateObj.getTime())) {
+                            const dateKey = toLocalISOString(dateObj);
+                            if (!seenDates.has(dateKey)) {
+                                seenDates.add(dateKey);
+                                results.push({
+                                    day,
+                                    dateKey,
+                                    startTime,
+                                    endTime,
+                                    dateDisplay: dateObj.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
+                                    selected: true
+                                });
+                            }
+                        }
+                        continue;
+                    }
+
+                    // Pattern 2: dd-mm: hh:mm-hh:mm (dag en maand)
+                    match = line.match(/^(\d{1,2})[-\/](\d{1,2})\s*[:\s]\s*(\d{1,2}[:.]\d{2})\s*[-–]\s*(\d{1,2}[:.]\d{2})/i);
+                    if (match) {
+                        const day = parseInt(match[1]);
+                        const monthParsed = parseInt(match[2]) - 1;
+                        const startTime = match[3].replace('.', ':');
+                        const endTime = match[4].replace('.', ':');
+
+                        // Gebruik geselecteerd jaar
+                        const dateObj = new Date(year, monthParsed, day);
+                        if (!isNaN(dateObj.getTime())) {
+                            const dateKey = toLocalISOString(dateObj);
+                            if (!seenDates.has(dateKey)) {
+                                seenDates.add(dateKey);
+                                results.push({
+                                    day,
+                                    dateKey,
+                                    startTime,
+                                    endTime,
+                                    dateDisplay: dateObj.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
+                                    selected: true
+                                });
+                            }
+                        }
+                        continue;
+                    }
+
+                    // Pattern 3: dd: hh:mm-hh:mm (alleen dag, gebruikt geselecteerde maand/jaar)
+                    match = line.match(/^(\d{1,2})\s*[:\s]\s*(\d{1,2}[:.]\d{2})\s*[-–]\s*(\d{1,2}[:.]\d{2})/i);
+                    if (match) {
+                        const day = parseInt(match[1]);
+                        const startTime = match[2].replace('.', ':');
+                        const endTime = match[3].replace('.', ':');
+
+                        const daysInMonth = new Date(year, month + 1, 0).getDate();
+                        if (day >= 1 && day <= daysInMonth) {
+                            const dateObj = new Date(year, month, day);
+                            const dateKey = toLocalISOString(dateObj);
+                            if (!seenDates.has(dateKey)) {
+                                seenDates.add(dateKey);
+                                results.push({
+                                    day,
+                                    dateKey,
+                                    startTime,
+                                    endTime,
+                                    dateDisplay: dateObj.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' }),
+                                    selected: true
+                                });
+                            }
+                        }
+                    }
+                }
+
+                results.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+                return results;
+            };
+
+            const handleTijdvakBulkParse = () => {
+                const parsed = parseTijdvakBulkInput(tijdvakBulkInput, tijdvakMonth, tijdvakYear);
+                setTijdvakBulkParsed(parsed);
+            };
+
+            const toggleTijdvakBulkSelection = (index) => {
+                setTijdvakBulkParsed(prev => prev.map((item, i) =>
+                    i === index ? { ...item, selected: !item.selected } : item
+                ));
+            };
+
+            const importTijdvakBulkShifts = () => {
+                const selected = tijdvakBulkParsed.filter(s => s.selected);
+                if (selected.length === 0) return;
+
+                const updated = { ...tijdvakShifts };
+
+                selected.forEach(entry => {
+                    updated[entry.dateKey] = {
+                        id: Date.now() + Math.random(),
+                        startTime: entry.startTime,
+                        endTime: entry.endTime
+                    };
+                });
+
+                setTijdvakShifts(updated);
+                closeTijdvakModal();
+            };
+
+            const openTijdvakModal = () => {
+                setTijdvakMonth(viewDate.getMonth());
+                setTijdvakYear(viewDate.getFullYear());
+                setTijdvakBulkInput("");
+                setTijdvakBulkParsed([]);
+                setShowTijdvakModal(true);
+            };
+
+            const closeTijdvakModal = () => {
+                setShowTijdvakModal(false);
+                setTijdvakBulkInput("");
+                setTijdvakBulkParsed([]);
+            };
+
+            const deleteTijdvakShift = (dateKey) => {
+                const updated = { ...tijdvakShifts };
+                delete updated[dateKey];
+                setTijdvakShifts(updated);
+            };
+
+            const toggleFilter = (filterName) => {
+                setCalendarFilters(prev => ({
+                    ...prev,
+                    [filterName]: !prev[filterName]
+                }));
+            };
+            
+            const filterOrtecShifts = (shifts) => {
+                if (!shifts || shifts.length === 0) return [];
+                const sorted = [...shifts].sort((a, b) => a.start - b.start);
+                
+                return sorted.reduce((acc, cur) => {
+                    const s = cur.summary?.toLowerCase() || "";
+                    if (s.includes("roostervrij")) return acc; 
+                    
+                    if (acc.length > 0) {
+                        const last = acc[acc.length - 1];
+                        if (cur.start < new Date(last.end.getTime() - 60000)) {
+                            acc[acc.length - 1] = cur;
+                        } else {
+                            acc.push(cur);
+                        }
+                    } else {
+                        acc.push(cur);
+                    }
+                    return acc;
+                }, []);
+            };
+
+            const isSwimTimeConflict = (swimTimeStr, shifts, currentDayDate) => {
+                if (!shifts || shifts.length === 0) return false;
+                
+                const [startStr, endStr] = swimTimeStr.split(' - ').map(s => s.replace(' uur', '').trim());
+                const [startH, startM] = startStr.split(/[:.]/).map(Number);
+                const [endH, endM] = endStr.split(/[:.]/).map(Number);
+                
+                const swimStart = new Date(currentDayDate);
+                swimStart.setHours(startH, startM, 0, 0);
+                const swimEnd = new Date(currentDayDate);
+                swimEnd.setHours(endH, endM, 0, 0);
+                
+                return shifts.some(shift => {
+                    if (shift.isNote) return false; 
+                    if (shift.summary?.toLowerCase().includes('verlof')) return false;
+                    return (swimStart < shift.sortEnd && swimEnd > shift.sortStart);
+                });
+            };
+
+            const nextM = () => { const n = new Date(viewDate.getFullYear(), viewDate.getMonth()+1, 1); if(n.getFullYear()<=2027) setViewDate(n); };
+            const prevM = () => { const p = new Date(viewDate.getFullYear(), viewDate.getMonth()-1, 1); if(p>=new Date('2025-10-01')) setViewDate(p); };
+            const mNames = ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December"];
+
+            const renderCalendar = () => {
+                const year = viewDate.getFullYear();
+                const month = viewDate.getMonth();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const firstDay = new Date(year, month, 1).getDay() === 0 ? 6 : new Date(year, month, 1).getDay() - 1;
+                const days = [];
+                
+                for (let i = 0; i < firstDay; i++) days.push(<div key={`e-${i}`} className="h-36 bg-gray-50 border border-gray-100"></div>);
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, month, day);
+                    const dateKey = toLocalISOString(date);
+                    const dayOfWeek = date.getDay();
+                    
+                    // SOBRIETY HISTORY CHECK (met filter)
+                    const daySoberCount = calendarFilters.showSobriety ? getDaySoberCount(date) : 0;
+                    
+                    // ARM TRAINING HISTORY CHECK (met filter)
+                    const isArmDay = calendarFilters.showTraining ? isArmTrainingDay(date) : false;
+
+                    // AMBER SHIFT CHECK (met filter)
+                    const amberShift = calendarFilters.showAmber ? amberShifts[dateKey]?.[0] : null;
+
+                    // TIJDVAK CHECK (met filter) - voorlopig rooster uit G4S Connect
+                    const tijdvakShift = calendarFilters.showTijdvak ? tijdvakShifts[dateKey] : null;
+
+                    // SALARY DAY CHECK (met filter)
+                    const salaryDay = calendarFilters.showSalary ? salaryDays[dateKey] : null;
+
+                    const ortecRaw = ortecShifts[dateKey] || [];
+                    const finalOrtec = calendarFilters.showWork ? filterOrtecShifts(ortecRaw).map(s => ({
+                        ...s, type: 'ortec', sortStart: s.start, sortEnd: s.end
+                    })) : [];
+
+                    // Check of er een echte Ortec dienst is (niet alleen verlof)
+                    const hasRealOrtecShift = finalOrtec.length > 0;
+
+                    const manualDay = calendarFilters.showWork ? (manualShifts[dateKey] || [])
+                        // Filter G4S tijdvakken uit als er een echte Ortec dienst is
+                        .filter(s => {
+                            if (s.isG4SShift && hasRealOrtecShift) {
+                                return false; // Verberg tijdvak als er een echte dienst is
+                            }
+                            if (s.isNote && !calendarFilters.showNotes) {
+                                return false;
+                            }
+                            return true;
+                        })
+                        .map(s => {
+                        let start = new Date(date);
+                        let end = new Date(date);
+                        if (s.isNote || s.isG4SShift) {
+                            start.setHours(0, 0);
+                            end.setHours(23, 59);
+                        } else if (s.startTime) {
+                            const [h1, m1] = s.startTime.split(':').map(Number);
+                            const [h2, m2] = s.endTime.split(':').map(Number);
+                            start.setHours(h1, m1);
+                            end.setHours(h2, m2);
+                        }
+                        return { ...s, type: 'manual', sortStart: start, sortEnd: end };
+                    }) : [];
+
+                    const swimInfo = poolSchedule[dayOfWeek];
+                    const swimEvents = [];
+                    if (swimInfo.isOpen && calendarFilters.showSwimming) {
+                        swimInfo.times.forEach(tStr => {
+                            const allWorkShifts = [...finalOrtec, ...manualDay];
+                            if (!isSwimTimeConflict(tStr, allWorkShifts, date)) {
+                                const [startStr, endStr] = tStr.split(' - ');
+                                const [h1, m1] = startStr.split(/[:.]/).map(Number);
+                                const [h2, m2] = endStr.split(/[:.]/).map(Number);
+                                const start = new Date(date); start.setHours(h1, m1);
+                                const end = new Date(date); end.setHours(h2, m2);
+                                swimEvents.push({ type: 'swim', summary: tStr, sortStart: start, sortEnd: end });
+                            }
+                        });
+                    }
+
+                    const allEvents = [...finalOrtec, ...manualDay, ...swimEvents].sort((a, b) => {
+                        // Notities altijd bovenaan
+                        if (a.isNote && !b.isNote) return -1;
+                        if (!a.isNote && b.isNote) return 1;
+                        // Daarna op tijd sorteren
+                        return a.sortStart - b.sortStart;
+                    });
+                    const isToday = currentDate.toDateString() === date.toDateString();
+                    
+                    // Check voor werk: Ortec diensten, handmatige shifts, OF G4S tijdvakken
+                    const hasWork = allEvents.some(e => (e.type === 'ortec' || (e.type === 'manual' && !e.isNote))) ||
+                                   (manualShifts[dateKey] || []).some(s => s.isG4SShift); // Ook checken voor verborgen G4S tijdvakken
+                    const isOnlyVerlof = hasWork && allEvents.every(e => e.type !== 'swim' && e.summary?.toLowerCase().includes('verlof'));
+
+                    // Check of er een definitieve dienst is (Ortec of PDF import)
+                    const hasDefinitiveShift = finalOrtec.length > 0 || (manualShifts[dateKey] || []).some(s => s.isG4SShift);
+
+                    // Bepaal of tijdvak getoond moet worden (alleen als er GEEN definitieve dienst is)
+                    const showTijdvak = tijdvakShift && !hasDefinitiveShift;
+
+                    let bgClass = "bg-emerald-50 border-emerald-200";
+                    if (hasWork && !isOnlyVerlof) bgClass = "bg-red-50 border-red-200";
+                    // Tijdvak zonder definitieve dienst: amber gestippelde achtergrond
+                    if (showTijdvak && !hasWork) bgClass = "bg-amber-50 border-amber-300 border-dashed";
+                    if (isToday) bgClass = "bg-blue-50 ring-2 ring-blue-400"; 
+
+                    days.push(
+                        <div key={day} className={`h-36 border p-1 relative flex flex-col ${bgClass} group transition-colors`}>
+                            <div className="flex justify-between items-start mb-1">
+                                <span className={`text-sm font-bold ${isToday ? 'text-blue-600' : (hasWork && !isOnlyVerlof ? 'text-red-700' : 'text-emerald-700')}`}>{day}{getMoonPhase(date) && <span className="ml-1 text-xs" title={getMoonPhase(date) === '🌑' ? 'Nieuwe maan' : 'Volle maan'}>{getMoonPhase(date)}</span>}</span>
+                                {isToday && <span className="text-[10px] bg-blue-600 text-white px-1 rounded">Vandaag</span>}
+                                <button onClick={() => { setSelectedDate(dateKey); setNewNote(""); setShowAddModal(true); }} className="opacity-0 group-hover:opacity-100 text-blue-500 p-0.5 hover:bg-white/50 rounded"><Plus size={14}/></button>
+                            </div>
+                            
+                            <div className="flex-1 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
+                                {/* 1. NOTITIES EERST */}
+                                {allEvents.filter(e => e.isNote).map((e) => (
+                                    <div key={`m-${e.id}`} className="text-[10px] font-bold p-1 rounded border border-gray-200 mb-0.5 flex justify-between items-start group/item bg-white shadow-sm text-black w-full text-left">
+                                        <span className="break-words w-full leading-tight">{e.summary}</span>
+                                        <button onClick={(ev)=>{ev.stopPropagation(); handleDeleteShift(dateKey, e.id)}} className="opacity-0 group-hover/item:opacity-100 text-gray-400 hover:text-red-500 ml-1 shrink-0"><Trash2 size={10}/></button>
+                                    </div>
+                                ))}
+
+                                {/* 2. AMBER'S SHIFT */}
+                                {amberShift && (
+                                    <div className="flex items-center justify-between text-[9px] text-pink-700 bg-pink-50 p-0.5 rounded border border-pink-200 w-full group/amber">
+                                        <div className="flex items-center">
+                                            <Heart size={10} className="mr-1 fill-pink-300"/>
+                                            <span className="font-medium">Amber {amberShift.startTime}-{amberShift.endTime}</span>
+                                        </div>
+                                        <button onClick={(ev) => { ev.stopPropagation(); deleteAmberShift(dateKey); }} className="opacity-0 group-hover/amber:opacity-100 text-pink-500 hover:text-pink-700"><Trash2 size={10}/></button>
+                                    </div>
+                                )}
+
+                                {/* 2.25 TIJDVAK (voorlopig rooster) - alleen tonen als geen definitieve dienst */}
+                                {showTijdvak && (
+                                    <div className="flex items-center justify-between text-[9px] text-amber-700 bg-amber-50 p-0.5 rounded border-2 border-dashed border-amber-400 w-full group/tijdvak">
+                                        <div className="flex items-center">
+                                            <Clock size={10} className="mr-1"/>
+                                            <span className="font-medium">Tijdvak {tijdvakShift.startTime}-{tijdvakShift.endTime}</span>
+                                        </div>
+                                        <button onClick={(ev) => { ev.stopPropagation(); deleteTijdvakShift(dateKey); }} className="opacity-0 group-hover/tijdvak:opacity-100 text-amber-500 hover:text-amber-700"><Trash2 size={10}/></button>
+                                    </div>
+                                )}
+
+                                {/* 2.5 SALARISDAG */}
+                                {salaryDay && (
+                                    <div className="flex items-center text-[9px] text-yellow-800 bg-yellow-100 p-0.5 rounded border border-yellow-300 w-full font-bold">
+                                        <span className="mr-1">💰</span>
+                                        <span>Salaris P{salaryDay.periode}{salaryDay.note ? ` (${salaryDay.note})` : ''}</span>
+                                    </div>
+                                )}
+
+                                {/* 3. REST VAN DE EVENTS (geen notities) */}
+                                {allEvents.filter(e => !e.isNote).map((e, idx) => {
+                                    if (e.type === 'swim') {
+                                        return (
+                                            <div key={`s-${idx}`} className="flex flex-col items-start text-[9px] text-blue-700 bg-white/80 p-1 rounded border border-blue-100 mb-0.5 w-full text-left shadow-sm">
+                                                <div className="flex items-center font-bold mb-0.5"><Droplets size={8} className="mr-1"/> <span>Zwemmen</span></div>
+                                                <span className="font-medium block">{e.summary}</span>
+                                            </div>
+                                        );
+                                    }
+                                    if (e.type === 'ortec') {
+                                        const isVerlof = e.summary?.toLowerCase().includes('verlof');
+                                        const txt = cleanSummary(e.summary);
+                                        return (
+                                            <div key={`o-${idx}`} className="text-[9px] p-1 rounded bg-white shadow-sm text-purple-800 border border-purple-200 mb-0.5 w-full text-left">
+                                                <div className="font-bold flex items-center"><Briefcase size={8} className="mr-1"/> {isVerlof ? "Verlof" : `${formatTime(e.sortStart)} - ${formatTime(e.sortEnd)}`}</div>
+                                                {!isVerlof && txt && <div className="truncate opacity-80">{txt}</div>}
+                                            </div>
+                                        );
+                                    }
+                                    if (e.type === 'manual') {
+                                        // G4S Geïmporteerde tijdvak (voorlopig, wordt overschreven door echte dienst)
+                                        if (e.isG4SShift) {
+                                            return (
+                                                <div key={`m-${e.id}`} className="text-[9px] p-1 rounded border-2 border-dashed mb-0.5 flex justify-between items-center group/item bg-amber-50/50 text-amber-700 border-amber-300 w-full text-left">
+                                                    <div className="overflow-hidden w-full">
+                                                        <div className="font-bold flex items-center gap-1">
+                                                            <Clock size={8}/> Tijdvak: {e.summary.replace('Dienst ', '')}
+                                                        </div>
+                                                        <div className="text-[8px] opacity-70 italic">Wacht op definitieve dienst...</div>
+                                                    </div>
+                                                    <button onClick={(ev)=>{ev.stopPropagation(); handleDeleteShift(dateKey, e.id)}} className="opacity-0 group-hover/item:opacity-100 text-red-500 ml-1 shrink-0"><Trash2 size={10}/></button>
+                                                </div>
+                                            );
+                                        }
+                                        // Handmatige shift (geen notitie, geen G4S)
+                                        return (
+                                            <div key={`m-${e.id}`} className="text-[9px] p-1 rounded border mb-0.5 flex justify-between items-center group/item bg-white shadow-sm text-orange-800 border-orange-200 w-full text-left">
+                                                <div className="overflow-hidden w-full">
+                                                    <div className="font-bold">{e.startTime} - {e.endTime}</div>
+                                                    <div className="truncate opacity-80">{e.summary}</div>
+                                                </div>
+                                                <button onClick={(ev)=>{ev.stopPropagation(); handleDeleteShift(dateKey, e.id)}} className="opacity-0 group-hover/item:opacity-100 text-red-500 ml-1 shrink-0"><Trash2 size={10}/></button>
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                })}
+                                
+                                {/* 4. TRACKING INDICATORS ONDERAAN */}
+                                {daySoberCount > 0 && <div className={`flex items-center text-[9px] ${currentDate.toDateString() === date.toDateString() ? "text-white bg-green-600 border-green-600 font-bold" : "text-green-700 bg-white/50 border-green-100"} p-0.5 rounded border w-full mt-auto transition-colors`}><CheckCircle size={10} className="mr-1"/> Dag {daySoberCount}</div>}
+                                {isArmDay && <div className="flex items-center text-[9px] text-red-700 font-bold bg-white/50 p-0.5 rounded border border-red-100 w-full"><Activity size={10} className="mr-1"/> Armen</div>}
+                            </div>
+                        </div>
+                    );
+                }
+                return days;
+            };
+
+            return (
+                <div className="max-w-6xl mx-auto p-4 font-sans min-h-screen relative">
+                    <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border-l-4 border-blue-500 flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-800">Mijn Herstel Dashboard</h1>
+                            <div className="flex items-center gap-2 mt-1">
+                                <p className="text-gray-600 text-sm">Notities & Automatisch Rooster</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            {/* FILTER KNOP */}
+                            <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center text-xs px-3 py-1.5 rounded-lg font-bold transition-colors ${showFilters ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}>
+                                <Filter size={14} className="mr-1.5"/> Filters
+                            </button>
+                            {/* TIJDVAK ROOSTER UPLOAD */}
+                            <button onClick={openTijdvakModal} className="flex items-center text-xs bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg hover:bg-amber-200 font-bold transition-colors">
+                                <Clock size={14} className="mr-1.5"/> Tijdvakken
+                            </button>
+                            {/* OPSLAAN ALS */}
+                            <button onClick={handleSaveAs} className="flex items-center text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-200 font-bold transition-colors">
+                                <FileJson size={14} className="mr-1.5"/> Opslaan als...
+                            </button>
+                            {/* BESTAND OPENEN */}
+                            <button onClick={handleOpenFile} className="flex items-center text-xs bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg hover:bg-emerald-200 font-bold transition-colors">
+                                <FolderOpen size={14} className="mr-1.5"/> Bestand Openen
+                            </button>
+                            {/* STATUS INDICATOR */}
+                            <div className={`flex items-center text-xs px-3 py-1.5 rounded-full ${fileHandle ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}`}>
+                                <HardDrive size={14} className="mr-1.5"/>
+                                {saveStatus}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        {/* DAGEN NUCHTER KPI */}
+                        <div className="bg-white p-5 rounded-xl border border-green-100 flex flex-col items-center">
+                            <Trophy className="text-green-600 mb-2" size={24}/>
+                            <h2 className="text-xs font-bold text-gray-500">Dagen Nuchter</h2>
+                            <p className="text-3xl font-extrabold text-green-600">{daysSoberToday}</p>
+                            <button onClick={() => setShowSoberSettingsModal(true)} className="mt-3 inline-flex items-center text-xs font-semibold text-gray-600 hover:text-green-800 transition-colors">
+                                <Settings size={14} className="mr-1"/> Startdatum Aanpassen
+                            </button>
+                        </div>
+                        
+                        {/* ARM TRAINING KPI */}
+                        <div className="bg-white p-5 rounded-xl border border-red-100 flex flex-col items-center">
+                            <Activity className="text-red-600 mb-2" size={24}/>
+                            <h2 className="text-xs font-bold text-gray-500">Arm Training</h2>
+                            <p className={`text-xl font-bold ${armStatus.includes("TRAINEN") ? "text-red-600 animate-pulse" : "text-gray-700"}`}>{armStatus}</p>
+                            <button onClick={openArmSettings} className="mt-3 inline-flex items-center text-xs font-semibold text-gray-600 hover:text-red-800 transition-colors">
+                                <Settings size={14} className="mr-1"/> Pas Trainingscyclus Aan
+                            </button>
+                        </div>
+
+                        {/* ZWEMMEN KPI */}
+                        <div className="bg-white p-5 rounded-xl border border-blue-100 flex flex-col items-center text-center">
+                            <Droplets className="text-blue-600 mb-2" size={24}/>
+                            <h2 className="text-xs font-bold text-gray-500 mb-1">Victoriabad Vandaag</h2>
+                            {poolSchedule[currentDate.getDay()].isOpen ? (
+                                <div className="space-y-1">
+                                    {poolSchedule[currentDate.getDay()].times.map((t, i) => (
+                                        <p key={i} className="text-lg font-bold text-blue-600">{t}</p>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-xl font-bold text-gray-400">Gesloten</p>
+                            )}
+                            <a href={poolScheduleUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                                <ExternalLink size={14} className="mr-1"/> Check Tijden Website
+                            </a>
+                        </div>
+
+                        {/* MINOXIDIL KPI (NIEUW) */}
+                        <div className="bg-white p-5 rounded-xl border border-purple-100 flex flex-col items-center">
+                            <FlaskConical className="text-purple-600 mb-2" size={24}/>
+                            <h2 className="text-xs font-bold text-gray-500">Minoxidil Voortgang</h2>
+                            <p className="text-lg font-extrabold text-purple-600 text-center">{minoxDisplay}</p>
+                            <button onClick={() => setShowMinoxSettingsModal(true)} className="mt-3 inline-flex items-center text-xs font-semibold text-gray-600 hover:text-purple-800 transition-colors">
+                                <Settings size={14} className="mr-1"/> Startdatum Aanpassen
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-lg border border-gray-200">
+                        <div className="p-4 bg-gray-800 text-white flex justify-between items-center">
+                            <button onClick={prevM} className="p-2 hover:bg-gray-700 rounded-full"><ChevronLeft/></button>
+                            <h2 className="text-lg font-bold flex items-center gap-2"><CalendarIcon/> {mNames[viewDate.getMonth()]} {viewDate.getFullYear()}</h2>
+                            <button onClick={nextM} className="p-2 hover:bg-gray-700 rounded-full"><ChevronRight/></button>
+                        </div>
+                        <div className="grid grid-cols-7 bg-gray-100 text-center py-3 text-xs font-bold text-gray-500 border-b"><div>Ma</div><div>Di</div><div>Wo</div><div>Do</div><div>Vr</div><div>Za</div><div>Zo</div></div>
+                        <div className="grid grid-cols-7 bg-gray-200 gap-px">{renderCalendar()}</div>
+                    </div>
+
+                    {/* MODAL: Notitie Toevoegen */}
+                    {showAddModal && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                            <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl">
+                                <div className="flex justify-between items-center mb-4 border-b pb-2">
+                                    <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2"><StickyNote size={20}/> Notitie Toevoegen</h3>
+                                    <button onClick={() => setShowAddModal(false)}><X className="text-gray-400 hover:text-gray-600"/></button>
+                                </div>
+                                
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Inhoud</label>
+                                        <textarea 
+                                            className="w-full border p-3 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none min-h-[100px]" 
+                                            placeholder="Typ hier je notitie..." 
+                                            value={newNote} 
+                                            onChange={e => setNewNote(e.target.value)}
+                                            autoFocus
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
+                                    <button onClick={() => setShowAddModal(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Annuleren</button>
+                                    <button onClick={handleAddNote} className="px-4 py-2 text-sm font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm flex items-center gap-2"><Save size={16}/> Opslaan</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL: Dagen Nuchter Instellingen */}
+                    {showSoberSettingsModal && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                            <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl">
+                                <div className="flex justify-between items-center mb-4 border-b pb-2">
+                                    <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2"><Settings size={20}/> Nuchterheid Instellen</h3>
+                                    <button onClick={() => setShowSoberSettingsModal(false)}><X className="text-gray-400 hover:text-gray-600"/></button>
+                                </div>
+                                
+                                <p className="text-sm text-gray-600 mb-4">
+                                    Kies een nieuwe startdatum.
+                                </p>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Nieuwe Startdatum</label>
+                                        <input 
+                                            type="date" 
+                                            className="w-full border p-3 rounded text-sm focus:ring-2 focus:ring-green-500 outline-none" 
+                                            value={newSoberStartDate} 
+                                            onChange={e => setNewSoberStartDate(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="bg-green-50 p-3 rounded text-xs text-green-700 border border-green-200">
+                                        <p>Huidige reeks gestart op: **{activeSoberPeriod.start.toLocaleDateString('nl-NL', { dateStyle: 'medium' })}**</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col gap-2 mt-6 pt-4 border-t">
+                                    <button onClick={handleCorrectSoberDate} className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center justify-center gap-2">
+                                        <RefreshCw size={16}/> Datum Corrigeren <span className="text-[10px] opacity-70">(Overschrijft huidige start)</span>
+                                    </button>
+                                    <button onClick={handleRelapseSoberDate} className="w-full px-4 py-2 text-sm font-bold bg-green-600 text-white rounded-lg hover:bg-green-700 shadow-sm flex items-center justify-center gap-2">
+                                        <History size={16}/> Opnieuw Beginnen <span className="text-[10px] opacity-70">(Behoudt historie)</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL: Arm Training Instellingen (UPDATED) */}
+                    {showArmSettingsModal && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                            <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl">
+                                <div className="flex justify-between items-center mb-4 border-b pb-2">
+                                    <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2"><Settings size={20}/> Trainingscyclus Aanpassen</h3>
+                                    <button onClick={() => setShowArmSettingsModal(false)}><X className="text-gray-400 hover:text-gray-600"/></button>
+                                </div>
+                                
+                                <p className="text-sm text-gray-600 mb-4">Kies de <strong>nieuwe startdatum</strong> en de gewenste <strong>cyclusduur</strong>.</p>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Nieuwe Startdatum (Eerste trainingsdag)</label>
+                                        <input 
+                                            type="date" 
+                                            className="w-full border p-3 rounded text-sm focus:ring-2 focus:ring-red-500 outline-none" 
+                                            value={newArmStartDate} 
+                                            onChange={e => setNewArmStartDate(e.target.value)}
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Cyclus Lengte</label>
+                                        <select 
+                                            className="w-full border p-3 rounded text-sm focus:ring-2 focus:ring-red-500 outline-none bg-white"
+                                            value={newArmCycle}
+                                            onChange={e => setNewArmCycle(e.target.value)}
+                                        >
+                                            <option value="2">2 Dagen (Trainen, Rust)</option>
+                                            <option value="3">3 Dagen (Trainen, Rust, Rust)</option>
+                                            <option value="4">4 Dagen (Trainen, Rust, Rust, Rust)</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="bg-red-50 p-3 rounded text-xs text-red-700 border border-red-200">
+                                        <p>Huidige cyclus gestart op: **{activeArmPeriod.start.toLocaleDateString('nl-NL', { dateStyle: 'medium' })}** ({activeArmPeriod.cycle || 3} dagen)</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col gap-2 mt-6 pt-4 border-t">
+                                    <button onClick={handleCorrectArmDate} className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center justify-center gap-2">
+                                        <RefreshCw size={16}/> Datum Corrigeren <span className="text-[10px] opacity-70">(Overschrijft huidige cyclus)</span>
+                                    </button>
+                                    <button onClick={handleNewArmCycle} className="w-full px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-lg hover:bg-red-700 shadow-sm flex items-center justify-center gap-2">
+                                        <History size={16}/> Nieuwe Cyclus Starten <span className="text-[10px] opacity-70">(Behoudt historie)</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL: Minoxidil Instellingen */}
+                    {showMinoxSettingsModal && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                            <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl">
+                                <div className="flex justify-between items-center mb-4 border-b pb-2">
+                                    <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2"><Settings size={20}/> Minoxidil Startdatum</h3>
+                                    <button onClick={() => setShowMinoxSettingsModal(false)}><X className="text-gray-400 hover:text-gray-600"/></button>
+                                </div>
+                                
+                                <p className="text-sm text-gray-600 mb-4">Wanneer ben je begonnen met de behandeling?</p>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Startdatum</label>
+                                        <input 
+                                            type="date" 
+                                            className="w-full border p-3 rounded text-sm focus:ring-2 focus:ring-purple-500 outline-none" 
+                                            value={newMinoxStartDateInput} 
+                                            onChange={e => setNewMinoxStartDateInput(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
+                                    <button onClick={() => setShowMinoxSettingsModal(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Annuleren</button>
+                                    <button onClick={handleMinoxDateChange} className="px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-sm flex items-center gap-2"><Save size={16}/> Opslaan</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* FILTER DROPDOWN */}
+                    {showFilters && (
+                        <div className="fixed top-20 right-4 bg-white rounded-xl shadow-2xl border p-4 z-40 w-64">
+                            <div className="flex justify-between items-center mb-3 pb-2 border-b">
+                                <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                                    <Filter size={16}/> Kalender Filters
+                                </h3>
+                                <button onClick={() => setShowFilters(false)}>
+                                    <X size={18} className="text-gray-400 hover:text-gray-600"/>
+                                </button>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" checked={calendarFilters.showSwimming} onChange={() => toggleFilter('showSwimming')} className="w-4 h-4 rounded text-blue-600"/>
+                                    <Droplets size={16} className="text-blue-500"/>
+                                    <span className="text-sm">Zwemtijden</span>
+                                </label>
+                                <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" checked={calendarFilters.showTraining} onChange={() => toggleFilter('showTraining')} className="w-4 h-4 rounded text-red-600"/>
+                                    <Activity size={16} className="text-red-500"/>
+                                    <span className="text-sm">Arm Training</span>
+                                </label>
+                                <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" checked={calendarFilters.showSobriety} onChange={() => toggleFilter('showSobriety')} className="w-4 h-4 rounded text-green-600"/>
+                                    <CheckCircle size={16} className="text-green-500"/>
+                                    <span className="text-sm">Nuchterheid</span>
+                                </label>
+                                <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" checked={calendarFilters.showAmber} onChange={() => toggleFilter('showAmber')} className="w-4 h-4 rounded text-pink-600"/>
+                                    <Heart size={16} className="text-pink-500"/>
+                                    <span className="text-sm">Amber's Rooster</span>
+                                </label>
+                                <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" checked={calendarFilters.showWork} onChange={() => toggleFilter('showWork')} className="w-4 h-4 rounded text-purple-600"/>
+                                    <Briefcase size={16} className="text-purple-500"/>
+                                    <span className="text-sm">Werk/Diensten</span>
+                                </label>
+                                <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" checked={calendarFilters.showNotes} onChange={() => toggleFilter('showNotes')} className="w-4 h-4 rounded text-gray-600"/>
+                                    <StickyNote size={16} className="text-gray-500"/>
+                                    <span className="text-sm">Notities</span>
+                                </label>
+                                <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" checked={calendarFilters.showSalary} onChange={() => toggleFilter('showSalary')} className="w-4 h-4 rounded text-yellow-600"/>
+                                    <span className="text-yellow-500">💰</span>
+                                    <span className="text-sm">Salarisdagen</span>
+                                </label>
+                                <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" checked={calendarFilters.showTijdvak} onChange={() => toggleFilter('showTijdvak')} className="w-4 h-4 rounded text-amber-600"/>
+                                    <Clock size={16} className="text-amber-500"/>
+                                    <span className="text-sm">Tijdvakken</span>
+                                </label>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL: PDF Rooster Upload */}
+                    {showPdfModal && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                            <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] flex flex-col">
+                                <div className="flex justify-between items-center mb-4 border-b pb-2">
+                                    <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                                        <Upload size={20}/> G4S Rooster Importeren
+                                    </h3>
+                                    <button onClick={() => { setShowPdfModal(false); setParsedShifts([]); setPdfError(null); }}>
+                                        <X className="text-gray-400 hover:text-gray-600"/>
+                                    </button>
+                                </div>
+                                
+                                {/* Upload Sectie */}
+                                {parsedShifts.length === 0 && (
+                                    <div className="space-y-4">
+                                        <p className="text-sm text-gray-600">
+                                            Upload je G4S tijdvakrooster PDF. Het systeem herkent automatisch de diensten en voegt ze toe aan je kalender.
+                                        </p>
+                                        
+                                        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-orange-300 rounded-lg cursor-pointer bg-orange-50 hover:bg-orange-100 transition-colors">
+                                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                {pdfParsing ? (
+                                                    <>
+                                                        <RefreshCw className="w-8 h-8 text-orange-500 animate-spin mb-2"/>
+                                                        <p className="text-sm text-orange-600 font-medium">PDF wordt verwerkt...</p>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <FileText className="w-8 h-8 text-orange-500 mb-2"/>
+                                                        <p className="text-sm text-gray-600"><span className="font-semibold text-orange-600">Klik om PDF te selecteren</span></p>
+                                                        <p className="text-xs text-gray-500 mt-1">G4S Tijdvakrooster PDF</p>
+                                                    </>
+                                                )}
+                                            </div>
+                                            <input 
+                                                type="file" 
+                                                className="hidden" 
+                                                accept=".pdf"
+                                                onChange={handlePdfUpload}
+                                                disabled={pdfParsing}
+                                            />
+                                        </label>
+
+                                        {pdfError && (
+                                            <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                                                <AlertCircle size={18} className="shrink-0 mt-0.5"/>
+                                                <span>{pdfError}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Preview Sectie */}
+                                {parsedShifts.length > 0 && (
+                                    <div className="flex flex-col flex-1 min-h-0">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <p className="text-sm text-gray-600">
+                                                <span className="font-bold text-green-600">{parsedShifts.filter(s => s.selected).length}</span> van <span className="font-bold">{parsedShifts.length}</span> diensten geselecteerd
+                                            </p>
+                                            <div className="flex gap-2">
+                                                <button 
+                                                    onClick={() => selectAllShifts(true)} 
+                                                    className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                                                >
+                                                    Alles selecteren
+                                                </button>
+                                                <span className="text-gray-300">|</span>
+                                                <button 
+                                                    onClick={() => selectAllShifts(false)} 
+                                                    className="text-xs text-gray-500 hover:text-gray-700 font-medium"
+                                                >
+                                                    Niets selecteren
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex-1 overflow-y-auto border rounded-lg divide-y custom-scrollbar min-h-0 max-h-64">
+                                            {parsedShifts.map((shift, index) => (
+                                                <div 
+                                                    key={index}
+                                                    onClick={() => toggleShiftSelection(index)}
+                                                    className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${
+                                                        shift.selected ? 'bg-green-50 hover:bg-green-100' : 'bg-white hover:bg-gray-50'
+                                                    }`}
+                                                >
+                                                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ${
+                                                        shift.selected ? 'bg-green-500 border-green-500' : 'border-gray-300'
+                                                    }`}>
+                                                        {shift.selected && <Check size={14} className="text-white"/>}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-medium text-gray-800 truncate">{shift.dateDisplay}</p>
+                                                        <p className="text-xs text-orange-600 font-bold">{shift.time}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="flex gap-2 mt-4 pt-4 border-t">
+                                            <button 
+                                                onClick={() => { setParsedShifts([]); setPdfError(null); }}
+                                                className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                                            >
+                                                Andere PDF
+                                            </button>
+                                            <button 
+                                                onClick={importSelectedShifts}
+                                                disabled={parsedShifts.filter(s => s.selected).length === 0}
+                                                className="flex-1 px-4 py-2 text-sm font-bold bg-green-600 text-white rounded-lg hover:bg-green-700 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                <Check size={16}/> Importeren ({parsedShifts.filter(s => s.selected).length})
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL: Tijdvak Rooster Upload */}
+                    {showTijdvakModal && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                            <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] flex flex-col">
+                                <div className="flex justify-between items-center mb-4 border-b pb-2">
+                                    <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                                        <Clock size={20} className="text-amber-500"/> Tijdvakkenrooster Invoeren
+                                    </h3>
+                                    <button onClick={closeTijdvakModal}>
+                                        <X className="text-gray-400 hover:text-gray-600"/>
+                                    </button>
+                                </div>
+
+                                {/* Maand/Jaar selectie */}
+                                <div className="flex gap-4 mb-4">
+                                    <select
+                                        className="flex-1 border p-2 rounded text-sm"
+                                        value={tijdvakMonth}
+                                        onChange={e => { setTijdvakMonth(parseInt(e.target.value)); setTijdvakBulkParsed([]); }}
+                                    >
+                                        {mNames.map((name, idx) => (
+                                            <option key={idx} value={idx}>{name}</option>
+                                        ))}
+                                    </select>
+                                    <select
+                                        className="flex-1 border p-2 rounded text-sm"
+                                        value={tijdvakYear}
+                                        onChange={e => { setTijdvakYear(parseInt(e.target.value)); setTijdvakBulkParsed([]); }}
+                                    >
+                                        <option value="2025">2025</option>
+                                        <option value="2026">2026</option>
+                                        <option value="2027">2027</option>
+                                    </select>
+                                </div>
+
+                                {tijdvakBulkParsed.length === 0 && (
+                                    <div className="space-y-4">
+                                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                                            <p className="text-sm text-amber-800 font-medium mb-2">📋 Hoe werkt het?</p>
+                                            <ol className="text-xs text-amber-700 space-y-1 list-decimal list-inside">
+                                                <li>Maak een screenshot van je tijdvakkenrooster in de G4S Connect app</li>
+                                                <li>Lees de tijden af en typ ze hieronder in</li>
+                                                <li>Of kopieer/plak de tekst als je die hebt</li>
+                                            </ol>
+                                        </div>
+
+                                        {/* Handmatige invoer */}
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-gray-500 uppercase">Voer tijdvakken in</label>
+                                            <p className="text-xs text-gray-500">Format: <code className="bg-gray-100 px-1 rounded">29: 07:15-13:45</code> of <code className="bg-gray-100 px-1 rounded">29-1: 07:15-13:45</code></p>
+                                            <textarea
+                                                className="w-full border p-3 rounded text-sm min-h-[120px] font-mono"
+                                                placeholder="29: 07:15-13:45&#10;30: 08:30-12:00&#10;4-2: 04:15-14:15&#10;5-2: 05:15-15:15"
+                                                value={tijdvakBulkInput}
+                                                onChange={e => setTijdvakBulkInput(e.target.value)}
+                                            />
+                                            <button
+                                                onClick={handleTijdvakBulkParse}
+                                                disabled={!tijdvakBulkInput.trim()}
+                                                className="w-full px-4 py-2 text-sm font-bold bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors"
+                                            >
+                                                Tijdvakken Verwerken
+                                            </button>
+                                        </div>
+
+                                        {/* Tip */}
+                                        <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
+                                            <strong>💡 Tip:</strong> Als je de tijdvakken van meerdere weken hebt, kun je ze allemaal tegelijk invoeren. Het systeem herkent automatisch de datums.
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Parsed results */}
+                                {tijdvakBulkParsed.length > 0 && (
+                                    <div className="flex flex-col flex-1 min-h-0">
+                                        <div className="flex justify-between mb-3">
+                                            <p className="text-sm"><span className="font-bold text-amber-600">{tijdvakBulkParsed.filter(s => s.selected).length}</span> tijdvakken gevonden</p>
+                                            <button onClick={() => { setTijdvakBulkParsed([]); setTijdvakBulkInput(""); }} className="text-xs text-gray-500 hover:text-gray-700">← Terug</button>
+                                        </div>
+
+                                        <div className="flex-1 overflow-y-auto border rounded-lg divide-y max-h-64">
+                                            {tijdvakBulkParsed.map((shift, index) => (
+                                                <div
+                                                    key={index}
+                                                    onClick={() => toggleTijdvakBulkSelection(index)}
+                                                    className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${shift.selected ? 'bg-amber-50 hover:bg-amber-100' : 'bg-white hover:bg-gray-50'}`}
+                                                >
+                                                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${shift.selected ? 'bg-amber-500 border-amber-500' : 'border-gray-300'}`}>
+                                                        {shift.selected && <Check size={14} className="text-white"/>}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <p className="text-sm font-medium">{shift.dateDisplay}</p>
+                                                        <p className="text-xs text-amber-600 font-bold">{shift.startTime} - {shift.endTime}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="flex gap-2 mt-4 pt-4 border-t">
+                                            <button onClick={closeTijdvakModal} className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">
+                                                Annuleren
+                                            </button>
+                                            <button
+                                                onClick={importTijdvakBulkShifts}
+                                                disabled={tijdvakBulkParsed.filter(s => s.selected).length === 0}
+                                                className="flex-1 px-4 py-2 text-sm font-bold bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 flex items-center justify-center gap-2"
+                                            >
+                                                <Check size={16}/> Importeren ({tijdvakBulkParsed.filter(s => s.selected).length})
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

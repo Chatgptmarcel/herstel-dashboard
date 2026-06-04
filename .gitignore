@@ -1,0 +1,11 @@
+# Persoonlijke/gevoelige data — mag NOOIT in de (publieke) repo komen
+mijn_herstel_dashboard.json
+*.local.json
+
+# Tijdelijke bestanden van de sync
+raw.ics
+
+# Rommel
+node_modules/
+.DS_Store
+Thumbs.db
