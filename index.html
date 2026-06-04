@@ -1667,7 +1667,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                             {weather[dateKey] && (
                                 <div className="text-[9px] font-semibold text-sky-700 flex items-center gap-1 mb-0.5 px-0.5 whitespace-nowrap" title="Weersvoorspelling Weesp">
                                     <span className="text-[11px] leading-none">{weatherIcon(weather[dateKey].code)}</span>
-                                    <span>{weather[dateKey].min}° / {weather[dateKey].max}°</span>
+                                    <span>{weather[dateKey].max}° / {weather[dateKey].min}°</span>
                                 </div>
                             )}
                             <div className="flex-1 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
