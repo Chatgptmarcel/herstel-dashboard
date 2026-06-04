@@ -25,9 +25,194 @@
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+
+        /* Astrologie KPI kaart — wit, past bij de rest */
+        .astro-kpi {
+            background: white;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #e0e7ff;
+        }
+        .astro-kpi::after {
+            content: '☉ ☽ ♃ ♄ ♅ ♆ ♇';
+            position: absolute;
+            bottom: -6px;
+            right: -8px;
+            font-size: 2rem;
+            opacity: 0.06;
+            letter-spacing: 3px;
+            pointer-events: none;
+            color: #4338ca;
+        }
+
+        /* Piek pulse */
+        .astro-piek-pulse { animation: astroPulseGlow 2s ease-in-out infinite; }
+        @keyframes astroPulseGlow {
+            0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.3); }
+            50% { box-shadow: 0 0 12px 4px rgba(245,158,11,0.15); }
+        }
+
+        /* Transit sectie — zelfde donkere stijl als KPI */
+        .astro-section {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #3730a3 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .astro-section::before {
+            content: '';
+            position: absolute;
+            top: -50%; right: -30%;
+            width: 80%; height: 100%;
+            background: radial-gradient(circle, rgba(199,168,76,0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        /* Transit kaart hover */
+        .astro-transit-card {
+            transition: all 0.2s ease;
+            border-left-width: 4px;
+            border-left-style: solid;
+        }
+        .astro-transit-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -5px rgba(0,0,0,0.1), 0 4px 10px -5px rgba(0,0,0,0.04);
+        }
+
+        /* Fase badges */
+        .astro-fase-piek {
+            animation: astroPulse 2s ease-in-out infinite;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #78350f;
+        }
+        @keyframes astroPulse { 0%,100% { opacity:1; } 50% { opacity:0.7; } }
+        .astro-fase-aanloop { background: linear-gradient(135deg, #93c5fd, #60a5fa); color: #1e3a5f; }
+        .astro-fase-uitloop { background: linear-gradient(135deg, #d1d5db, #9ca3af); color: #374151; }
+
+        /* Voortgangsbalk */
+        .astro-progress {
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(0,0,0,0.06);
+            overflow: hidden;
+            position: relative;
+        }
+        .astro-progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            position: relative;
+        }
+        .astro-progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 8px; height: 100%;
+            background: rgba(255,255,255,0.5);
+            border-radius: 0 3px 3px 0;
+        }
+
+        /* Samenvatting kaarten — glassmorphism op donker */
+        .astro-stat-card {
+            background: rgba(255,255,255,0.07);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.15s;
+        }
+        .astro-stat-card:hover { transform: translateY(-1px); background: rgba(255,255,255,0.1); }
+
+        /* Modal */
+        .astro-modal-header {
+            background: linear-gradient(135deg, #312e81 0%, #4c1d95 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .astro-modal-header::before {
+            content: '';
+            position: absolute;
+            top: -30px; right: -30px;
+            width: 120px; height: 120px;
+            background: radial-gradient(circle, rgba(199,168,76,0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        /* Intensiteitsbalk met glow */
+        .astro-intensity-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+        .astro-intensity-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
     </style>
+
+    <!-- Astrologie Transit Data (uit astrologieprogramma) -->
+    <script>
+    window.ASTRO_TRANSITS = [];
+
+    // Berekeningsconstanten
+    window.ASTRO_PLANEET_ICONEN = {'Zon':'☉','Maan':'☽','Mercurius':'☿','Venus':'♀','Mars':'♂','Jupiter':'♃','Saturnus':'♄','Uranus':'♅','Neptunus':'♆','Pluto':'♇'};
+    window.ASTRO_PLANEET_SNELHEID = {'Pluto':0.015,'Neptunus':0.020,'Uranus':0.040,'Saturnus':0.055,'Jupiter':0.083};
+    window.ASTRO_PLANEET_ORB = {'Pluto':1.5,'Neptunus':1.5,'Uranus':2.0,'Saturnus':2.0,'Jupiter':2.0};
+    window.ASTRO_PIEK_ORB = 0.5;
+    window.ASTRO_LEVENSGEBIEDEN = {identiteit:{naam:'Identiteit',icon:'☉'},emoties:{naam:'Emoties',icon:'☽'},werk:{naam:'Werk',icon:'♄'},relaties:{naam:'Relaties',icon:'♀'},creativiteit:{naam:'Creativiteit',icon:'♇'},gezondheid:{naam:'Gezondheid',icon:'♅'},financien:{naam:'Financiën',icon:'☽'}};
+
+    // Bereken actieve periodes per groep
+    window.ASTRO_GROEP_PERIODES = {};
+    (function() {
+      const groepen = {};
+      window.ASTRO_TRANSITS.forEach(t => {
+        if (!groepen[t.groepId]) groepen[t.groepId] = [];
+        groepen[t.groepId].push(t);
+      });
+      Object.entries(groepen).forEach(([groepId, passages]) => {
+        const planeet = passages[0].transitplaneet;
+        const snelheid = window.ASTRO_PLANEET_SNELHEID[planeet] || 0.05;
+        const orb = window.ASTRO_PLANEET_ORB[planeet] || 2.0;
+        const orbDagen = Math.round(orb / snelheid);
+        passages.sort((a, b) => new Date(a.datum) - new Date(b.datum));
+        const eersteHit = new Date(passages[0].datum);
+        const laatsteHit = new Date(passages[passages.length - 1].datum);
+        const startActief = new Date(eersteHit.getTime() - orbDagen * 86400000);
+        const eindActief = new Date(laatsteHit.getTime() + orbDagen * 86400000);
+        const piekDagen = Math.round(window.ASTRO_PIEK_ORB / snelheid);
+        const pieken = passages.map(p => ({
+          id: p.id, datum: new Date(p.datum),
+          piekStart: new Date(new Date(p.datum).getTime() - piekDagen * 86400000),
+          piekEind: new Date(new Date(p.datum).getTime() + piekDagen * 86400000)
+        }));
+        window.ASTRO_GROEP_PERIODES[groepId] = { startActief, eindActief, eersteHit, laatsteHit, orbDagen, piekDagen, pieken, passages };
+      });
+    })();
+
+    // Bepaal transit status voor een datum
+    window.getAstroTransitStatus = function(transit, datum) {
+      const groep = window.ASTRO_GROEP_PERIODES[transit.groepId];
+      if (!groep) return null;
+      const d = datum.getTime();
+      if (d < groep.startActief.getTime() || d > groep.eindActief.getTime()) return null;
+      const snelheid = window.ASTRO_PLANEET_SNELHEID[transit.transitplaneet] || 0.05;
+      let dichtstbijHit = null, minAfstand = Infinity;
+      groep.pieken.forEach(p => {
+        const afstand = Math.abs(p.datum.getTime() - d);
+        if (afstand < minAfstand) { minAfstand = afstand; dichtstbijHit = p; }
+      });
+      let fase;
+      if (dichtstbijHit && d >= dichtstbijHit.piekStart.getTime() && d <= dichtstbijHit.piekEind.getTime()) fase = 'piek';
+      else if (d < groep.eersteHit.getTime()) fase = 'aanloop';
+      else if (d > groep.laatsteHit.getTime()) fase = 'uitloop';
+      else fase = (dichtstbijHit && d < dichtstbijHit.datum.getTime()) ? 'aanloop' : 'uitloop';
+      const totaalDuur = groep.eindActief.getTime() - groep.startActief.getTime();
+      const voortgang = Math.min(100, Math.max(0, Math.round(((d - groep.startActief.getTime()) / totaalDuur) * 100)));
+      const dagenTotHit = dichtstbijHit ? Math.round((dichtstbijHit.datum.getTime() - d) / 86400000) : 0;
+      const orbGraden = dichtstbijHit ? (Math.abs(dichtstbijHit.datum.getTime() - d) / 86400000 * snelheid).toFixed(1) : '?';
+      return { actief: true, fase, voortgang, dagenTotHit, dichtstbijHit, orbGraden, groep };
+    };
+    </script>
 </head>
-<body class="bg-gray-50 text-slate-900">
+<body class="text-slate-900" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%); min-height: 100vh;">
     <div id="root"></div>
 
     <script type="text/babel" data-type="module">
@@ -63,7 +248,12 @@
             Heart,
             Eye,
             EyeOff,
-            Filter
+            Filter,
+            Star,
+            ChevronDown,
+            ChevronUp,
+            Sparkles,
+            Zap
         } from 'lucide-react';
 
         const App = () => {
@@ -186,6 +376,7 @@
                     showWork: true,
                     showNotes: true,
                     showSalary: true,
+                    showTrigion: true,
                     showTijdvak: true
                 };
                 if (saved) {
@@ -195,11 +386,71 @@
                 return defaults;
             }); 
 
+            // ASTROLOGIE STATES
+            const [astroOpen, setAstroOpen] = useState(false);
+            const [astroModalTransit, setAstroModalTransit] = useState(null);
+
+            // Bereken actieve transits voor vandaag
+            const getAstroToday = () => {
+                const datum = new Date();
+                datum.setHours(12, 0, 0, 0);
+                const actieve = [];
+                const getoond = new Set();
+                window.ASTRO_TRANSITS.forEach(t => {
+                    const status = window.getAstroTransitStatus(t, datum);
+                    if (status && !getoond.has(t.groepId)) {
+                        const groep = window.ASTRO_GROEP_PERIODES[t.groepId];
+                        let beste = t;
+                        let minAf = Math.abs(new Date(t.datum).getTime() - datum.getTime());
+                        groep.passages.forEach(p => {
+                            const af = Math.abs(new Date(p.datum).getTime() - datum.getTime());
+                            if (af < minAf) { minAf = af; beste = p; }
+                        });
+                        actieve.push({ transit: beste, status, groep });
+                        getoond.add(t.groepId);
+                    }
+                });
+                actieve.sort((a, b) => {
+                    if (a.status.fase === 'piek' && b.status.fase !== 'piek') return -1;
+                    if (b.status.fase === 'piek' && a.status.fase !== 'piek') return 1;
+                    return b.transit.intensiteit - a.transit.intensiteit;
+                });
+                return actieve;
+            };
+            const astroToday = getAstroToday();
+            const astroPieken = astroToday.filter(a => a.status.fase === 'piek');
+
+            const astroIntensiteitKleur = (n) => {
+                if (n <= 3) return '#22c55e';
+                if (n <= 5) return '#84cc16';
+                if (n <= 7) return '#f59e0b';
+                if (n <= 8) return '#f97316';
+                return '#ef4444';
+            };
+
+            const astroToonKleur = (toon) => {
+                if (toon === 'positief') return {bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-300'};
+                if (toon === 'negatief') return {bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300'};
+                if (toon === 'gemengd') return {bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-300'};
+                return {bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-300'};
+            };
+
+            const astroFaseLabel = (fase) => {
+                if (fase === 'piek') return {label: '⚡ Piek', cls: 'bg-amber-200 text-amber-800'};
+                if (fase === 'aanloop') return {label: '↗ Aanloop', cls: 'bg-blue-100 text-blue-700'};
+                return {label: '↘ Uitloop', cls: 'bg-gray-200 text-gray-600'};
+            };
+
+            const formatAstroDatum = (d) => {
+                const dt = typeof d === 'string' ? new Date(d) : d;
+                const maanden = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+                return `${dt.getDate()} ${maanden[dt.getMonth()]} ${dt.getFullYear()}`;
+            };
+
             // CONFIGURATIE VAST
             // Werkrooster komt uit RostarCAS (Trigion Schiphol). De privé feed-URL staat
             // BEWUST NIET in deze client-code: een GitHub Action haalt de feed server-side
-            // op (met de URL in een beveiligde secret) en schrijft het resultaat naar
-            // ./schedule.ics naast dit dashboard. De browser laadt dat same-origin.
+            // op en schrijft het resultaat naar ./schedule.ics naast dit dashboard.
             const poolScheduleUrl = "https://victoriabad.nl/tijden-en-tarieven/";
             
             const poolSchedule = {
@@ -212,26 +463,29 @@
                 6: { times: ["09:00 - 13:00"], label: "Zaterdag", isOpen: true }
             };
 
-            // SALARISDAGEN (RVNB 2026-2027)
+            // SALARISDAGEN G4S (t/m juni 2026)
             const salaryDays = {
-                // 2026
                 '2026-01-28': { periode: 1, jaar: 2026 },
                 '2026-02-25': { periode: 2, jaar: 2026 },
                 '2026-03-25': { periode: 3, jaar: 2026 },
                 '2026-04-22': { periode: 4, jaar: 2026, note: 'Vak' },
                 '2026-05-20': { periode: 5, jaar: 2026 },
                 '2026-06-17': { periode: 6, jaar: 2026 },
-                '2026-07-15': { periode: 7, jaar: 2026 },
-                '2026-08-12': { periode: 8, jaar: 2026 },
-                '2026-09-09': { periode: 9, jaar: 2026 },
-                '2026-10-07': { periode: 10, jaar: 2026 },
-                '2026-11-04': { periode: 11, jaar: 2026, note: 'Bonus' },
-                '2026-12-02': { periode: 12, jaar: 2026 },
-                '2027-01-06': { periode: 13, jaar: 2026, note: 'incl wk 53' },
-                // 2027
-                '2027-02-03': { periode: 1, jaar: 2027 },
-                '2027-03-03': { periode: 2, jaar: 2027 },
-                '2027-03-31': { periode: 3, jaar: 2027 },
+            };
+
+            // BETAALDAGEN TRIGION (vanaf juni 2026, vrijdagen)
+            const trigionDays = {
+                '2026-06-19': { periode: 6, jaar: 2026 },
+                '2026-07-17': { periode: 7, jaar: 2026 },
+                '2026-08-14': { periode: 8, jaar: 2026 },
+                '2026-09-11': { periode: 9, jaar: 2026 },
+                '2026-10-09': { periode: 10, jaar: 2026 },
+                '2026-11-06': { periode: 11, jaar: 2026 },
+                '2026-12-04': { periode: 12, jaar: 2026 },
+                '2027-01-08': { periode: 13, jaar: 2026 },
+                '2027-02-05': { periode: 1, jaar: 2027 },
+                '2027-03-05': { periode: 2, jaar: 2027 },
+                '2027-04-02': { periode: 3, jaar: 2027 },
             };
 
             // Helper: Calculate days sober for a specific date based on history
@@ -343,7 +597,31 @@
                 const saved = localStorage.getItem('dashboard_manual_shifts');
                 if (saved) {
                     try {
-                        setManualShifts(JSON.parse(saved));
+                        const parsed = JSON.parse(saved);
+                        if (!localStorage.getItem('_vakantie_aug2026_injected')) {
+                            const baseId = 1777830000000;
+                            for (let d = 10; d <= 30; d++) {
+                                const key = '2026-08-' + String(d).padStart(2, '0');
+                                const entry = {id: baseId + d, summary: 'Vakantie', isManual: true, isNote: true};
+                                if (!parsed[key]) parsed[key] = [];
+                                if (!parsed[key].some(e => e.summary === 'Vakantie')) parsed[key].push(entry);
+                            }
+                            localStorage.setItem('dashboard_manual_shifts', JSON.stringify(parsed));
+                            localStorage.setItem('_vakantie_aug2026_injected', '1');
+                        }
+                        if (!localStorage.getItem('_alleen_thuis_jul2026_injected')) {
+                            const baseId2 = 1788830000000;
+                            for (let d = 3; d <= 12; d++) {
+                                if (d === 4) continue; // behalve 4 juli
+                                const key = '2026-07-' + String(d).padStart(2, '0');
+                                const entry = {id: baseId2 + d, summary: 'Alleen thuis', isManual: true, isNote: true};
+                                if (!parsed[key]) parsed[key] = [];
+                                if (!parsed[key].some(e => e.summary === 'Alleen thuis')) parsed[key].push(entry);
+                            }
+                            localStorage.setItem('dashboard_manual_shifts', JSON.stringify(parsed));
+                            localStorage.setItem('_alleen_thuis_jul2026_injected', '1');
+                        }
+                        setManualShifts(parsed);
                         setSaveStatus("Lokale kopie geladen");
                     } catch (e) { console.error("Fout laden data", e); }
                 }
@@ -602,8 +880,7 @@
                 setLoadingShifts(true);
                 try {
                     // Same-origin laden: schedule.ics wordt server-side ververst door de
-                    // GitHub Action (RostarCAS -> schedule.ics). Geen CORS, geen proxy.
-                    // Cache-buster zodat we altijd de nieuwste versie krijgen.
+                    // GitHub Action (RostarCAS -> filter -> schedule.ics). Geen CORS/proxy.
                     const res = await fetch(`./schedule.ics?t=${Date.now()}`, { cache: "no-store" });
                     if (!res.ok) throw new Error("schedule.ics niet gevonden");
                     const txt = await res.text();
@@ -611,22 +888,32 @@
                     const parsedShifts = parseICS(txt);
                     setOrtecShifts(parsedShifts);
 
-                    // Verwijder voorlopige tijdvakken tot en met de laatste definitieve roosterdatum
-                    const shiftDates = Object.keys(parsedShifts);
-                    if (shiftDates.length > 0) {
-                        const latestDate = shiftDates.reduce((latest, current) => current > latest ? current : latest);
+                    // Verwijder tijdvakken tot de laatste ORTEC datum
+                    const ortecDates = Object.keys(parsedShifts);
+                    if (ortecDates.length > 0) {
+                        // Vind de laatste datum in ORTEC data
+                        const latestOrtecDate = ortecDates.reduce((latest, current) => {
+                            return current > latest ? current : latest;
+                        });
+
+                        // Verwijder alle tijdvakken tot en met deze datum
                         setTijdvakShifts(prev => {
                             const updated = { ...prev };
                             let removed = 0;
                             Object.keys(updated).forEach(dateKey => {
-                                if (dateKey <= latestDate) { delete updated[dateKey]; removed++; }
+                                if (dateKey <= latestOrtecDate) {
+                                    delete updated[dateKey];
+                                    removed++;
+                                }
                             });
-                            if (removed > 0) console.log(`${removed} tijdvak(ken) verwijderd tot ${latestDate}`);
+                            if (removed > 0) {
+                                console.log(`${removed} tijdvak(ken) verwijderd tot ${latestOrtecDate}`);
+                            }
                             return updated;
                         });
                     }
                 } catch (e) {
-                    console.log("Auto-rooster laadt niet:", e.message);
+                    console.log("Auto-rooster laadt niet.");
                 } finally {
                     setLoadingShifts(false);
                 }
@@ -1252,6 +1539,9 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                     // SALARY DAY CHECK (met filter)
                     const salaryDay = calendarFilters.showSalary ? salaryDays[dateKey] : null;
 
+                    // TRIGION DAY CHECK (met filter)
+                    const trigionDay = calendarFilters.showTrigion ? trigionDays[dateKey] : null;
+
                     const ortecRaw = ortecShifts[dateKey] || [];
                     const finalOrtec = calendarFilters.showWork ? filterOrtecShifts(ortecRaw).map(s => ({
                         ...s, type: 'ortec', sortStart: s.start, sortEnd: s.end
@@ -1371,7 +1661,15 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                 {salaryDay && (
                                     <div className="flex items-center text-[9px] text-yellow-800 bg-yellow-100 p-0.5 rounded border border-yellow-300 w-full font-bold">
                                         <span className="mr-1">💰</span>
-                                        <span>Salaris P{salaryDay.periode}{salaryDay.note ? ` (${salaryDay.note})` : ''}</span>
+                                        <span>G4S P{salaryDay.periode}{salaryDay.note ? ` (${salaryDay.note})` : ''}</span>
+                                    </div>
+                                )}
+
+                                {/* 2.6 TRIGION BETAALDAG */}
+                                {trigionDay && (
+                                    <div className="flex items-center text-[9px] text-yellow-800 bg-yellow-100 p-0.5 rounded border border-yellow-300 w-full font-bold">
+                                        <span className="mr-1">💰</span>
+                                        <span>Trigion P{trigionDay.periode}</span>
                                     </div>
                                 )}
 
@@ -1435,7 +1733,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
             };
 
             return (
-                <div className="max-w-6xl mx-auto p-4 font-sans min-h-screen relative">
+                <div className="max-w-6xl mx-auto p-6 font-sans min-h-screen relative bg-gray-50 shadow-2xl" style={{borderRadius: '0', minHeight: '100vh'}}>
                     <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border-l-4 border-blue-500 flex flex-col sm:flex-row justify-between items-center gap-4">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-800">Mijn Herstel Dashboard</h1>
@@ -1468,7 +1766,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                         {/* DAGEN NUCHTER KPI */}
                         <div className="bg-white p-5 rounded-xl border border-green-100 flex flex-col items-center">
                             <Trophy className="text-green-600 mb-2" size={24}/>
@@ -1516,7 +1814,234 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                 <Settings size={14} className="mr-1"/> Startdatum Aanpassen
                             </button>
                         </div>
+
+                        {/* ASTROLOGIE KPI */}
+                        <div className="astro-kpi p-5 rounded-xl flex flex-col items-center cursor-pointer hover:shadow-lg transition-all relative z-10" onClick={() => setAstroOpen(!astroOpen)}>
+                            <Sparkles className="text-indigo-600 mb-2" size={24}/>
+                            <h2 className="text-xs font-bold text-gray-500">Transits Vandaag</h2>
+                            <p className="text-3xl font-extrabold text-indigo-600">{astroToday.length}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                                {astroPieken.length > 0 && (
+                                    <span className="inline-flex items-center text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full astro-piek-pulse">
+                                        <Zap size={9} className="mr-0.5"/> {astroPieken.length} piek
+                                    </span>
+                                )}
+                                <div className="flex items-center gap-1.5">
+                                    {astroToday.filter(a => a.transit.toon === 'positief').length > 0 && (
+                                        <span className="text-[10px] font-bold text-emerald-600">+{astroToday.filter(a => a.transit.toon === 'positief').length}</span>
+                                    )}
+                                    {astroToday.filter(a => a.transit.toon === 'negatief').length > 0 && (
+                                        <span className="text-[10px] font-bold text-rose-600">−{astroToday.filter(a => a.transit.toon === 'negatief').length}</span>
+                                    )}
+                                    {astroToday.filter(a => a.transit.toon === 'gemengd').length > 0 && (
+                                        <span className="text-[10px] font-bold text-amber-600">~{astroToday.filter(a => a.transit.toon === 'gemengd').length}</span>
+                                    )}
+                                </div>
+                            </div>
+                            <button className="mt-3 inline-flex items-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
+                                {astroOpen ? <ChevronUp size={14} className="mr-1"/> : <ChevronDown size={14} className="mr-1"/>}
+                                {astroOpen ? 'Inklappen' : 'Bekijk transits'}
+                            </button>
+                        </div>
                     </div>
+
+                    {/* ASTROLOGIE UITKLAPBARE SECTIE */}
+                    {astroOpen && (
+                        <div className="astro-section rounded-xl border border-indigo-200/50 p-5 mb-8 shadow-sm">
+                            <div className="flex items-center justify-between mb-5">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center">
+                                        <Sparkles size={16} className="text-amber-300"/>
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-white text-sm">Transitdashboard</h3>
+                                        <p className="text-[10px] text-indigo-300">Actieve kosmische invloeden vandaag</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setAstroOpen(false)} className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
+                                    <X size={14} className="text-indigo-300"/>
+                                </button>
+                            </div>
+
+                            {astroToday.length === 0 ? (
+                                <div className="text-center py-12 text-indigo-300/60">
+                                    <p className="text-4xl mb-3">☽</p>
+                                    <p className="text-sm font-medium text-indigo-200">Geen actieve transits vandaag</p>
+                                    <p className="text-xs text-indigo-400 mt-1">Een rustige dag aan de hemel</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {/* Samenvatting */}
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                                        <div className="astro-stat-card rounded-xl p-3.5 text-center">
+                                            <div className="text-2xl font-extrabold text-white">{astroToday.length}</div>
+                                            <div className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">Actief</div>
+                                        </div>
+                                        <div className="astro-stat-card rounded-xl p-3.5 text-center">
+                                            <div className="text-2xl font-extrabold text-amber-300">{astroPieken.length}</div>
+                                            <div className="text-[10px] font-bold text-amber-400/70 uppercase tracking-wider flex items-center justify-center gap-1">{astroPieken.length > 0 && <Zap size={9}/>} In piek</div>
+                                        </div>
+                                        <div className="astro-stat-card rounded-xl p-3.5 text-center">
+                                            <div className="text-2xl font-extrabold text-indigo-200">{astroToday.length > 0 ? (Math.round(astroToday.reduce((s,a) => s + a.transit.intensiteit, 0) / astroToday.length * 10) / 10) : 0}</div>
+                                            <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Gem. intensiteit</div>
+                                        </div>
+                                        <div className="astro-stat-card rounded-xl p-3.5 text-center">
+                                            <div className="flex items-center justify-center gap-2 text-lg font-extrabold">
+                                                <span className="text-emerald-400">{astroToday.filter(a=>a.transit.toon==='positief').length}</span>
+                                                <span className="text-indigo-500">/</span>
+                                                <span className="text-rose-400">{astroToday.filter(a=>a.transit.toon==='negatief').length}</span>
+                                                <span className="text-indigo-500">/</span>
+                                                <span className="text-amber-400">{astroToday.filter(a=>a.transit.toon==='gemengd').length}</span>
+                                            </div>
+                                            <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Pos / Neg / Gem</div>
+                                        </div>
+                                    </div>
+
+                                    {/* Piekfase */}
+                                    {astroPieken.length > 0 && (
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <div className="w-5 h-5 rounded bg-amber-400/20 flex items-center justify-center"><Zap size={12} className="text-amber-300"/></div>
+                                            <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">Piekfase — sterkste werking</span>
+                                            <div className="flex-1 h-px bg-amber-400/20"/>
+                                        </div>
+                                    )}
+                                    {astroPieken.map(item => {
+                                        const t = item.transit;
+                                        const s = item.status;
+                                        const kleur = astroIntensiteitKleur(t.intensiteit);
+                                        const toonStijl = astroToonKleur(t.toon);
+                                        const gebieden = t.levensgebieden.map(g => window.ASTRO_LEVENSGEBIEDEN[g]?.naam).join(' · ');
+                                        let dagenTekst = s.dagenTotHit === 0 ? 'Exacte hit vandaag!' : s.dagenTotHit > 0 ? `${s.dagenTotHit}d tot hit` : `${Math.abs(s.dagenTotHit)}d na hit`;
+                                        return (
+                                            <div key={t.id} onClick={() => setAstroModalTransit(t)} className="astro-transit-card bg-white rounded-xl p-4 cursor-pointer shadow-sm mb-2" style={{borderLeftColor: kleur}}>
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div className="font-bold text-sm text-gray-800 flex items-center gap-1.5">
+                                                        <span className="text-xl leading-none">{window.ASTRO_PLANEET_ICONEN[t.transitplaneet]}</span>
+                                                        <span>{t.transitplaneet}</span>
+                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${toonStijl.bg} ${toonStijl.text} font-bold uppercase`}>{t.aspect}</span>
+                                                        <span>{t.nataalPunt}</span>
+                                                    </div>
+                                                    <span className="astro-fase-piek text-[10px] px-2.5 py-1 rounded-full font-bold shadow-sm">⚡ Piek</span>
+                                                </div>
+                                                <div className="flex gap-3 text-[10px] text-gray-400 mb-2 flex-wrap font-medium">
+                                                    <span>📐 ~{s.orbGraden}°</span>
+                                                    <span>⏱ {dagenTekst}</span>
+                                                    {t.totaalPassages > 1 && <span>🔄 {t.passageNummer}/{t.totaalPassages}</span>}
+                                                    <span>📍 H{t.transitHuis}→{t.nataalHuis}</span>
+                                                </div>
+                                                <div className="astro-progress mb-2">
+                                                    <div className="astro-progress-fill" style={{width: `${s.voortgang}%`, background: `linear-gradient(90deg, ${kleur}88, ${kleur})`}}/>
+                                                </div>
+                                                <p className="text-xs text-gray-600 leading-relaxed mb-2">{t.samenvatting}</p>
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="astro-intensity-bar w-20">
+                                                            <div className="astro-intensity-fill" style={{width: `${t.intensiteit*10}%`, background: `linear-gradient(90deg, ${kleur}aa, ${kleur})`}}/>
+                                                        </div>
+                                                        <span className="text-xs font-extrabold" style={{color: kleur}}>{t.intensiteit}/10</span>
+                                                    </div>
+                                                    <span className="text-[10px] text-gray-400 font-medium">{gebieden}</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+
+                                    {/* Aanloop */}
+                                    {astroToday.filter(a => a.status.fase === 'aanloop').length > 0 && (
+                                        <div className="flex items-center gap-2 mb-3 mt-4">
+                                            <div className="w-5 h-5 rounded bg-blue-400/20 flex items-center justify-center"><ChevronUp size={12} className="text-blue-300"/></div>
+                                            <span className="text-xs font-bold text-blue-300 uppercase tracking-wider">Aanloop — bouwt op</span>
+                                            <div className="flex-1 h-px bg-blue-400/20"/>
+                                        </div>
+                                    )}
+                                    {astroToday.filter(a => a.status.fase === 'aanloop').map(item => {
+                                        const t = item.transit;
+                                        const s = item.status;
+                                        const kleur = astroIntensiteitKleur(t.intensiteit);
+                                        const toonStijl = astroToonKleur(t.toon);
+                                        const gebieden = t.levensgebieden.map(g => window.ASTRO_LEVENSGEBIEDEN[g]?.naam).join(' · ');
+                                        let dagenTekst = s.dagenTotHit === 0 ? 'Exacte hit vandaag!' : s.dagenTotHit > 0 ? `${s.dagenTotHit}d tot hit` : `${Math.abs(s.dagenTotHit)}d na hit`;
+                                        return (
+                                            <div key={t.id} onClick={() => setAstroModalTransit(t)} className="astro-transit-card bg-white rounded-xl p-4 cursor-pointer shadow-sm mb-2" style={{borderLeftColor: kleur}}>
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div className="font-bold text-sm text-gray-800 flex items-center gap-1.5">
+                                                        <span className="text-xl leading-none">{window.ASTRO_PLANEET_ICONEN[t.transitplaneet]}</span>
+                                                        <span>{t.transitplaneet}</span>
+                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${toonStijl.bg} ${toonStijl.text} font-bold uppercase`}>{t.aspect}</span>
+                                                        <span>{t.nataalPunt}</span>
+                                                    </div>
+                                                    <span className="astro-fase-aanloop text-[10px] px-2.5 py-1 rounded-full font-bold shadow-sm">↗ Aanloop</span>
+                                                </div>
+                                                <div className="flex gap-3 text-[10px] text-gray-400 mb-2 flex-wrap font-medium">
+                                                    <span>📐 ~{s.orbGraden}°</span>
+                                                    <span>⏱ {dagenTekst}</span>
+                                                    {t.totaalPassages > 1 && <span>🔄 {t.passageNummer}/{t.totaalPassages}</span>}
+                                                </div>
+                                                <div className="astro-progress mb-2">
+                                                    <div className="astro-progress-fill" style={{width: `${s.voortgang}%`, background: `linear-gradient(90deg, ${kleur}88, ${kleur})`}}/>
+                                                </div>
+                                                <p className="text-xs text-gray-600 leading-relaxed mb-2">{t.samenvatting}</p>
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="astro-intensity-bar w-20">
+                                                            <div className="astro-intensity-fill" style={{width: `${t.intensiteit*10}%`, background: `linear-gradient(90deg, ${kleur}aa, ${kleur})`}}/>
+                                                        </div>
+                                                        <span className="text-xs font-extrabold" style={{color: kleur}}>{t.intensiteit}/10</span>
+                                                    </div>
+                                                    <span className="text-[10px] text-gray-400 font-medium">{gebieden}</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+
+                                    {/* Uitloop */}
+                                    {astroToday.filter(a => a.status.fase === 'uitloop').length > 0 && (
+                                        <div className="flex items-center gap-2 mb-3 mt-4">
+                                            <div className="w-5 h-5 rounded bg-indigo-400/20 flex items-center justify-center"><ChevronDown size={12} className="text-indigo-300"/></div>
+                                            <span className="text-xs font-bold text-indigo-300/70 uppercase tracking-wider">Uitloop — neemt af</span>
+                                            <div className="flex-1 h-px bg-indigo-400/15"/>
+                                        </div>
+                                    )}
+                                    {astroToday.filter(a => a.status.fase === 'uitloop').map(item => {
+                                        const t = item.transit;
+                                        const s = item.status;
+                                        const kleur = astroIntensiteitKleur(t.intensiteit);
+                                        const toonStijl = astroToonKleur(t.toon);
+                                        const gebieden = t.levensgebieden.map(g => window.ASTRO_LEVENSGEBIEDEN[g]?.naam).join(' · ');
+                                        let dagenTekst = `${Math.abs(s.dagenTotHit)}d na hit`;
+                                        return (
+                                            <div key={t.id} onClick={() => setAstroModalTransit(t)} className="astro-transit-card bg-white/70 rounded-xl p-4 cursor-pointer shadow-sm mb-2 opacity-75 hover:opacity-100" style={{borderLeftColor: `${kleur}88`}}>
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div className="font-bold text-sm text-gray-600 flex items-center gap-1.5">
+                                                        <span className="text-xl leading-none opacity-60">{window.ASTRO_PLANEET_ICONEN[t.transitplaneet]}</span>
+                                                        <span>{t.transitplaneet}</span>
+                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${toonStijl.bg} ${toonStijl.text} font-bold uppercase opacity-70`}>{t.aspect}</span>
+                                                        <span>{t.nataalPunt}</span>
+                                                    </div>
+                                                    <span className="astro-fase-uitloop text-[10px] px-2.5 py-1 rounded-full font-bold">↘ Uitloop</span>
+                                                </div>
+                                                <div className="flex gap-3 text-[10px] text-gray-400 mb-2 flex-wrap font-medium">
+                                                    <span>📐 ~{s.orbGraden}°</span>
+                                                    <span>⏱ {dagenTekst}</span>
+                                                    {t.totaalPassages > 1 && <span>🔄 {t.passageNummer}/{t.totaalPassages}</span>}
+                                                </div>
+                                                <p className="text-xs text-gray-500 leading-relaxed mb-2">{t.samenvatting}</p>
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="astro-intensity-bar w-16">
+                                                            <div className="astro-intensity-fill" style={{width: `${t.intensiteit*10}%`, background: `linear-gradient(90deg, ${kleur}77, ${kleur}aa)`}}/>
+                                                        </div>
+                                                        <span className="text-xs font-bold text-gray-400">{t.intensiteit}/10</span>
+                                                    </div>
+                                                    <span className="text-[10px] text-gray-400 font-medium">{gebieden}</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     <div className="bg-white rounded-xl shadow-lg border border-gray-200">
                         <div className="p-4 bg-gray-800 text-white flex justify-between items-center">
@@ -1527,6 +2052,104 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                         <div className="grid grid-cols-7 bg-gray-100 text-center py-3 text-xs font-bold text-gray-500 border-b"><div>Ma</div><div>Di</div><div>Wo</div><div>Do</div><div>Vr</div><div>Za</div><div>Zo</div></div>
                         <div className="grid grid-cols-7 bg-gray-200 gap-px">{renderCalendar()}</div>
                     </div>
+
+                    {/* MODAL: Astrologie Transit Detail */}
+                    {astroModalTransit && (() => {
+                        const t = astroModalTransit;
+                        const kleur = astroIntensiteitKleur(t.intensiteit);
+                        const toonStijl = astroToonKleur(t.toon);
+                        const groep = window.ASTRO_GROEP_PERIODES[t.groepId];
+                        const verwachtingKleur = t.verwachting === 'positief' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : t.verwachting === 'negatief' ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-amber-100 text-amber-700 border-amber-200';
+                        return (
+                            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => { if(e.target === e.currentTarget) setAstroModalTransit(null); }}>
+                                <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl custom-scrollbar" style={{animation: 'fadeInUp 0.2s ease-out'}}>
+                                    <style>{`@keyframes fadeInUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }`}</style>
+                                    <div className="astro-modal-header sticky top-0 text-white p-5 rounded-t-2xl">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span className="text-3xl">{window.ASTRO_PLANEET_ICONEN[t.transitplaneet]}</span>
+                                                    <div>
+                                                        <h3 className="font-bold text-lg leading-tight">
+                                                            {t.transitplaneet} {t.aspect} {t.nataalPunt}
+                                                        </h3>
+                                                        <p className="text-indigo-300 text-xs">
+                                                            {t.nataalPositie} · Huis {t.transitHuis} → {t.nataalHuis}
+                                                            {t.totaalPassages > 1 ? ` · Passage ${t.passageNummer}/${t.totaalPassages}` : ''}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-3 text-[11px] text-indigo-300/80">
+                                                    <span>📅 Exacte hit: {formatAstroDatum(t.datum)}</span>
+                                                </div>
+                                                {groep && <div className="text-[11px] text-indigo-300/80 mt-0.5">📍 Actief: {formatAstroDatum(groep.startActief)} – {formatAstroDatum(groep.eindActief)}</div>}
+                                            </div>
+                                            <button onClick={() => setAstroModalTransit(null)} className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors ml-3 shrink-0">
+                                                <X size={16}/>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="p-5 space-y-5">
+                                        {/* Samenvatting */}
+                                        <div>
+                                            <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1.5">Samenvatting</h4>
+                                            <p className="text-sm text-gray-700 leading-relaxed">{t.samenvatting}</p>
+                                        </div>
+
+                                        {/* Verwachting + Intensiteit naast elkaar */}
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className={`rounded-xl p-3 border ${verwachtingKleur} text-center`}>
+                                                <div className="text-[10px] font-bold uppercase tracking-wider opacity-70 mb-1">Verwachting</div>
+                                                <div className="text-sm font-bold capitalize">{t.verwachting}</div>
+                                            </div>
+                                            <div className="rounded-xl p-3 border border-gray-100 bg-gray-50 text-center">
+                                                <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Intensiteit</div>
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <div className="astro-intensity-bar flex-1 max-w-[80px]">
+                                                        <div className="astro-intensity-fill" style={{width: `${t.intensiteit*10}%`, background: `linear-gradient(90deg, ${kleur}aa, ${kleur})`}}/>
+                                                    </div>
+                                                    <span className="text-lg font-extrabold" style={{color: kleur}}>{t.intensiteit}/10</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Meevaller */}
+                                        <div>
+                                            <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1.5">Meevaller of tegenvaller</h4>
+                                            <p className="text-sm text-gray-700 leading-relaxed">{t.meevaller}</p>
+                                        </div>
+
+                                        {/* Duur */}
+                                        <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                                            <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Duur</h4>
+                                            <p className="text-sm text-gray-700">{t.duurBeschrijving}</p>
+                                        </div>
+
+                                        {/* Scenario's */}
+                                        <div>
+                                            <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2">Concrete scenario's</h4>
+                                            <ul className="space-y-2">
+                                                {t.situaties.map((s, i) => (
+                                                    <li key={i} className="text-sm text-gray-700 flex items-start gap-2.5 leading-relaxed">
+                                                        <span className="w-5 h-5 rounded bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold text-indigo-500">{i+1}</span>
+                                                        {s}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+
+                                        {/* Advies */}
+                                        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100">
+                                            <h4 className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                                                <Star size={12}/> Advies
+                                            </h4>
+                                            <p className="text-sm text-indigo-900 leading-relaxed">{t.advies}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })()}
 
                     {/* MODAL: Notitie Toevoegen */}
                     {showAddModal && (
@@ -1726,7 +2349,12 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                 <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
                                     <input type="checkbox" checked={calendarFilters.showSalary} onChange={() => toggleFilter('showSalary')} className="w-4 h-4 rounded text-yellow-600"/>
                                     <span className="text-yellow-500">💰</span>
-                                    <span className="text-sm">Salarisdagen</span>
+                                    <span className="text-sm">G4S salaris</span>
+                                </label>
+                                <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" checked={calendarFilters.showTrigion} onChange={() => toggleFilter('showTrigion')} className="w-4 h-4 rounded text-yellow-600"/>
+                                    <span className="text-yellow-500">💰</span>
+                                    <span className="text-sm">Trigion betaaldag</span>
                                 </label>
                                 <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
                                     <input type="checkbox" checked={calendarFilters.showTijdvak} onChange={() => toggleFilter('showTijdvak')} className="w-4 h-4 rounded text-amber-600"/>
