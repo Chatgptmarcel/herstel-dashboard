@@ -921,6 +921,44 @@
 
             const formatTime = (d) => d ? d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }) : "";
 
+            // --- WEER (Open-Meteo, Weesp) — icoon + min/max temp per dag, ~16 dagen vooruit ---
+            const weatherIcon = (code) => {
+                if (code === 0) return '☀️';
+                if (code === 1 || code === 2) return '🌤️';
+                if (code === 3) return '☁️';
+                if (code === 45 || code === 48) return '🌫️';
+                if (code >= 51 && code <= 57) return '🌦️';
+                if (code >= 61 && code <= 67) return '🌧️';
+                if (code >= 71 && code <= 77) return '❄️';
+                if (code >= 80 && code <= 82) return '🌦️';
+                if (code >= 85 && code <= 86) return '🌨️';
+                if (code >= 95) return '⛈️';
+                return '🌡️';
+            };
+            const [weather, setWeather] = useState(() => {
+                try {
+                    const c = JSON.parse(localStorage.getItem('weather_cache') || 'null');
+                    if (c && (Date.now() - c.ts) < 3 * 60 * 60 * 1000) return c.data;
+                } catch (e) {}
+                return {};
+            });
+            useEffect(() => {
+                try {
+                    const c = JSON.parse(localStorage.getItem('weather_cache') || 'null');
+                    if (c && (Date.now() - c.ts) < 3 * 60 * 60 * 1000) return;
+                } catch (e) {}
+                const url = "https://api.open-meteo.com/v1/forecast?latitude=52.31&longitude=5.04&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe/Amsterdam&forecast_days=16";
+                fetch(url).then(r => r.json()).then(d => {
+                    if (!d || !d.daily) return;
+                    const map = {};
+                    d.daily.time.forEach((date, i) => {
+                        map[date] = { code: d.daily.weather_code[i], max: Math.round(d.daily.temperature_2m_max[i]), min: Math.round(d.daily.temperature_2m_min[i]) };
+                    });
+                    setWeather(map);
+                    try { localStorage.setItem('weather_cache', JSON.stringify({ ts: Date.now(), data: map })); } catch (e) {}
+                }).catch(e => console.log('Weer laadt niet:', e.message));
+            }, []);
+
             // Maanfase berekening - retourneert 🌑 (nieuwe maan) of 🌕 (volle maan) of null
             // Genereer alle maan datums van 2025-2050 bij eerste aanroep
             const moonDatesCache = (() => {
@@ -1626,6 +1664,12 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                 <button onClick={() => { setSelectedDate(dateKey); setNewNote(""); setShowAddModal(true); }} className="opacity-0 group-hover:opacity-100 text-blue-500 p-0.5 hover:bg-white/50 rounded"><Plus size={14}/></button>
                             </div>
                             
+                            {weather[dateKey] && (
+                                <div className="text-[9px] font-semibold text-sky-700 flex items-center gap-1 mb-0.5 px-0.5 whitespace-nowrap" title="Weersvoorspelling Weesp">
+                                    <span className="text-[11px] leading-none">{weatherIcon(weather[dateKey].code)}</span>
+                                    <span>{weather[dateKey].min}° / {weather[dateKey].max}°</span>
+                                </div>
+                            )}
                             <div className="flex-1 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
                                 {/* 1. NOTITIES EERST */}
                                 {allEvents.filter(e => e.isNote).map((e) => (
