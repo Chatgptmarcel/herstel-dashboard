@@ -2,7 +2,7 @@ name: Sync RostarCAS rooster
 
 on:
   schedule:
-    - cron: '0 5,12,18 * * *'   # 3x per dag (UTC) ~ 07/14/20 NL-tijd
+    - cron: '0 */3 * * *'   # elke 3 uur (UTC) — houdt de online versie actueel
   workflow_dispatch:             # handmatige knop in het Actions-tabblad
 
 permissions:
