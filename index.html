@@ -328,7 +328,7 @@
             const [fileHandle, setFileHandle] = useState(null);
 
             // DATA
-            const [ortecShifts, setOrtecShifts] = useState({});
+            const [rosterShifts, setRosterShifts] = useState({});
             const [manualShifts, setManualShifts] = useState({});
 
             // STATES
@@ -889,13 +889,13 @@
                     const txt = await res.text();
                     if (!txt.includes("BEGIN:VCALENDAR")) throw new Error("Geen geldige kalender");
                     const parsedShifts = parseICS(txt);
-                    setOrtecShifts(parsedShifts);
+                    setRosterShifts(parsedShifts);
 
-                    // Verwijder tijdvakken tot de laatste ORTEC datum
-                    const ortecDates = Object.keys(parsedShifts);
-                    if (ortecDates.length > 0) {
-                        // Vind de laatste datum in ORTEC data
-                        const latestOrtecDate = ortecDates.reduce((latest, current) => {
+                    // Verwijder tijdvakken tot de laatste ROSTER datum
+                    const rosterDates = Object.keys(parsedShifts);
+                    if (rosterDates.length > 0) {
+                        // Vind de laatste datum in ROSTER data
+                        const latestRosterDate = rosterDates.reduce((latest, current) => {
                             return current > latest ? current : latest;
                         });
 
@@ -904,13 +904,13 @@
                             const updated = { ...prev };
                             let removed = 0;
                             Object.keys(updated).forEach(dateKey => {
-                                if (dateKey <= latestOrtecDate) {
+                                if (dateKey <= latestRosterDate) {
                                     delete updated[dateKey];
                                     removed++;
                                 }
                             });
                             if (removed > 0) {
-                                console.log(`${removed} tijdvak(ken) verwijderd tot ${latestOrtecDate}`);
+                                console.log(`${removed} tijdvak(ken) verwijderd tot ${latestRosterDate}`);
                             }
                             return updated;
                         });
@@ -921,6 +921,21 @@
                     setLoadingShifts(false);
                 }
             };
+
+            // Live verversen: haal het rooster opnieuw op zodra het dashboard weer op de
+            // voorgrond komt (tab/app openen of terugkeren) en periodiek terwijl het open
+            // staat. Zo is het rooster bij openen altijd actueel zonder handmatig verversen.
+            useEffect(() => {
+                const ververs = () => { if (document.visibilityState === 'visible') fetchAndParseICS(); };
+                document.addEventListener('visibilitychange', ververs);
+                window.addEventListener('focus', ververs);
+                const id = setInterval(ververs, 5 * 60 * 1000);
+                return () => {
+                    document.removeEventListener('visibilitychange', ververs);
+                    window.removeEventListener('focus', ververs);
+                    clearInterval(id);
+                };
+            }, []);
 
             const formatTime = (d) => d ? d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }) : "";
 
@@ -1506,7 +1521,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                 }));
             };
             
-            const filterOrtecShifts = (shifts) => {
+            const filterRosterShifts = (shifts) => {
                 if (!shifts || shifts.length === 0) return [];
                 const sorted = [...shifts].sort((a, b) => a.start - b.start);
                 
@@ -1583,18 +1598,18 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                     // TRIGION DAY CHECK (met filter)
                     const trigionDay = calendarFilters.showTrigion ? trigionDays[dateKey] : null;
 
-                    const ortecRaw = ortecShifts[dateKey] || [];
-                    const finalOrtec = calendarFilters.showWork ? filterOrtecShifts(ortecRaw).map(s => ({
-                        ...s, type: 'ortec', sortStart: s.start, sortEnd: s.end
+                    const rosterRaw = rosterShifts[dateKey] || [];
+                    const finalRoster = calendarFilters.showWork ? filterRosterShifts(rosterRaw).map(s => ({
+                        ...s, type: 'roster', sortStart: s.start, sortEnd: s.end
                     })) : [];
 
-                    // Check of er een echte Ortec dienst is (niet alleen verlof)
-                    const hasRealOrtecShift = finalOrtec.length > 0;
+                    // Check of er een echte Roster dienst is (niet alleen verlof)
+                    const hasRealRosterShift = finalRoster.length > 0;
 
                     const manualDay = calendarFilters.showWork ? (manualShifts[dateKey] || [])
-                        // Filter G4S tijdvakken uit als er een echte Ortec dienst is
+                        // Filter G4S tijdvakken uit als er een echte Roster dienst is
                         .filter(s => {
-                            if (s.isG4SShift && hasRealOrtecShift) {
+                            if (s.isG4SShift && hasRealRosterShift) {
                                 return false; // Verberg tijdvak als er een echte dienst is
                             }
                             if (s.isNote && !calendarFilters.showNotes) {
@@ -1621,7 +1636,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                     const swimEvents = [];
                     if (swimInfo.isOpen && calendarFilters.showSwimming) {
                         swimInfo.times.forEach(tStr => {
-                            const allWorkShifts = [...finalOrtec, ...manualDay];
+                            const allWorkShifts = [...finalRoster, ...manualDay];
                             if (!isSwimTimeConflict(tStr, allWorkShifts, date)) {
                                 const [startStr, endStr] = tStr.split(' - ');
                                 const [h1, m1] = startStr.split(/[:.]/).map(Number);
@@ -1633,7 +1648,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                         });
                     }
 
-                    const allEvents = [...finalOrtec, ...manualDay, ...swimEvents].sort((a, b) => {
+                    const allEvents = [...finalRoster, ...manualDay, ...swimEvents].sort((a, b) => {
                         // Notities altijd bovenaan
                         if (a.isNote && !b.isNote) return -1;
                         if (!a.isNote && b.isNote) return 1;
@@ -1642,13 +1657,13 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                     });
                     const isToday = currentDate.toDateString() === date.toDateString();
                     
-                    // Check voor werk: Ortec diensten, handmatige shifts, OF G4S tijdvakken
-                    const hasWork = allEvents.some(e => (e.type === 'ortec' || (e.type === 'manual' && !e.isNote))) ||
+                    // Check voor werk: Roster diensten, handmatige shifts, OF G4S tijdvakken
+                    const hasWork = allEvents.some(e => (e.type === 'roster' || (e.type === 'manual' && !e.isNote))) ||
                                    (manualShifts[dateKey] || []).some(s => s.isG4SShift); // Ook checken voor verborgen G4S tijdvakken
                     const isOnlyVerlof = hasWork && allEvents.every(e => e.type !== 'swim' && e.summary?.toLowerCase().includes('verlof'));
 
-                    // Check of er een definitieve dienst is (Ortec of PDF import)
-                    const hasDefinitiveShift = finalOrtec.length > 0 || (manualShifts[dateKey] || []).some(s => s.isG4SShift);
+                    // Check of er een definitieve dienst is (Roster of PDF import)
+                    const hasDefinitiveShift = finalRoster.length > 0 || (manualShifts[dateKey] || []).some(s => s.isG4SShift);
 
                     // Bepaal of tijdvak getoond moet worden (alleen als er GEEN definitieve dienst is)
                     const showTijdvak = tijdvakShift && !hasDefinitiveShift;
@@ -1730,7 +1745,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                             </div>
                                         );
                                     }
-                                    if (e.type === 'ortec') {
+                                    if (e.type === 'roster') {
                                         const isVerlof = e.summary?.toLowerCase().includes('verlof');
                                         const txt = cleanSummary(e.summary);
                                         return (

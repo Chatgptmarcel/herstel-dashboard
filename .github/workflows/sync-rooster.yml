@@ -2,7 +2,7 @@ name: Sync RostarCAS rooster
 
 on:
   schedule:
-    - cron: '0 */3 * * *'   # elke 3 uur (UTC) — houdt de online versie actueel
+    - cron: '*/10 * * * *'   # elke 10 min — rooster vers genoeg om "live bij openen" te zijn
   workflow_dispatch:             # handmatige knop in het Actions-tabblad
 
 permissions:

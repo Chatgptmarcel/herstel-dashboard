@@ -66,5 +66,12 @@ if (kept === 0 && totalEvents > 0) {
   kept = totalEvents; removed = 0;
 }
 
+// DTSTAMP is de genereertijd van de feed en verandert bij ELKE ophaling. Zonder dit
+// zou schedule.ics bij iedere sync wijzigen en een nutteloze commit veroorzaken
+// (bij een 10-minuten-cron zo'n 140+ commits per dag). We zetten DTSTAMP op een vaste
+// waarde, zodat het bestand alleen wijzigt bij een ECHTE roosterwijziging. Het
+// dashboard gebruikt DTSTAMP niet (alleen DTSTART/DTEND/SUMMARY).
+ics = ics.replace(/DTSTAMP:[^\r\n]*/g, 'DTSTAMP:20000101T000000Z');
+
 fs.writeFileSync(outPath, ics, 'utf8');
 console.log(`Filter klaar: ${kept} echte diensten behouden, ${removed} ruis-events verwijderd -> ${outPath}`);
