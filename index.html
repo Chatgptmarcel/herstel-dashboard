@@ -12,7 +12,12 @@
     <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
-    
+
+    <!-- Lokaal rooster (offline / file://): laadt schedule-data.js (window.SCHEDULE_ICS), gegenereerd door
+         rooster-sync.js. Cache-bust zodat altijd de nieuwste data laadt. Bestaat dit bestand niet (bv. op
+         GitHub Pages), dan valt het dashboard terug op fetch('./schedule.ics'). -->
+    <script>document.write('<scr' + 'ipt src="schedule-data.js?t=' + Date.now() + '"><\/scr' + 'ipt>');</script>
+
     <!-- Import Map voor React en Iconen -->
     <script type="importmap">
     {
@@ -928,12 +933,15 @@
             const fetchAndParseICS = async () => {
                 setLoadingShifts(true);
                 try {
-                    // Same-origin laden: schedule.ics wordt server-side ververst door de
-                    // GitHub Action (RostarCAS -> filter -> schedule.ics). Geen CORS/proxy.
-                    const res = await fetch(`./schedule.ics?t=${Date.now()}`, { cache: "no-store" });
-                    if (!res.ok) throw new Error("schedule.ics niet gevonden");
-                    const txt = await res.text();
-                    if (!txt.includes("BEGIN:VCALENDAR")) throw new Error("Geen geldige kalender");
+                    // Rooster laden. Lokaal (file://): uit window.SCHEDULE_ICS (schedule-data.js,
+                    // gegenereerd door rooster-sync.js). Anders (GitHub Pages): fetch ./schedule.ics,
+                    // dat server-side ververst wordt door de GitHub Action.
+                    let txt = (typeof window !== 'undefined' && window.SCHEDULE_ICS) ? window.SCHEDULE_ICS : "";
+                    if (!txt.includes("BEGIN:VCALENDAR")) {
+                        const res = await fetch(`./schedule.ics?t=${Date.now()}`, { cache: "no-store" });
+                        if (res.ok) txt = await res.text();
+                    }
+                    if (!txt.includes("BEGIN:VCALENDAR")) throw new Error("Geen rooster gevonden (draai rooster-sync.js)");
                     const parsedShifts = parseICS(txt);
                     setRosterShifts(parsedShifts);
 
