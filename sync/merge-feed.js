@@ -3,21 +3,23 @@
  * Voegt de verse (gefilterde) RostarCAS-feed samen met het bestaande schedule.ics,
  * zodat GEWERKTE diensten bewaard blijven ook nadat ze uit de feed zijn gevallen.
  *
- * Gebruik: node merge-feed.js <bestaand.ics> <vers.ics> <output.ics> [referentiedatumISO]
+ * Gebruik: node merge-feed.js <bestaand.ics> <vers.ics> <output.ics>
  *
  * Achtergrond: de RostarCAS-feed is een schuivend venster (±1 week terug t/m ±1 maand
  * vooruit). Het oude gedrag overschreef schedule.ics volledig met de feed, waardoor
  * voorbije diensten verdwenen zodra ze uit dat venster vielen. Voor de urenadministratie
  * moeten gewerkte diensten echter blijven staan.
  *
- * Samenvoegregels (UID is de stabiele sleutel; RostarCAS-diensten hebben UID "T_..."):
- *   - VERLEDEN dienst (DTEND < nu) uit het bestaande bestand -> ALTIJD behouden (bevriezen),
- *     ook als de verse feed hem niet meer levert.
- *   - Alles uit de VERSE feed -> overnemen (actuele waarheid voor het venster). Bij gelijke
- *     UID wint de verse versie, zodat correcties op recente/toekomstige diensten doorkomen.
- *   - TOEKOMSTIGE dienst die WEL in het oude bestand stond maar NIET meer in de verse feed
- *     -> weglaten (geannuleerd/verschoven). Alleen de toekomst spiegelt de feed; het verleden
- *     wordt bevroren.
+ * Samenvoegregel — de FEED IS GEZAGHEBBEND OVER ZIJN HELE DATUMBEREIK:
+ *   - Voor elke DAG die in de verse feed voorkomt, geldt UITSLUITEND wat de feed nu levert.
+ *     Een gewijzigde dienst (RostarCAS geeft die vaak een nieuwe UID) of een geannuleerde
+ *     dienst vervangt dus de oude versie van die dag — er blijft nooit een verouderde
+ *     versie naast de nieuwe staan.
+ *   - Diensten uit het bestaande bestand op dagen BUITEN het feed-bereik blijven behouden:
+ *       * dagen vóór de feed (uit het venster gevallen) = bevroren werkhistorie;
+ *       * dagen ná de feed (alleen bij een tijdelijk ingekorte feed) = nog niet bevestigd
+ *         geannuleerd, dus behouden tot de feed die dagen weer dekt.
+ *   Het datumbereik wordt bepaald op DTSTART (de dag waarop de dienst valt).
  *
  * Stabiliteit: events worden deterministisch gesorteerd (op starttijd, dan UID) en elke
  * DTSTAMP wordt op een vaste waarde gezet. Zo wijzigt schedule.ics alleen bij een ECHTE
@@ -71,7 +73,12 @@ function eventInfo(block) {
   return { uid, dtstart, dtend };
 }
 
-// Zet een ICS-datumstring (YYYYMMDD of YYYYMMDDTHHMMSS[Z]) om naar epoch-ms (UTC).
+// De dag waarop een dienst valt (YYYYMMDD uit DTSTART) — sleutel voor het feed-bereik.
+function dagVan(info) {
+  return (info.dtstart || '').slice(0, 8);
+}
+
+// Zet een ICS-datumstring (YYYYMMDD of YYYYMMDDTHHMMSS[Z]) om naar epoch-ms (UTC), voor sorteren.
 function icsNaarEpoch(s) {
   if (!s) return NaN;
   const y = +s.slice(0, 4), mo = +s.slice(4, 6) - 1, d = +s.slice(6, 8);
@@ -82,18 +89,12 @@ function icsNaarEpoch(s) {
   return Date.UTC(y, mo, d);
 }
 
-// Het einde van een dienst (val terug op start als DTEND ontbreekt).
-function eindEpoch(info) {
-  const e = icsNaarEpoch(info.dtend);
-  return Number.isNaN(e) ? icsNaarEpoch(info.dtstart) : e;
-}
-
 // Vervangt de DTSTAMP-regel in een blok door de vaste waarde (voorkomt ruis-commits).
 function normaliseerDtstamp(block) {
   return block.map(l => (l.startsWith('DTSTAMP') ? VASTE_DTSTAMP : l));
 }
 
-function merge(bestaandIcs, versIcs, refMs) {
+function merge(bestaandIcs, versIcs) {
   const vers = parseIcs(versIcs);
 
   // Vangnet: lege/ongeldige verse feed -> bestaande historie ongemoeid laten.
@@ -103,22 +104,29 @@ function merge(bestaandIcs, versIcs, refMs) {
 
   const bestaand = bestaandIcs ? parseIcs(bestaandIcs) : { header: [], events: [], footer: [] };
 
-  // UID -> blok. Eerst de bevroren verleden-diensten uit het oude bestand.
+  // Datumbereik dat de verse feed dekt (op de dag van elke dienst).
+  const versDagen = vers.events.map(b => dagVan(eventInfo(b))).filter(Boolean);
+  const minFeed = versDagen.reduce((a, b) => (a < b ? a : b));
+  const maxFeed = versDagen.reduce((a, b) => (a > b ? a : b));
+
   const perUid = new Map();
-  let bevroren = 0;
+  let behoudenBuitenFeed = 0;
+  // 1) Behoud bestaande diensten op dagen BUITEN het feed-bereik (bevroren historie + toekomst
+  //    voorbij een eventueel ingekorte feed). Dagen BINNEN het bereik laten we over aan de feed,
+  //    zodat gewijzigde/geannuleerde diensten niet als oude versie blijven hangen.
   for (const block of bestaand.events) {
     const info = eventInfo(block);
     if (!info.uid) continue;
-    if (eindEpoch(info) < refMs) {
+    const dag = dagVan(info);
+    if (dag && (dag < minFeed || dag > maxFeed)) {
       perUid.set(info.uid, block);
-      bevroren++;
+      behoudenBuitenFeed++;
     }
   }
-  // Daarna de verse feed: actuele waarheid, wint bij gelijke UID.
+  // 2) De verse feed is de waarheid binnen zijn bereik.
   for (const block of vers.events) {
     const info = eventInfo(block);
-    if (!info.uid) continue;
-    perUid.set(info.uid, block);
+    if (info.uid) perUid.set(info.uid, block);
   }
 
   // Deterministisch sorteren op (starttijd, UID) voor stabiele diffs.
@@ -129,8 +137,7 @@ function merge(bestaandIcs, versIcs, refMs) {
     return ia.uid < ib.uid ? -1 : ia.uid > ib.uid ? 1 : 0;
   });
 
-  // Header/footer van de verse feed (actuele VTIMEZONE). Footer terugbrengen tot
-  // de afsluitende regels (verwijder eventuele lege staartregels, voeg END:VCALENDAR toe).
+  // Header/footer van de verse feed (actuele VTIMEZONE).
   const header = vers.header.length ? vers.header : bestaand.header;
   let footer = vers.footer.filter(l => l.trim().length > 0);
   if (!footer.some(l => l.startsWith('END:VCALENDAR'))) footer.push('END:VCALENDAR');
@@ -141,23 +148,20 @@ function merge(bestaandIcs, versIcs, refMs) {
     ...footer,
   ];
   const ics = out.join('\r\n').replace(/\r?\n*$/, '\r\n');
-  return { ics, kept: samengevoegd.length, bevroren, versAantal: vers.events.length, vangnet: false };
+  return { ics, kept: samengevoegd.length, behoudenBuitenFeed, versAantal: vers.events.length, minFeed, maxFeed, vangnet: false };
 }
 
-const [, , bestaandPath, versPath, outPath, refArg] = process.argv;
+const [, , bestaandPath, versPath, outPath] = process.argv;
 if (!bestaandPath || !versPath || !outPath) {
-  console.error('Gebruik: node merge-feed.js <bestaand.ics> <vers.ics> <output.ics> [referentiedatumISO]');
+  console.error('Gebruik: node merge-feed.js <bestaand.ics> <vers.ics> <output.ics>');
   process.exit(1);
 }
-
-const refMs = refArg ? Date.parse(refArg) : Date.now();
-if (Number.isNaN(refMs)) { console.error('Ongeldige referentiedatum: ' + refArg); process.exit(1); }
 
 const versIcs = fs.readFileSync(versPath, 'utf8');
 if (!versIcs.includes('BEGIN:VCALENDAR')) { console.error('Geen geldige ICS in ' + versPath); process.exit(1); }
 const bestaandIcs = fs.existsSync(bestaandPath) ? fs.readFileSync(bestaandPath, 'utf8') : '';
 
-const res = merge(bestaandIcs, versIcs, refMs);
+const res = merge(bestaandIcs, versIcs);
 
 if (res.vangnet) {
   if (bestaandIcs) {
@@ -169,6 +173,6 @@ if (res.vangnet) {
   }
 } else {
   fs.writeFileSync(outPath, res.ics, 'utf8');
-  console.log(`Merge klaar: ${res.kept} diensten in schedule.ics ` +
-    `(${res.bevroren} bevroren uit historie + ${res.versAantal} uit verse feed, gededupliceerd) -> ${outPath}`);
+  console.log(`Merge klaar: ${res.kept} diensten (feed-bereik ${res.minFeed}–${res.maxFeed}: ` +
+    `${res.versAantal} uit feed + ${res.behoudenBuitenFeed} bevroren buiten dat bereik) -> ${outPath}`);
 }
