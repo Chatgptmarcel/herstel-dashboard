@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Haal RostarCAS-feed op en filter tot echte diensten
+      - name: Haal RostarCAS-feed op, filter en voeg samen met bestaande historie
         env:
           ROSTAR_ICS_URL: ${{ secrets.ROSTAR_ICS_URL }}
         run: |
@@ -31,8 +31,12 @@ jobs:
             exit 1
           fi
           curl -fsSL --retry 3 --retry-delay 5 "$ROSTAR_ICS_URL" -o raw.ics
-          node sync/filter-feed.js raw.ics schedule.ics
-          rm -f raw.ics
+          # 1) Filter de ruwe feed tot alleen echte diensten.
+          node sync/filter-feed.js raw.ics fresh.ics
+          # 2) Voeg samen met het bestaande schedule.ics: voorbije diensten blijven bewaard,
+          #    de toekomst spiegelt de verse feed. Zo verdwijnen gewerkte diensten nooit meer.
+          node sync/merge-feed.js schedule.ics fresh.ics schedule.ics
+          rm -f raw.ics fresh.ics
 
       - name: Commit bij wijziging
         run: |
