@@ -930,12 +930,24 @@
                 return events;
             };
 
+            // Op file:// is fetch() geblokkeerd; herlaad schedule-data.js daarom als verse
+            // <script>-tag (met cache-bust) zodat window.SCHEDULE_ICS de laatste sync van
+            // rooster-sync.js bevat — ook als het dashboard al open staat.
+            const herlaadScheduleData = () => new Promise((resolve) => {
+                const s = document.createElement('script');
+                s.src = `schedule-data.js?t=${Date.now()}`;
+                s.onload = () => { s.remove(); resolve(true); };
+                s.onerror = () => { s.remove(); resolve(false); };
+                document.head.appendChild(s);
+            });
+
             const fetchAndParseICS = async () => {
                 setLoadingShifts(true);
                 try {
                     // Rooster laden. Lokaal (file://): uit window.SCHEDULE_ICS (schedule-data.js,
-                    // gegenereerd door rooster-sync.js). Anders (GitHub Pages): fetch ./schedule.ics,
-                    // dat server-side ververst wordt door de GitHub Action.
+                    // gegenereerd door rooster-sync.js), eerst vers herladen van schijf. Anders
+                    // (GitHub Pages): fetch ./schedule.ics, server-side ververst door de GitHub Action.
+                    if (typeof window !== 'undefined' && window.SCHEDULE_ICS) await herlaadScheduleData();
                     let txt = (typeof window !== 'undefined' && window.SCHEDULE_ICS) ? window.SCHEDULE_ICS : "";
                     if (!txt.includes("BEGIN:VCALENDAR")) {
                         const res = await fetch(`./schedule.ics?t=${Date.now()}`, { cache: "no-store" });
@@ -1869,6 +1881,34 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                 return days;
             };
 
+            // Trigion-loonperiodes: 13 periodes van 4 weken (ma t/m zo), gekoppeld aan ISO-kalenderweken.
+            // Periode N = week (4N−3) t/m week 4N; in een jaar met 53 weken duurt periode 13 vijf weken.
+            const isoWeekInfo = (d) => {
+                const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                const dag = (date.getDay() + 6) % 7; // ma=0 ... zo=6
+                date.setDate(date.getDate() - dag + 3); // donderdag van deze week bepaalt het ISO-jaar
+                const isoYear = date.getFullYear();
+                const jan4 = new Date(isoYear, 0, 4);
+                const week = 1 + Math.round(((date - jan4) / 86400000 - 3 + ((jan4.getDay() + 6) % 7)) / 7);
+                return { isoYear, week };
+            };
+            const maandagVanWeek = (isoYear, week) => {
+                const jan4 = new Date(isoYear, 0, 4);
+                const ma = new Date(jan4);
+                ma.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7) + (week - 1) * 7);
+                return ma;
+            };
+            const wekenInIsoJaar = (isoYear) => isoWeekInfo(new Date(isoYear, 11, 28)).week; // 28 dec valt altijd in de laatste ISO-week
+            const periodeInfo = (dateKey) => {
+                const { isoYear, week } = isoWeekInfo(new Date(`${dateKey}T12:00:00`));
+                const nr = Math.min(13, Math.ceil(week / 4));
+                const eindWeek = nr === 13 ? wekenInIsoJaar(isoYear) : nr * 4;
+                const start = maandagVanWeek(isoYear, nr * 4 - 3);
+                const eind = maandagVanWeek(isoYear, eindWeek);
+                eind.setDate(eind.getDate() + 6); // zondag
+                return { key: `${isoYear}-P${String(nr).padStart(2, '0')}`, nr, isoYear, start, eind };
+            };
+
             // Verzamelt alle GEWERKTE diensten (automatisch rooster + handmatige G4S-import) voor de
             // urenadministratie. Past correcties toe, laat verlof/roostervrij weg, ontdubbelt per dag
             // (automatische dienst wint van handmatige), en berekent de uren.
@@ -1918,28 +1958,40 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                         (byDate[dateKey] = byDate[dateKey] || []).push({ dateKey, begin, eind, uren, omschrijving: 'Dienst', bron: 'Handmatig' });
                     });
                 });
-                const entries = Object.values(byDate).flat().sort((a,b) => a.dateKey < b.dateKey ? -1 : a.dateKey > b.dateKey ? 1 : 0);
-                const maanden = {};
+                const nu = new Date();
+                const vandaagKey = `${nu.getFullYear()}-${String(nu.getMonth()+1).padStart(2,'0')}-${String(nu.getDate()).padStart(2,'0')}`;
+                const entries = Object.values(byDate).flat()
+                    .filter(e => e.dateKey <= vandaagKey) // alleen gewerkte diensten t/m vandaag, geen geplande
+                    .filter(e => periodeInfo(e.dateKey).isoYear >= 2026) // alleen periodes vanaf 2026
+                    .sort((a,b) => a.dateKey < b.dateKey ? -1 : a.dateKey > b.dateKey ? 1 : 0);
+                // Onbetaalde pauze per dienst (niet per dag: twee losse diensten op één dag worden
+                // elk apart beoordeeld). Recht op pauze vanaf een dienst langer dan 5,5 uur (cao
+                // Particuliere Beveiliging art. 29). Op Schiphol worden de kleine pauzes doorbetaald;
+                // alleen de grote pauze van 30 minuten is onbetaald.
+                const pauzeVoorDienst = (uren) => uren > 5.5 ? 0.5 : 0;
+                entries.forEach(e => { e.pauze = pauzeVoorDienst(e.uren); e.netto = e.uren - e.pauze; });
+                const periodes = {};
                 entries.forEach(e => {
-                    const mk = e.dateKey.slice(0,7);
-                    (maanden[mk] = maanden[mk] || { key: mk, entries: [], totaal: 0 });
-                    maanden[mk].entries.push(e); maanden[mk].totaal += e.uren;
+                    const p = periodeInfo(e.dateKey);
+                    (periodes[p.key] = periodes[p.key] || { ...p, entries: [], totaal: 0 });
+                    periodes[p.key].entries.push(e); periodes[p.key].totaal += e.netto;
                 });
                 return {
-                    maandGroepen: Object.values(maanden).sort((a,b)=> a.key < b.key ? -1 : 1),
-                    totaalUren: entries.reduce((s,e)=>s+e.uren, 0),
+                    periodeGroepen: Object.values(periodes).sort((a,b)=> a.key < b.key ? -1 : 1),
+                    totaalUren: entries.reduce((s,e)=>s+e.netto, 0),
                     aantal: entries.length,
                 };
             };
             const exportWorkLogCSV = () => {
-                const { maandGroepen } = buildWorkLog();
+                const { periodeGroepen } = buildWorkLog();
                 const nf = (n) => n.toFixed(2).replace('.', ',');
                 const df = (k) => { const [y,m,d] = k.split('-'); return `${d}-${m}-${y}`; };
+                const dd = (d) => `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
                 const dagNamen = ['zo','ma','di','wo','do','vr','za'];
-                const rows = [['Datum','Dag','Begin','Eind','Uren','Omschrijving','Bron']];
-                maandGroepen.forEach(g => {
-                    g.entries.forEach(e => rows.push([df(e.dateKey), dagNamen[new Date(`${e.dateKey}T12:00:00`).getDay()], e.begin, e.eind, nf(e.uren), e.omschrijving, e.bron]));
-                    rows.push(['', '', '', 'Totaal ' + g.key, nf(g.totaal), '', '']);
+                const rows = [['Datum','Dag','Begin','Eind','Bruto','Pauze','Uren','Omschrijving','Bron']];
+                periodeGroepen.forEach(g => {
+                    g.entries.forEach(e => rows.push([df(e.dateKey), dagNamen[new Date(`${e.dateKey}T12:00:00`).getDay()], e.begin, e.eind, nf(e.uren), nf(e.pauze), nf(e.netto), e.omschrijving, e.bron]));
+                    rows.push(['', '', '', '', '', `Totaal periode ${g.nr}-${g.isoYear} (${dd(g.start)} t/m ${dd(g.eind)})`, nf(g.totaal), '', '']);
                 });
                 const csv = '﻿' + rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
                 const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -2460,10 +2512,10 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                 </div>
                                 <div className="flex-1 overflow-y-auto custom-scrollbar -mx-2 px-2">
                                     {log.aantal === 0 && <p className="text-sm text-gray-400 italic py-8 text-center">Nog geen gewerkte diensten gevonden.</p>}
-                                    {log.maandGroepen.map(g => (
+                                    {log.periodeGroepen.map(g => (
                                         <div key={g.key} className="mb-4">
                                             <div className="flex justify-between items-baseline sticky top-0 bg-white py-1 border-b border-gray-200 z-10">
-                                                <h4 className="font-bold text-sm text-indigo-700 capitalize">{new Date(`${g.key}-01T12:00:00`).toLocaleDateString('nl-NL',{month:'long',year:'numeric'})}</h4>
+                                                <h4 className="font-bold text-sm text-indigo-700">Periode {g.nr} · {g.isoYear} <span className="font-normal text-gray-500">({g.start.toLocaleDateString('nl-NL',{day:'2-digit',month:'2-digit'})} t/m {g.eind.toLocaleDateString('nl-NL',{day:'2-digit',month:'2-digit'})})</span></h4>
                                                 <span className="text-xs font-bold text-gray-600">{fmtUren(g.totaal)} u · {g.entries.length} diensten</span>
                                             </div>
                                             <table className="w-full text-xs mt-1">
@@ -2471,8 +2523,8 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                                 {g.entries.map((e,i) => (
                                                     <tr key={i} className="border-b border-gray-50">
                                                         <td className="py-1 pr-2 text-gray-500 whitespace-nowrap">{dagNamen[new Date(`${e.dateKey}T12:00:00`).getDay()]} {e.dateKey.slice(8,10)}-{e.dateKey.slice(5,7)}</td>
-                                                        <td className="py-1 pr-2 whitespace-nowrap font-medium text-gray-700">{e.begin}{e.eind?`–${e.eind}`:''}</td>
-                                                        <td className="py-1 pr-2 text-right font-bold whitespace-nowrap text-gray-800">{fmtUren(e.uren)} u</td>
+                                                        <td className="py-1 pr-2 whitespace-nowrap font-medium text-gray-700">{e.begin}{e.eind?`–${e.eind}`:''}{e.pauze > 0 && <span className="text-amber-600 ml-1 text-[10px]">− {Math.round(e.pauze*60)}m pauze</span>}</td>
+                                                        <td className="py-1 pr-2 text-right font-bold whitespace-nowrap text-gray-800">{fmtUren(e.netto)} u</td>
                                                         <td className="py-1 pl-2 text-gray-500 truncate">{e.omschrijving}{e.bron==='Rooster (aangepast)' && <span className="text-blue-500 italic ml-1">aangepast</span>}{e.bron==='Handmatig' && <span className="text-gray-400 ml-1">(handm.)</span>}</td>
                                                     </tr>
                                                 ))}
@@ -2496,7 +2548,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                     )}
                                 </div>
                                 <div className="mt-3 pt-3 border-t text-[11px] text-gray-400">
-                                    Uren = eindtijd − begintijd (zonder pauze-aftrek). Correcties en verwijderingen op je kalender tellen hierin mee.
+                                    Uren = eindtijd − begintijd minus 30 min onbetaalde grote pauze bij diensten langer dan 5,5 uur (cao art. 29; kleine pauzes worden op Schiphol doorbetaald). Pauze geldt per dienst: twee losse diensten op één dag tellen apart, niet samen. Correcties en verwijderingen op je kalender tellen mee. Gegroepeerd per Trigion-loonperiode: 13 periodes van 4 weken (ma t/m zo). Alleen diensten t/m vandaag tellen mee.
                                 </div>
                             </div>
                         </div>
