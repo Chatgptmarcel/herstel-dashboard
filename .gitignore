@@ -1,6 +1,8 @@
 # Persoonlijke/gevoelige data — mag NOOIT in de (publieke) repo komen
+# (mijn_herstel_dashboard.enc.json mag wél: dat is de AES-versleutelde versie voor de telefoon)
 mijn_herstel_dashboard.json
 *.local.json
+telefoon-wachtwoord.txt
 
 # Tijdelijke bestanden van de sync
 raw.ics

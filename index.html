@@ -2995,26 +2995,49 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
         };
 
         // Eerste start op de telefoon (GitHub Pages): localStorage is daar nog leeg. Laad dan
-        // eenmalig de meegepubliceerde gegevens (mijn_herstel_dashboard.json) zodat de app niet
-        // blanco begint. Daarna is de opslag op het apparaat zelf de waarheid — dit draait niet
-        // opnieuw zolang er data of de vlag aanwezig is. Op file:// (pc) gebeurt hier niets.
+        // eenmalig de versleutelde gegevens (mijn_herstel_dashboard.enc.json, gemaakt met
+        // tools/versleutel-data.js) na het vragen van het wachtwoord. De onversleutelde data
+        // staat bewust NIET in de publieke repo (.gitignore). Daarna is de opslag op het
+        // apparaat zelf de waarheid. Op file:// (pc) gebeurt hier niets.
+        const ontsleutel = async (pakket, wachtwoord) => {
+            const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+            const basis = await crypto.subtle.importKey('raw', new TextEncoder().encode(wachtwoord), 'PBKDF2', false, ['deriveKey']);
+            const sleutel = await crypto.subtle.deriveKey(
+                { name: 'PBKDF2', salt: b64(pakket.salt), iterations: pakket.iteraties, hash: 'SHA-256' },
+                basis, { name: 'AES-GCM', length: 256 }, false, ['decrypt']
+            );
+            const klaar = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(pakket.iv) }, sleutel, b64(pakket.data));
+            return JSON.parse(new TextDecoder().decode(klaar));
+        };
+
         const seedVanafServer = async () => {
             const isHttps = location.protocol === 'https:';
             const alGedaan = localStorage.getItem('_seed_json_geladen');
             const heeftData = localStorage.getItem('dashboard_manual_shifts');
             if (!isHttps || alGedaan || heeftData) return;
             try {
-                const res = await fetch(`./mijn_herstel_dashboard.json?t=${Date.now()}`, { cache: 'no-store' });
+                const res = await fetch(`./mijn_herstel_dashboard.enc.json?t=${Date.now()}`, { cache: 'no-store' });
                 if (!res.ok) return;
-                const data = await res.json();
-                if (data.shifts) localStorage.setItem('dashboard_manual_shifts', JSON.stringify(data.shifts));
-                if (data.sobriety) localStorage.setItem('sobriety_history', JSON.stringify(data.sobriety));
-                if (data.armHistory) localStorage.setItem('arm_history', JSON.stringify(data.armHistory));
-                if (data.minoxStart) localStorage.setItem('minox_start_date', new Date(data.minoxStart).toISOString());
-                if (data.amberShifts) localStorage.setItem('amber_shifts', JSON.stringify(data.amberShifts));
-                if (data.tijdvakShifts) localStorage.setItem('tijdvak_shifts', JSON.stringify(data.tijdvakShifts));
-                if (data.rosterOverrides) localStorage.setItem('dashboard_roster_overrides', JSON.stringify(data.rosterOverrides));
-                localStorage.setItem('_seed_json_geladen', '1');
+                const pakket = await res.json();
+                for (let poging = 1; poging <= 3; poging++) {
+                    const ww = window.prompt('Eerste start op dit apparaat.\n\nVoer het wachtwoord in om je gegevens te laden\n(staat op de pc in telefoon-wachtwoord.txt).\n\nAnnuleren = zonder gegevens beginnen; bij de volgende start wordt het opnieuw gevraagd.');
+                    if (ww === null) return; // geannuleerd: vlag niet zetten, volgende keer opnieuw vragen
+                    try {
+                        const data = await ontsleutel(pakket, ww.trim());
+                        if (data.shifts) localStorage.setItem('dashboard_manual_shifts', JSON.stringify(data.shifts));
+                        if (data.sobriety) localStorage.setItem('sobriety_history', JSON.stringify(data.sobriety));
+                        if (data.armHistory) localStorage.setItem('arm_history', JSON.stringify(data.armHistory));
+                        if (data.minoxStart) localStorage.setItem('minox_start_date', new Date(data.minoxStart).toISOString());
+                        if (data.amberShifts) localStorage.setItem('amber_shifts', JSON.stringify(data.amberShifts));
+                        if (data.tijdvakShifts) localStorage.setItem('tijdvak_shifts', JSON.stringify(data.tijdvakShifts));
+                        if (data.rosterOverrides) localStorage.setItem('dashboard_roster_overrides', JSON.stringify(data.rosterOverrides));
+                        localStorage.setItem('_seed_json_geladen', '1');
+                        return;
+                    } catch (e) {
+                        if (poging < 3) alert('Wachtwoord onjuist, probeer het opnieuw.');
+                        else alert('Drie keer onjuist. De app start zonder gegevens; herlaad om het opnieuw te proberen.');
+                    }
+                }
             } catch (e) { console.warn('Startgegevens laden overgeslagen:', e); }
         };
 
