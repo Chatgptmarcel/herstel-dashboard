@@ -2,12 +2,28 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="robots" content="noindex, nofollow">
     <title>Mijn Herstel Dashboard</title>
+
+    <!-- PWA: installeerbaar op de telefoon ("Toevoegen aan startscherm") met eigen icoon -->
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Herstel">
+    <!-- Service worker (offline gebruik): alleen op https (GitHub Pages); op file:// gebeurt er niets -->
+    <script>
+        if ('serviceWorker' in navigator && location.protocol === 'https:') {
+            window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+        }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -2978,8 +2994,34 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
             );
         };
 
-        const root = createRoot(document.getElementById('root'));
-        root.render(<App />);
+        // Eerste start op de telefoon (GitHub Pages): localStorage is daar nog leeg. Laad dan
+        // eenmalig de meegepubliceerde gegevens (mijn_herstel_dashboard.json) zodat de app niet
+        // blanco begint. Daarna is de opslag op het apparaat zelf de waarheid — dit draait niet
+        // opnieuw zolang er data of de vlag aanwezig is. Op file:// (pc) gebeurt hier niets.
+        const seedVanafServer = async () => {
+            const isHttps = location.protocol === 'https:';
+            const alGedaan = localStorage.getItem('_seed_json_geladen');
+            const heeftData = localStorage.getItem('dashboard_manual_shifts');
+            if (!isHttps || alGedaan || heeftData) return;
+            try {
+                const res = await fetch(`./mijn_herstel_dashboard.json?t=${Date.now()}`, { cache: 'no-store' });
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data.shifts) localStorage.setItem('dashboard_manual_shifts', JSON.stringify(data.shifts));
+                if (data.sobriety) localStorage.setItem('sobriety_history', JSON.stringify(data.sobriety));
+                if (data.armHistory) localStorage.setItem('arm_history', JSON.stringify(data.armHistory));
+                if (data.minoxStart) localStorage.setItem('minox_start_date', new Date(data.minoxStart).toISOString());
+                if (data.amberShifts) localStorage.setItem('amber_shifts', JSON.stringify(data.amberShifts));
+                if (data.tijdvakShifts) localStorage.setItem('tijdvak_shifts', JSON.stringify(data.tijdvakShifts));
+                if (data.rosterOverrides) localStorage.setItem('dashboard_roster_overrides', JSON.stringify(data.rosterOverrides));
+                localStorage.setItem('_seed_json_geladen', '1');
+            } catch (e) { console.warn('Startgegevens laden overgeslagen:', e); }
+        };
+
+        seedVanafServer().then(() => {
+            const root = createRoot(document.getElementById('root'));
+            root.render(<App />);
+        });
     </script>
 </body>
 </html>
