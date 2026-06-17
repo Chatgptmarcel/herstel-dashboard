@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 20,
+  "aantalGespeeld": 21,
   "groepen": [
     {
       "id": "A",
@@ -578,33 +578,33 @@
       "id": "K",
       "stand": [
         {
-          "team": "Colombia",
-          "gespeeld": 0,
+          "team": "DR Congo",
+          "gespeeld": 1,
           "w": 0,
-          "g": 0,
+          "g": 1,
           "v": 0,
-          "dv": 0,
-          "dt": 0,
+          "dv": 1,
+          "dt": 1,
           "saldo": 0,
-          "punten": 0,
+          "punten": 1,
           "positie": 1,
           "status": "direct"
         },
         {
-          "team": "DR Congo",
-          "gespeeld": 0,
+          "team": "Portugal",
+          "gespeeld": 1,
           "w": 0,
-          "g": 0,
+          "g": 1,
           "v": 0,
-          "dv": 0,
-          "dt": 0,
+          "dv": 1,
+          "dt": 1,
           "saldo": 0,
-          "punten": 0,
+          "punten": 1,
           "positie": 2,
           "status": "direct"
         },
         {
-          "team": "Oezbekistan",
+          "team": "Colombia",
           "gespeeld": 0,
           "w": 0,
           "g": 0,
@@ -617,7 +617,7 @@
           "status": "derde"
         },
         {
-          "team": "Portugal",
+          "team": "Oezbekistan",
           "gespeeld": 0,
           "w": 0,
           "g": 0,
@@ -741,8 +741,8 @@
       "geplaatst": true
     },
     {
-      "groep": "L",
-      "team": "Kroatië",
+      "groep": "K",
+      "team": "Colombia",
       "gespeeld": 0,
       "punten": 0,
       "saldo": 0,
@@ -751,8 +751,8 @@
       "geplaatst": true
     },
     {
-      "groep": "K",
-      "team": "Oezbekistan",
+      "groep": "L",
+      "team": "Kroatië",
       "gespeeld": 0,
       "punten": 0,
       "saldo": 0,
@@ -1570,9 +1570,28 @@
       "stadion": "Houston",
       "team1": "Portugal",
       "team2": "DR Congo",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          1
+        ],
+        "ht": [
+          1,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "João Neves",
+          "minuut": "6"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Yoane Wissa",
+          "minuut": "45+5"
+        }
+      ]
     },
     {
       "id": 66,
