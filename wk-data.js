@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 21,
+  "aantalGespeeld": 22,
   "groepen": [
     {
       "id": "A",
@@ -636,14 +636,14 @@ window.WK_DATA = {
       "stand": [
         {
           "team": "Engeland",
-          "gespeeld": 0,
-          "w": 0,
+          "gespeeld": 1,
+          "w": 1,
           "g": 0,
           "v": 0,
-          "dv": 0,
-          "dt": 0,
-          "saldo": 0,
-          "punten": 0,
+          "dv": 4,
+          "dt": 2,
+          "saldo": 2,
+          "punten": 3,
           "positie": 1,
           "status": "direct"
         },
@@ -661,7 +661,7 @@ window.WK_DATA = {
           "status": "direct"
         },
         {
-          "team": "Kroatië",
+          "team": "Panama",
           "gespeeld": 0,
           "w": 0,
           "g": 0,
@@ -674,14 +674,14 @@ window.WK_DATA = {
           "status": "derde"
         },
         {
-          "team": "Panama",
-          "gespeeld": 0,
+          "team": "Kroatië",
+          "gespeeld": 1,
           "w": 0,
           "g": 0,
-          "v": 0,
-          "dv": 0,
-          "dt": 0,
-          "saldo": 0,
+          "v": 1,
+          "dv": 2,
+          "dt": 4,
+          "saldo": -2,
           "punten": 0,
           "positie": 4,
           "status": null
@@ -752,7 +752,7 @@ window.WK_DATA = {
     },
     {
       "groep": "L",
-      "team": "Kroatië",
+      "team": "Panama",
       "gespeeld": 0,
       "punten": 0,
       "saldo": 0,
@@ -1603,9 +1603,45 @@ window.WK_DATA = {
       "stadion": "Dallas (Arlington)",
       "team1": "Engeland",
       "team2": "Kroatië",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          4,
+          2
+        ],
+        "ht": [
+          2,
+          2
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Harry Kane",
+          "minuut": "12",
+          "strafschop": true
+        },
+        {
+          "naam": "Harry Kane",
+          "minuut": "42"
+        },
+        {
+          "naam": "Jude Bellingham",
+          "minuut": "47"
+        },
+        {
+          "naam": "Marcus Rashford",
+          "minuut": "85"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Martin Baturina",
+          "minuut": "36"
+        },
+        {
+          "naam": "Petar Musa",
+          "minuut": "45+5"
+        }
+      ]
     },
     {
       "id": 67,
