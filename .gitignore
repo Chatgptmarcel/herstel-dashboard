@@ -6,6 +6,8 @@ telefoon-wachtwoord.txt
 
 # Tijdelijke bestanden van de sync
 raw.ics
+wk-raw.json
+fresh.ics
 
 # Rommel
 node_modules/

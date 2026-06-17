@@ -12,6 +12,7 @@
 const CACHE = 'herstel-dashboard-v1';
 const PRECACHE = [
     './',
+    './wk-data.json',
     './manifest.webmanifest',
     './icons/icon-192.png',
     './icons/icon-512.png',
