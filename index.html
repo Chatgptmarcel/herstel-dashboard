@@ -34,6 +34,10 @@
          GitHub Pages), dan valt het dashboard terug op fetch('./schedule.ics'). -->
     <script>document.write('<scr' + 'ipt src="schedule-data.js?t=' + Date.now() + '"><\/scr' + 'ipt>');</script>
 
+    <!-- Lokale WK-data (offline / file://): laadt wk-data.js (window.WK_DATA), gegenereerd door
+         sync/wk-sync.js. Op een server haalt het dashboard verse data op; dit is de offline-terugval. -->
+    <script>document.write('<scr' + 'ipt src="wk-data.js?t=' + Date.now() + '"><\/scr' + 'ipt>');</script>
+
     <!-- Import Map voor React en Iconen -->
     <script type="importmap">
     {
@@ -537,17 +541,38 @@
             const [currentDate, setCurrentDate] = useState(new Date());
             const [viewDate, setViewDate] = useState(new Date());
 
-            // --- WK 2026: tabwissel + data uit wk-data.json -------------------
+            // --- WK 2026: tabwissel + data laden ------------------------------
+            // Volgorde: 1) zelfde-origin wk-data.json (server; offline via service worker),
+            // 2) verse data rechtstreeks van GitHub (werkt ook op file:// dankzij CORS),
+            // 3) window.WK_DATA uit wk-data.js (offline/file://-terugval).
             const [activeTab, setActiveTab] = useState('dashboard');
             const [wkData, setWkData] = useState(null);
             const [wkLaden, setWkLaden] = useState(false);
             const [wkFout, setWkFout] = useState(false);
-            const laadWk = React.useCallback(() => {
+            const laadWk = React.useCallback(async () => {
                 setWkLaden(true); setWkFout(false);
-                fetch('./wk-data.json', { cache: 'no-store' })
-                    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-                    .then(d => { setWkData(d); setWkLaden(false); })
-                    .catch(() => { setWkFout(true); setWkLaden(false); });
+                const RAW = 'https://raw.githubusercontent.com/Chatgptmarcel/herstel-dashboard/main/wk-data.json';
+                const probeer = async (url) => {
+                    const ctrl = new AbortController();
+                    const tid = setTimeout(() => ctrl.abort(), 6000);
+                    try {
+                        const r = await fetch(url, { cache: 'no-store', signal: ctrl.signal });
+                        if (!r.ok) throw new Error('HTTP ' + r.status);
+                        return await r.json();
+                    } finally { clearTimeout(tid); }
+                };
+                for (const url of ['./wk-data.json', RAW]) {
+                    try { const d = await probeer(url); setWkData(d); setWkLaden(false); return; } catch (e) { /* volgende bron */ }
+                }
+                // Terugval: lokaal meegeleverde data (wk-data.js → window.WK_DATA), bv. offline op file://.
+                await new Promise((res) => {
+                    const s = document.createElement('script');
+                    s.src = 'wk-data.js?t=' + Date.now();
+                    s.onload = res; s.onerror = res;
+                    document.body.appendChild(s);
+                });
+                if (typeof window !== 'undefined' && window.WK_DATA) { setWkData(window.WK_DATA); setWkLaden(false); }
+                else { setWkFout(true); setWkLaden(false); }
             }, []);
             useEffect(() => { laadWk(); }, [laadWk]);
             

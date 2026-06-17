@@ -34,10 +34,10 @@ jobs:
         run: |
           git config user.name "wk-sync-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- wk-data.json; then
+          if git diff --quiet -- wk-data.json wk-data.js; then
             echo "Geen wijziging in de WK-data."
           else
-            git add wk-data.json
+            git add wk-data.json wk-data.js
             git commit -m "WK-data automatisch bijgewerkt"
             git push
           fi

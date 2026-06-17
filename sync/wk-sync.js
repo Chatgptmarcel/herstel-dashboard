@@ -227,6 +227,13 @@ if (!bron || !Array.isArray(bron.matches) || bron.matches.length === 0) {
 }
 
 const data = transform(bron);
-fs.writeFileSync(outPath, JSON.stringify(data, null, 2) + '\n', 'utf8');
-console.log(`wk-data.json geschreven: ${data.aantalWedstrijden} wedstrijden, ` +
+const json = JSON.stringify(data, null, 2);
+fs.writeFileSync(outPath, json + '\n', 'utf8');
+
+// Ook een wk-data.js schrijven (window.WK_DATA). Nodig voor file:// (lokale kopie
+// gezondheid.html), waar fetch geblokkeerd is — net als schedule-data.js voor het rooster.
+const jsPath = outPath.replace(/\.json$/, '.js');
+fs.writeFileSync(jsPath, 'window.WK_DATA = ' + json + ';\n', 'utf8');
+
+console.log(`wk-data.json + wk-data.js geschreven: ${data.aantalWedstrijden} wedstrijden, ` +
   `${data.aantalGespeeld} gespeeld, ${data.groepen.length} groepen.`);
