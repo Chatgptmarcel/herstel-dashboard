@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 22,
+  "aantalGespeeld": 24,
   "groepen": [
     {
       "id": "A",
@@ -578,20 +578,20 @@ window.WK_DATA = {
       "id": "K",
       "stand": [
         {
-          "team": "DR Congo",
+          "team": "Colombia",
           "gespeeld": 1,
-          "w": 0,
-          "g": 1,
+          "w": 1,
+          "g": 0,
           "v": 0,
-          "dv": 1,
+          "dv": 3,
           "dt": 1,
-          "saldo": 0,
-          "punten": 1,
+          "saldo": 2,
+          "punten": 3,
           "positie": 1,
           "status": "direct"
         },
         {
-          "team": "Portugal",
+          "team": "DR Congo",
           "gespeeld": 1,
           "w": 0,
           "g": 1,
@@ -604,27 +604,27 @@ window.WK_DATA = {
           "status": "direct"
         },
         {
-          "team": "Colombia",
-          "gespeeld": 0,
+          "team": "Portugal",
+          "gespeeld": 1,
           "w": 0,
-          "g": 0,
+          "g": 1,
           "v": 0,
-          "dv": 0,
-          "dt": 0,
+          "dv": 1,
+          "dt": 1,
           "saldo": 0,
-          "punten": 0,
+          "punten": 1,
           "positie": 3,
           "status": "derde"
         },
         {
           "team": "Oezbekistan",
-          "gespeeld": 0,
+          "gespeeld": 1,
           "w": 0,
           "g": 0,
-          "v": 0,
-          "dv": 0,
-          "dt": 0,
-          "saldo": 0,
+          "v": 1,
+          "dv": 1,
+          "dt": 3,
+          "saldo": -2,
           "punten": 0,
           "positie": 4,
           "status": null
@@ -649,26 +649,26 @@ window.WK_DATA = {
         },
         {
           "team": "Ghana",
-          "gespeeld": 0,
-          "w": 0,
+          "gespeeld": 1,
+          "w": 1,
           "g": 0,
           "v": 0,
-          "dv": 0,
+          "dv": 1,
           "dt": 0,
-          "saldo": 0,
-          "punten": 0,
+          "saldo": 1,
+          "punten": 3,
           "positie": 2,
           "status": "direct"
         },
         {
           "team": "Panama",
-          "gespeeld": 0,
+          "gespeeld": 1,
           "w": 0,
           "g": 0,
-          "v": 0,
+          "v": 1,
           "dv": 0,
-          "dt": 0,
-          "saldo": 0,
+          "dt": 1,
+          "saldo": -1,
           "punten": 0,
           "positie": 3,
           "status": "derde"
@@ -721,13 +721,23 @@ window.WK_DATA = {
       "geplaatst": true
     },
     {
+      "groep": "K",
+      "team": "Portugal",
+      "gespeeld": 1,
+      "punten": 1,
+      "saldo": 0,
+      "dv": 1,
+      "positie": 4,
+      "geplaatst": true
+    },
+    {
       "groep": "B",
       "team": "Qatar",
       "gespeeld": 1,
       "punten": 1,
       "saldo": 0,
       "dv": 1,
-      "positie": 4,
+      "positie": 5,
       "geplaatst": true
     },
     {
@@ -737,27 +747,7 @@ window.WK_DATA = {
       "punten": 1,
       "saldo": 0,
       "dv": 0,
-      "positie": 5,
-      "geplaatst": true
-    },
-    {
-      "groep": "K",
-      "team": "Colombia",
-      "gespeeld": 0,
-      "punten": 0,
-      "saldo": 0,
-      "dv": 0,
       "positie": 6,
-      "geplaatst": true
-    },
-    {
-      "groep": "L",
-      "team": "Panama",
-      "gespeeld": 0,
-      "punten": 0,
-      "saldo": 0,
-      "dv": 0,
-      "positie": 7,
       "geplaatst": true
     },
     {
@@ -767,12 +757,22 @@ window.WK_DATA = {
       "punten": 0,
       "saldo": -1,
       "dv": 1,
-      "positie": 8,
+      "positie": 7,
       "geplaatst": true
     },
     {
       "groep": "E",
       "team": "Ecuador",
+      "gespeeld": 1,
+      "punten": 0,
+      "saldo": -1,
+      "dv": 0,
+      "positie": 8,
+      "geplaatst": true
+    },
+    {
+      "groep": "L",
+      "team": "Panama",
       "gespeeld": 1,
       "punten": 0,
       "saldo": -1,
@@ -1653,8 +1653,22 @@ window.WK_DATA = {
       "stadion": "Toronto",
       "team1": "Ghana",
       "team2": "Panama",
-      "score": null,
-      "goals1": [],
+      "score": {
+        "ft": [
+          1,
+          0
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Caleb Yirenkyi",
+          "minuut": "90+5"
+        }
+      ],
       "goals2": []
     },
     {
@@ -1667,9 +1681,36 @@ window.WK_DATA = {
       "stadion": "Mexico City",
       "team1": "Oezbekistan",
       "team2": "Colombia",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          3
+        ],
+        "ht": [
+          0,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Abbosbek Fayzullaev",
+          "minuut": "60"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Daniel Muñoz",
+          "minuut": "40"
+        },
+        {
+          "naam": "Luis Díaz",
+          "minuut": "65"
+        },
+        {
+          "naam": "Jáminton Campaz",
+          "minuut": "90+9"
+        }
+      ]
     },
     {
       "id": 2,
