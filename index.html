@@ -24,6 +24,34 @@
             window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
         }
     </script>
+    <!-- CLOUD-SYNC (1/2): registreer lokale wijzigingen. Draait vóór de app, zodat geen enkele
+         wijziging gemist wordt. Alleen deze sleutels gaan de cloud in; caches/vlaggen blijven lokaal. -->
+    <script>
+        (function () {
+            window.SYNC_KEYS = [
+                'dashboard_manual_shifts', 'sobriety_history', 'arm_history', 'minox_start_date',
+                'dashboard_roster_overrides', 'amber_shifts', 'tijdvak_shifts'
+            ];
+            try {
+                if (!localStorage.getItem('_sync_client_id')) {
+                    localStorage.setItem('_sync_client_id',
+                        'c-' + Math.random().toString(36).slice(2) + Date.now().toString(36));
+                }
+            } catch (e) {}
+            window.__applyingRemote = false;      // true terwijl cloud-data lokaal wordt toegepast
+            window.__reloading = false;           // true zodra we gaan herladen (blokkeert pushes)
+            window.__syncPending = false;         // er was een wijziging vóór de sync-module klaar was
+            // Tot deel 2/2 klaar is: wijzigingen niet laten vallen, maar onthouden.
+            window.__syncRequestPush = function () { window.__syncPending = true; };
+            var origSet = localStorage.setItem.bind(localStorage);
+            localStorage.setItem = function (key, value) {
+                origSet(key, value);
+                if (!window.__applyingRemote && !window.__reloading && window.SYNC_KEYS.indexOf(key) !== -1) {
+                    try { window.__syncRequestPush(); } catch (e) {}
+                }
+            };
+        })();
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -3298,57 +3326,158 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
             );
         };
 
-        // Eerste start op de telefoon (GitHub Pages): localStorage is daar nog leeg. Laad dan
-        // eenmalig de versleutelde gegevens (mijn_herstel_dashboard.enc.json, gemaakt met
-        // tools/versleutel-data.js) na het vragen van het wachtwoord. De onversleutelde data
-        // staat bewust NIET in de publieke repo (.gitignore). Daarna is de opslag op het
-        // apparaat zelf de waarheid. Op file:// (pc) gebeurt hier niets.
-        const ontsleutel = async (pakket, wachtwoord) => {
-            const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
-            const basis = await crypto.subtle.importKey('raw', new TextEncoder().encode(wachtwoord), 'PBKDF2', false, ['deriveKey']);
-            const sleutel = await crypto.subtle.deriveKey(
-                { name: 'PBKDF2', salt: b64(pakket.salt), iterations: pakket.iteraties, hash: 'SHA-256' },
-                basis, { name: 'AES-GCM', length: 256 }, false, ['decrypt']
-            );
-            const klaar = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(pakket.iv) }, sleutel, b64(pakket.data));
-            return JSON.parse(new TextDecoder().decode(klaar));
+        // De cloud-sync (deel 2/2, onderaan dit bestand) is nu de bron van waarheid en haalt de
+        // gegevens automatisch op — zonder wachtwoord. Het oude versleutelde seed-pad met
+        // wachtwoordprompt is daarom volledig verwijderd.
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+
+    <!-- CLOUD-SYNC (2/2): verbindt stil met Firebase (anoniem, geen wachtwoord) en houdt de gegevens
+         automatisch gelijk tussen pc en telefoon. Alleen window.SYNC_KEYS gaan de cloud in; verder
+         verlaat er niets dit apparaat. Lukt verbinden niet, dan werkt het dashboard gewoon lokaal door. -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js';
+        import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js';
+        import { getFirestore, doc, onSnapshot, setDoc } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC4AQN0cBfPt-sxvn2pxH5Y7zy6ZB37OUY",
+            authDomain: "herstel-dashboard-sync.firebaseapp.com",
+            projectId: "herstel-dashboard-sync",
+            storageBucket: "herstel-dashboard-sync.firebasestorage.app",
+            messagingSenderId: "922117230871",
+            appId: "1:922117230871:web:bc1ea59e634099837de752"
         };
 
-        const seedVanafServer = async () => {
-            const isHttps = location.protocol === 'https:';
-            const alGedaan = localStorage.getItem('_seed_json_geladen');
-            const heeftData = localStorage.getItem('dashboard_manual_shifts');
-            if (!isHttps || alGedaan || heeftData) return;
-            try {
-                const res = await fetch(`./mijn_herstel_dashboard.enc.json?t=${Date.now()}`, { cache: 'no-store' });
-                if (!res.ok) return;
-                const pakket = await res.json();
-                for (let poging = 1; poging <= 3; poging++) {
-                    const ww = window.prompt('Eerste start op dit apparaat.\n\nVoer het wachtwoord in om je gegevens te laden\n(staat op de pc in telefoon-wachtwoord.txt).\n\nAnnuleren = zonder gegevens beginnen; bij de volgende start wordt het opnieuw gevraagd.');
-                    if (ww === null) return; // geannuleerd: vlag niet zetten, volgende keer opnieuw vragen
-                    try {
-                        const data = await ontsleutel(pakket, ww.trim());
-                        if (data.shifts) localStorage.setItem('dashboard_manual_shifts', JSON.stringify(data.shifts));
-                        if (data.sobriety) localStorage.setItem('sobriety_history', JSON.stringify(data.sobriety));
-                        if (data.armHistory) localStorage.setItem('arm_history', JSON.stringify(data.armHistory));
-                        if (data.minoxStart) localStorage.setItem('minox_start_date', new Date(data.minoxStart).toISOString());
-                        if (data.amberShifts) localStorage.setItem('amber_shifts', JSON.stringify(data.amberShifts));
-                        if (data.tijdvakShifts) localStorage.setItem('tijdvak_shifts', JSON.stringify(data.tijdvakShifts));
-                        if (data.rosterOverrides) localStorage.setItem('dashboard_roster_overrides', JSON.stringify(data.rosterOverrides));
-                        localStorage.setItem('_seed_json_geladen', '1');
-                        return;
-                    } catch (e) {
-                        if (poging < 3) alert('Wachtwoord onjuist, probeer het opnieuw.');
-                        else alert('Drie keer onjuist. De app start zonder gegevens; herlaad om het opnieuw te proberen.');
-                    }
+        const KEYS = window.SYNC_KEYS;
+        const CLIENT_ID = localStorage.getItem('_sync_client_id') || ('c-' + Date.now());
+
+        const readLocal = () => {
+            const out = {};
+            for (const k of KEYS) { const v = localStorage.getItem(k); if (v !== null) out[k] = v; }
+            return out;
+        };
+        const stable = (obj) => JSON.stringify(obj, Object.keys(obj).sort());
+        const hasLocalData = () => {
+            for (const k of KEYS) { if (localStorage.getItem(k) !== null) return true; }
+            return false;
+        };
+        // Alleen bij de allereerste sync: notities samenvoegen op id per datum, zodat niets verloren gaat.
+        const mergeShifts = (localStr, remoteStr) => {
+            let L = {}, R = {};
+            try { L = JSON.parse(localStr || '{}'); } catch (e) {}
+            try { R = JSON.parse(remoteStr || '{}'); } catch (e) {}
+            const out = {};
+            for (const date of new Set([...Object.keys(L), ...Object.keys(R)])) {
+                const seen = new Set(); const arr = [];
+                for (const e of [...(R[date] || []), ...(L[date] || [])]) {
+                    const id = (e && e.id != null) ? e.id : JSON.stringify(e);
+                    if (!seen.has(id)) { seen.add(id); arr.push(e); }
                 }
-            } catch (e) { console.warn('Startgegevens laden overgeslagen:', e); }
+                out[date] = arr;
+            }
+            return JSON.stringify(out);
         };
 
-        seedVanafServer().then(() => {
-            const root = createRoot(document.getElementById('root'));
-            root.render(<App />);
-        });
+        let reloading = false;
+        // Cloud-waarden lokaal toepassen en herladen, zodat de app ze oppakt.
+        const applyRemote = (values, remoteTs, forcePush) => {
+            window.__applyingRemote = true;
+            for (const k of KEYS) { if (values[k] != null) localStorage.setItem(k, values[k]); }
+            localStorage.setItem('_sync_ts', String(remoteTs || Date.now()));
+            localStorage.setItem('_sync_pushed_hash', stable(readLocal()));
+            localStorage.setItem('_seed_json_geladen', '1');
+            if (forcePush) localStorage.setItem('_sync_force_push', '1');
+            window.__applyingRemote = false;
+            window.__reloading = true;   // vanaf nu geen pushes meer tot de herlaad de pagina vervangt
+            reloading = true;
+            location.reload();
+        };
+
+        (async function start() {
+            let ref;
+            try {
+                const app = initializeApp(firebaseConfig);
+                await signInAnonymously(getAuth(app));
+                ref = doc(getFirestore(app), 'sync', 'dashboard');
+            } catch (e) { console.warn('[sync] verbinden mislukt, dashboard werkt lokaal door:', e); return; }
+
+            let lastPushed = localStorage.getItem('_sync_pushed_hash');
+            let firstSnapshotDone = false;   // we hebben de cloud-staat nog niet gezien
+            let timer = null;
+
+            const push = async (attempt) => {
+                if (reloading || window.__reloading) return;
+                // Nooit pushen vóór we de cloud-staat kennen: anders kan een vers apparaat met
+                // standaardwaarden (vandaag) de echte teldatums in de cloud overschrijven.
+                if (!firstSnapshotDone) { window.__syncPending = true; return; }
+                const values = readLocal();
+                const s = stable(values);
+                if (s === lastPushed) return;          // niets veranderd sinds vorige upload
+                const ts = Date.now();
+                try {
+                    await setDoc(ref, { values, updatedAt: ts, updatedBy: CLIENT_ID });
+                    lastPushed = s;
+                    localStorage.setItem('_sync_pushed_hash', s);
+                    localStorage.setItem('_sync_ts', String(ts));
+                } catch (e) {
+                    console.warn('[sync] uploaden mislukt, opnieuw proberen:', e);
+                    const n = (attempt || 0) + 1;
+                    if (n <= 3) setTimeout(() => push(n), n * 2500);   // 2.5s, 5s, 7.5s
+                }
+            };
+            window.__syncRequestPush = () => { clearTimeout(timer); timer = setTimeout(() => push(0), 800); };
+
+            // Wijzigingen die vóór deze module klaar was plaatsvonden alsnog meenemen.
+            const flushPending = () => {
+                if (window.__syncPending) { window.__syncPending = false; window.__syncRequestPush(); }
+            };
+
+            // Een eerder samengevoegd resultaat (na herlaad) alsnog uploaden zodra de cloud-staat bekend is.
+            if (localStorage.getItem('_sync_force_push')) {
+                localStorage.removeItem('_sync_force_push');
+                lastPushed = null;
+                window.__syncPending = true;
+            }
+
+            onSnapshot(ref, (snap) => {
+                if (reloading) return;
+                firstSnapshotDone = true;                            // vanaf nu kennen we de cloud-staat
+                let willReload = false;
+                try {
+                    const data = snap.exists() ? snap.data() : null;
+                    const neverSynced = !localStorage.getItem('_sync_ts');
+                    const localTs = Number(localStorage.getItem('_sync_ts') || '0');
+
+                    if (!data) {                                     // cloud nog leeg: dit apparaat zet de data neer
+                        if (hasLocalData()) push(0);
+                    } else if (data.updatedBy === CLIENT_ID) {       // onze eigen wijziging: negeren
+                        lastPushed = stable(readLocal());
+                        localStorage.setItem('_sync_pushed_hash', lastPushed);
+                    } else {
+                        const remoteTs = Number(data.updatedAt || 0);
+                        const values = data.values || {};
+                        if (neverSynced) {
+                            if (hasLocalData()) {
+                                // Eerste sync terwijl beide kanten data hebben: notities samenvoegen (geen verlies).
+                                const merged = { ...values };
+                                merged['dashboard_manual_shifts'] = mergeShifts(
+                                    localStorage.getItem('dashboard_manual_shifts'), values['dashboard_manual_shifts']);
+                                willReload = true; applyRemote(merged, remoteTs, true);
+                            } else {
+                                willReload = true; applyRemote(values, remoteTs, false); // vers apparaat: cloud overnemen
+                            }
+                        } else if (remoteTs > localTs) {             // cloud is nieuwer dan wat wij hebben
+                            if (stable(readLocal()) !== stable(values)) { willReload = true; applyRemote(values, remoteTs, false); }
+                            else localStorage.setItem('_sync_ts', String(remoteTs));
+                        }
+                    }
+                } finally {
+                    if (!willReload && !reloading) flushPending();
+                }
+            }, (err) => console.warn('[sync] luisteren mislukt:', err));
+        })();
     </script>
 </body>
 </html>
