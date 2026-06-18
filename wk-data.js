@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 24,
+  "aantalGespeeld": 25,
   "groepen": [
     {
       "id": "A",
@@ -35,27 +35,27 @@ window.WK_DATA = {
         },
         {
           "team": "Tsjechië",
-          "gespeeld": 1,
+          "gespeeld": 2,
           "w": 0,
-          "g": 0,
+          "g": 1,
           "v": 1,
-          "dv": 1,
-          "dt": 2,
+          "dv": 2,
+          "dt": 3,
           "saldo": -1,
-          "punten": 0,
+          "punten": 1,
           "positie": 3,
           "status": "derde"
         },
         {
           "team": "Zuid-Afrika",
-          "gespeeld": 1,
+          "gespeeld": 2,
           "w": 0,
-          "g": 0,
+          "g": 1,
           "v": 1,
-          "dv": 0,
-          "dt": 2,
+          "dv": 1,
+          "dt": 3,
           "saldo": -2,
-          "punten": 0,
+          "punten": 1,
           "positie": 4,
           "status": null
         }
@@ -753,10 +753,10 @@ window.WK_DATA = {
     {
       "groep": "A",
       "team": "Tsjechië",
-      "gespeeld": 1,
-      "punten": 0,
+      "gespeeld": 2,
+      "punten": 1,
       "saldo": -1,
-      "dv": 1,
+      "dv": 2,
       "positie": 7,
       "geplaatst": true
     },
@@ -1722,9 +1722,29 @@ window.WK_DATA = {
       "stadion": "Atlanta",
       "team1": "Tsjechië",
       "team2": "Zuid-Afrika",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          1
+        ],
+        "ht": [
+          1,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Michal Sadílek",
+          "minuut": "6"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Teboho Mokoena",
+          "minuut": "83",
+          "strafschop": true
+        }
+      ]
     },
     {
       "id": 8,
