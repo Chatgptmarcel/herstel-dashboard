@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 25,
+  "aantalGespeeld": 26,
   "groepen": [
     {
       "id": "A",
@@ -65,15 +65,15 @@
       "id": "B",
       "stand": [
         {
-          "team": "Bosnië en Herzegovina",
-          "gespeeld": 1,
-          "w": 0,
+          "team": "Zwitserland",
+          "gespeeld": 2,
+          "w": 1,
           "g": 1,
           "v": 0,
-          "dv": 1,
-          "dt": 1,
-          "saldo": 0,
-          "punten": 1,
+          "dv": 5,
+          "dt": 2,
+          "saldo": 3,
+          "punten": 4,
           "positie": 1,
           "status": "direct"
         },
@@ -104,14 +104,14 @@
           "status": "derde"
         },
         {
-          "team": "Zwitserland",
-          "gespeeld": 1,
+          "team": "Bosnië en Herzegovina",
+          "gespeeld": 2,
           "w": 0,
           "g": 1,
-          "v": 0,
-          "dv": 1,
-          "dt": 1,
-          "saldo": 0,
+          "v": 1,
+          "dv": 2,
+          "dt": 5,
+          "saldo": -3,
           "punten": 1,
           "positie": 4,
           "status": null
@@ -1756,9 +1756,41 @@
       "stadion": "Los Angeles (Inglewood)",
       "team1": "Zwitserland",
       "team2": "Bosnië en Herzegovina",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          4,
+          1
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Johan Manzambi",
+          "minuut": "74"
+        },
+        {
+          "naam": "Rubén Vargas",
+          "minuut": "84"
+        },
+        {
+          "naam": "Johan Manzambi",
+          "minuut": "90"
+        },
+        {
+          "naam": "Granit Xhaka",
+          "minuut": "90+7",
+          "strafschop": true
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Ermin Mahmic",
+          "minuut": "90+3"
+        }
+      ]
     },
     {
       "id": 9,
