@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 26,
+  "aantalGespeeld": 27,
   "groepen": [
     {
       "id": "A",
@@ -65,6 +65,19 @@ window.WK_DATA = {
       "id": "B",
       "stand": [
         {
+          "team": "Canada",
+          "gespeeld": 2,
+          "w": 1,
+          "g": 1,
+          "v": 0,
+          "dv": 7,
+          "dt": 1,
+          "saldo": 6,
+          "punten": 4,
+          "positie": 1,
+          "status": "direct"
+        },
+        {
           "team": "Zwitserland",
           "gespeeld": 2,
           "w": 1,
@@ -74,34 +87,8 @@ window.WK_DATA = {
           "dt": 2,
           "saldo": 3,
           "punten": 4,
-          "positie": 1,
-          "status": "direct"
-        },
-        {
-          "team": "Canada",
-          "gespeeld": 1,
-          "w": 0,
-          "g": 1,
-          "v": 0,
-          "dv": 1,
-          "dt": 1,
-          "saldo": 0,
-          "punten": 1,
           "positie": 2,
           "status": "direct"
-        },
-        {
-          "team": "Qatar",
-          "gespeeld": 1,
-          "w": 0,
-          "g": 1,
-          "v": 0,
-          "dv": 1,
-          "dt": 1,
-          "saldo": 0,
-          "punten": 1,
-          "positie": 3,
-          "status": "derde"
         },
         {
           "team": "Bosnië en Herzegovina",
@@ -112,6 +99,19 @@ window.WK_DATA = {
           "dv": 2,
           "dt": 5,
           "saldo": -3,
+          "punten": 1,
+          "positie": 3,
+          "status": "derde"
+        },
+        {
+          "team": "Qatar",
+          "gespeeld": 2,
+          "w": 0,
+          "g": 1,
+          "v": 1,
+          "dv": 1,
+          "dt": 7,
+          "saldo": -6,
           "punten": 1,
           "positie": 4,
           "status": null
@@ -731,23 +731,13 @@ window.WK_DATA = {
       "geplaatst": true
     },
     {
-      "groep": "B",
-      "team": "Qatar",
-      "gespeeld": 1,
-      "punten": 1,
-      "saldo": 0,
-      "dv": 1,
-      "positie": 5,
-      "geplaatst": true
-    },
-    {
       "groep": "H",
       "team": "Kaapverdië",
       "gespeeld": 1,
       "punten": 1,
       "saldo": 0,
       "dv": 0,
-      "positie": 6,
+      "positie": 5,
       "geplaatst": true
     },
     {
@@ -756,6 +746,16 @@ window.WK_DATA = {
       "gespeeld": 2,
       "punten": 1,
       "saldo": -1,
+      "dv": 2,
+      "positie": 6,
+      "geplaatst": true
+    },
+    {
+      "groep": "B",
+      "team": "Bosnië en Herzegovina",
+      "gespeeld": 2,
+      "punten": 1,
+      "saldo": -3,
       "dv": 2,
       "positie": 7,
       "geplaatst": true
@@ -1802,8 +1802,43 @@ window.WK_DATA = {
       "stadion": "Vancouver",
       "team1": "Canada",
       "team2": "Qatar",
-      "score": null,
-      "goals1": [],
+      "score": {
+        "ft": [
+          6,
+          0
+        ],
+        "ht": [
+          3,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Cyle Larin",
+          "minuut": "16"
+        },
+        {
+          "naam": "Jonathan David",
+          "minuut": "29"
+        },
+        {
+          "naam": "Jonathan David",
+          "minuut": "45+3"
+        },
+        {
+          "naam": "Nathan Saliba",
+          "minuut": "64"
+        },
+        {
+          "naam": "Mohamed Manai",
+          "minuut": "75",
+          "eigendoelpunt": true
+        },
+        {
+          "naam": "Jonathan David",
+          "minuut": "90+2"
+        }
+      ],
       "goals2": []
     },
     {
