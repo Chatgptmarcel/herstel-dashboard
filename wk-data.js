@@ -2,33 +2,33 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 27,
+  "aantalGespeeld": 28,
   "groepen": [
     {
       "id": "A",
       "stand": [
         {
           "team": "Mexico",
-          "gespeeld": 1,
-          "w": 1,
+          "gespeeld": 2,
+          "w": 2,
           "g": 0,
           "v": 0,
-          "dv": 2,
+          "dv": 3,
           "dt": 0,
-          "saldo": 2,
-          "punten": 3,
+          "saldo": 3,
+          "punten": 6,
           "positie": 1,
           "status": "direct"
         },
         {
           "team": "Zuid-Korea",
-          "gespeeld": 1,
+          "gespeeld": 2,
           "w": 1,
           "g": 0,
-          "v": 0,
+          "v": 1,
           "dv": 2,
-          "dt": 1,
-          "saldo": 1,
+          "dt": 2,
+          "saldo": 0,
           "punten": 3,
           "positie": 2,
           "status": "direct"
@@ -1851,8 +1851,22 @@ window.WK_DATA = {
       "stadion": "Guadalajara (Zapopan)",
       "team1": "Mexico",
       "team2": "Zuid-Korea",
-      "score": null,
-      "goals1": [],
+      "score": {
+        "ft": [
+          1,
+          0
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Luis Romo",
+          "minuut": "50"
+        }
+      ],
       "goals2": []
     },
     {
