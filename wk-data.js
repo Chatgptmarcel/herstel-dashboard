@@ -982,8 +982,9 @@ window.WK_DATA = {
       },
       "goals1": [
         {
-          "naam": "Boualem Khoukhi",
-          "minuut": "90+4"
+          "naam": "Miro Muheim",
+          "minuut": "90+4",
+          "eigendoelpunt": true
         }
       ],
       "goals2": [
