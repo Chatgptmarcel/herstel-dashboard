@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 32,
+  "aantalGespeeld": 33,
   "groepen": [
     {
       "id": "A",
@@ -293,33 +293,33 @@ window.WK_DATA = {
       "id": "F",
       "stand": [
         {
-          "team": "Zweden",
-          "gespeeld": 1,
+          "team": "Nederland",
+          "gespeeld": 2,
           "w": 1,
-          "g": 0,
+          "g": 1,
           "v": 0,
-          "dv": 5,
-          "dt": 1,
+          "dv": 7,
+          "dt": 3,
           "saldo": 4,
-          "punten": 3,
+          "punten": 4,
           "positie": 1,
           "status": "direct"
         },
         {
-          "team": "Japan",
-          "gespeeld": 1,
-          "w": 0,
-          "g": 1,
-          "v": 0,
-          "dv": 2,
-          "dt": 2,
+          "team": "Zweden",
+          "gespeeld": 2,
+          "w": 1,
+          "g": 0,
+          "v": 1,
+          "dv": 6,
+          "dt": 6,
           "saldo": 0,
-          "punten": 1,
+          "punten": 3,
           "positie": 2,
           "status": "direct"
         },
         {
-          "team": "Nederland",
+          "team": "Japan",
           "gespeeld": 1,
           "w": 0,
           "g": 1,
@@ -712,7 +712,7 @@ window.WK_DATA = {
     },
     {
       "groep": "F",
-      "team": "Nederland",
+      "team": "Japan",
       "gespeeld": 1,
       "punten": 1,
       "saldo": 0,
@@ -2005,9 +2005,44 @@ window.WK_DATA = {
       "stadion": "Houston",
       "team1": "Nederland",
       "team2": "Zweden",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          5,
+          1
+        ],
+        "ht": [
+          2,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Brian Brobbey",
+          "minuut": "5"
+        },
+        {
+          "naam": "Brian Brobbey",
+          "minuut": "17"
+        },
+        {
+          "naam": "Cody Gakpo",
+          "minuut": "47"
+        },
+        {
+          "naam": "Cody Gakpo",
+          "minuut": "54"
+        },
+        {
+          "naam": "Crysencio Summerville",
+          "minuut": "89"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Anthony Elanga",
+          "minuut": "59"
+        }
+      ]
     },
     {
       "id": 26,
