@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 29,
+  "aantalGespeeld": 30,
   "groepen": [
     {
       "id": "A",
@@ -122,33 +122,33 @@
       "id": "C",
       "stand": [
         {
-          "team": "Schotland",
-          "gespeeld": 1,
+          "team": "Marokko",
+          "gespeeld": 2,
           "w": 1,
-          "g": 0,
+          "g": 1,
           "v": 0,
-          "dv": 1,
-          "dt": 0,
+          "dv": 2,
+          "dt": 1,
           "saldo": 1,
-          "punten": 3,
+          "punten": 4,
           "positie": 1,
           "status": "direct"
         },
         {
-          "team": "Brazilië",
-          "gespeeld": 1,
-          "w": 0,
-          "g": 1,
-          "v": 0,
+          "team": "Schotland",
+          "gespeeld": 2,
+          "w": 1,
+          "g": 0,
+          "v": 1,
           "dv": 1,
           "dt": 1,
           "saldo": 0,
-          "punten": 1,
+          "punten": 3,
           "positie": 2,
           "status": "direct"
         },
         {
-          "team": "Marokko",
+          "team": "Brazilië",
           "gespeeld": 1,
           "w": 0,
           "g": 1,
@@ -712,7 +712,7 @@
     },
     {
       "groep": "C",
-      "team": "Marokko",
+      "team": "Brazilië",
       "gespeeld": 1,
       "punten": 1,
       "saldo": 0,
@@ -1912,9 +1912,23 @@
       "stadion": "Boston (Foxborough)",
       "team1": "Schotland",
       "team2": "Marokko",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          1
+        ],
+        "ht": [
+          0,
+          1
+        ]
+      },
       "goals1": [],
-      "goals2": []
+      "goals2": [
+        {
+          "naam": "Ismael Saibari",
+          "minuut": "2"
+        }
+      ]
     },
     {
       "id": 15,
