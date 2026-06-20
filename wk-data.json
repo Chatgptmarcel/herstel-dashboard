@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 30,
+  "aantalGespeeld": 31,
   "groepen": [
     {
       "id": "A",
@@ -122,6 +122,19 @@
       "id": "C",
       "stand": [
         {
+          "team": "Brazilië",
+          "gespeeld": 2,
+          "w": 1,
+          "g": 1,
+          "v": 0,
+          "dv": 4,
+          "dt": 1,
+          "saldo": 3,
+          "punten": 4,
+          "positie": 1,
+          "status": "direct"
+        },
+        {
           "team": "Marokko",
           "gespeeld": 2,
           "w": 1,
@@ -131,7 +144,7 @@
           "dt": 1,
           "saldo": 1,
           "punten": 4,
-          "positie": 1,
+          "positie": 2,
           "status": "direct"
         },
         {
@@ -144,31 +157,18 @@
           "dt": 1,
           "saldo": 0,
           "punten": 3,
-          "positie": 2,
-          "status": "direct"
-        },
-        {
-          "team": "Brazilië",
-          "gespeeld": 1,
-          "w": 0,
-          "g": 1,
-          "v": 0,
-          "dv": 1,
-          "dt": 1,
-          "saldo": 0,
-          "punten": 1,
           "positie": 3,
           "status": "derde"
         },
         {
           "team": "Haïti",
-          "gespeeld": 1,
+          "gespeeld": 2,
           "w": 0,
           "g": 0,
-          "v": 1,
+          "v": 2,
           "dv": 0,
-          "dt": 1,
-          "saldo": -1,
+          "dt": 4,
+          "saldo": -4,
           "punten": 0,
           "positie": 4,
           "status": null
@@ -691,28 +691,28 @@
   ],
   "derden": [
     {
+      "groep": "C",
+      "team": "Schotland",
+      "gespeeld": 2,
+      "punten": 3,
+      "saldo": 0,
+      "dv": 1,
+      "positie": 1,
+      "geplaatst": true
+    },
+    {
       "groep": "F",
       "team": "Nederland",
       "gespeeld": 1,
       "punten": 1,
       "saldo": 0,
       "dv": 2,
-      "positie": 1,
+      "positie": 2,
       "geplaatst": true
     },
     {
       "groep": "G",
       "team": "België",
-      "gespeeld": 1,
-      "punten": 1,
-      "saldo": 0,
-      "dv": 1,
-      "positie": 2,
-      "geplaatst": true
-    },
-    {
-      "groep": "C",
-      "team": "Brazilië",
       "gespeeld": 1,
       "punten": 1,
       "saldo": 0,
@@ -1940,8 +1940,30 @@
       "stadion": "Philadelphia",
       "team1": "Brazilië",
       "team2": "Haïti",
-      "score": null,
-      "goals1": [],
+      "score": {
+        "ft": [
+          3,
+          0
+        ],
+        "ht": [
+          3,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Matheus Cunha",
+          "minuut": "23"
+        },
+        {
+          "naam": "Matheus Cunha",
+          "minuut": "36"
+        },
+        {
+          "naam": "Vinícius Júnior",
+          "minuut": "45+3"
+        }
+      ],
       "goals2": []
     },
     {
