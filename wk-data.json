@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 33,
+  "aantalGespeeld": 34,
   "groepen": [
     {
       "id": "A",
@@ -237,26 +237,26 @@
       "stand": [
         {
           "team": "Duitsland",
-          "gespeeld": 1,
-          "w": 1,
+          "gespeeld": 2,
+          "w": 2,
           "g": 0,
           "v": 0,
-          "dv": 7,
-          "dt": 1,
-          "saldo": 6,
-          "punten": 3,
+          "dv": 9,
+          "dt": 2,
+          "saldo": 7,
+          "punten": 6,
           "positie": 1,
           "status": "direct"
         },
         {
           "team": "Ivoorkust",
-          "gespeeld": 1,
+          "gespeeld": 2,
           "w": 1,
           "g": 0,
-          "v": 0,
-          "dv": 1,
-          "dt": 0,
-          "saldo": 1,
+          "v": 1,
+          "dv": 2,
+          "dt": 2,
+          "saldo": 0,
           "punten": 3,
           "positie": 2,
           "status": "direct"
@@ -2054,9 +2054,32 @@
       "stadion": "Toronto",
       "team1": "Duitsland",
       "team2": "Ivoorkust",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          2,
+          1
+        ],
+        "ht": [
+          0,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Deniz Undav",
+          "minuut": "68"
+        },
+        {
+          "naam": "Deniz Undav",
+          "minuut": "90+4"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Franck Kessié",
+          "minuut": "30"
+        }
+      ]
     },
     {
       "id": 27,
