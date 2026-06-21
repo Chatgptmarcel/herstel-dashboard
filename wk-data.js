@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 36,
+  "aantalGespeeld": 37,
   "groepen": [
     {
       "id": "A",
@@ -407,15 +407,15 @@ window.WK_DATA = {
       "id": "H",
       "stand": [
         {
-          "team": "Saoedi-Arabië",
-          "gespeeld": 1,
-          "w": 0,
+          "team": "Spanje",
+          "gespeeld": 2,
+          "w": 1,
           "g": 1,
           "v": 0,
-          "dv": 1,
-          "dt": 1,
-          "saldo": 0,
-          "punten": 1,
+          "dv": 4,
+          "dt": 0,
+          "saldo": 4,
+          "punten": 4,
           "positie": 1,
           "status": "direct"
         },
@@ -446,14 +446,14 @@ window.WK_DATA = {
           "status": "derde"
         },
         {
-          "team": "Spanje",
-          "gespeeld": 1,
+          "team": "Saoedi-Arabië",
+          "gespeeld": 2,
           "w": 0,
           "g": 1,
-          "v": 0,
-          "dv": 0,
-          "dt": 0,
-          "saldo": 0,
+          "v": 1,
+          "dv": 1,
+          "dt": 5,
+          "saldo": -4,
           "punten": 1,
           "positie": 4,
           "status": null
@@ -2154,8 +2154,35 @@ window.WK_DATA = {
       "stadion": "Atlanta",
       "team1": "Spanje",
       "team2": "Saoedi-Arabië",
-      "score": null,
-      "goals1": [],
+      "score": {
+        "ft": [
+          4,
+          0
+        ],
+        "ht": [
+          3,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Lamine Yamal",
+          "minuut": "10"
+        },
+        {
+          "naam": "Mikel Oyarzabal",
+          "minuut": "21"
+        },
+        {
+          "naam": "Mikel Oyarzabal",
+          "minuut": "24"
+        },
+        {
+          "naam": "Hassan Al-Tambakti",
+          "minuut": "49",
+          "eigendoelpunt": true
+        }
+      ],
       "goals2": []
     },
     {
