@@ -338,6 +338,28 @@
         const ORANJE = 'Nederland';
         const isOranje = (w) => w.team1 === ORANJE || w.team2 === ORANJE;
 
+        // FIFA-wereldranglijst (FIFA/Coca-Cola Men's World Ranking, 11 juni 2026).
+        // Vaste lookup op Nederlandse landnaam; placeholders ("Winnaar groep A" e.d.) staan er bewust niet in.
+        const FIFA_RANKING = {
+            'Argentinië': 1, 'Spanje': 2, 'Frankrijk': 3, 'Engeland': 4, 'Portugal': 5,
+            'Brazilië': 6, 'Marokko': 7, 'Nederland': 8, 'België': 9, 'Duitsland': 10,
+            'Kroatië': 11, 'Colombia': 13, 'Mexico': 14, 'Senegal': 15, 'Uruguay': 16,
+            'Verenigde Staten': 17, 'Japan': 18, 'Zwitserland': 19, 'Iran': 20, 'Turkije': 22,
+            'Ecuador': 23, 'Oostenrijk': 24, 'Zuid-Korea': 25, 'Australië': 27, 'Algerije': 28,
+            'Egypte': 29, 'Canada': 30, 'Noorwegen': 31, 'Ivoorkust': 33, 'Panama': 34,
+            'Zweden': 38, 'Tsjechië': 40, 'Paraguay': 41, 'Schotland': 42, 'Tunesië': 45,
+            'DR Congo': 46, 'Oezbekistan': 50, 'Qatar': 56, 'Irak': 57, 'Zuid-Afrika': 60,
+            'Saoedi-Arabië': 61, 'Jordanië': 63, 'Bosnië en Herzegovina': 64, 'Kaapverdië': 67,
+            'Ghana': 73, 'Haïti': 82, 'Curaçao': 83, 'Nieuw-Zeeland': 85,
+        };
+
+        // Kleine FIFA-ranking-badge achter een landnaam (alleen voor echte landen, niet voor placeholders).
+        const FifaRang = ({ naam }) => {
+            const r = FIFA_RANKING[naam];
+            if (!r) return null;
+            return <span title={`FIFA-ranking: #${r}`} className="shrink-0 text-[10px] leading-none text-gray-400 font-semibold tabular-nums">#{r}</span>;
+        };
+
         // Eén wedstrijdregel: team1 — uitslag/tijd — team2, met optioneel doelpuntenmakers.
         const WedstrijdRij = ({ w, toonScorers }) => {
             const st = statusVan(w);
@@ -349,13 +371,19 @@
             return (
                 <div className={`px-2 py-1.5 rounded-lg ${isOranje(w) ? 'bg-orange-50 ring-1 ring-orange-200' : ''}`}>
                     <div className="flex items-center gap-2 text-sm">
-                        <div className="flex-1 text-right truncate font-medium">{w.team1}</div>
+                        <div className="flex-1 min-w-0 flex items-center justify-end gap-1 font-medium">
+                            <span className="truncate">{w.team1}</span>
+                            <FifaRang naam={w.team1} />
+                        </div>
                         <div className="shrink-0 text-center min-w-[3.25rem]">
                             {gespeeld
                                 ? <span className="font-bold tabular-nums">{w.score.ft[0]} – {w.score.ft[1]}</span>
                                 : <span className="text-gray-500 tabular-nums text-xs">{wkTijd(w.aftrapUtc) || 'n.t.b.'}</span>}
                         </div>
-                        <div className="flex-1 truncate font-medium">{w.team2}</div>
+                        <div className="flex-1 min-w-0 flex items-center gap-1 font-medium">
+                            <span className="truncate">{w.team2}</span>
+                            <FifaRang naam={w.team2} />
+                        </div>
                         {st && <span className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded-full font-bold ${st.kleur}`}>{st.label}</span>}
                     </div>
                     {toonScorers && gespeeld && (s1 || s2) && (
