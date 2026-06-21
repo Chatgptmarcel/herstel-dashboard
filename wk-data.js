@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 35,
+  "aantalGespeeld": 36,
   "groepen": [
     {
       "id": "A",
@@ -306,6 +306,19 @@ window.WK_DATA = {
           "status": "direct"
         },
         {
+          "team": "Japan",
+          "gespeeld": 2,
+          "w": 1,
+          "g": 1,
+          "v": 0,
+          "dv": 6,
+          "dt": 2,
+          "saldo": 4,
+          "punten": 4,
+          "positie": 2,
+          "status": "direct"
+        },
+        {
           "team": "Zweden",
           "gespeeld": 2,
           "w": 1,
@@ -315,31 +328,18 @@ window.WK_DATA = {
           "dt": 6,
           "saldo": 0,
           "punten": 3,
-          "positie": 2,
-          "status": "direct"
-        },
-        {
-          "team": "Japan",
-          "gespeeld": 1,
-          "w": 0,
-          "g": 1,
-          "v": 0,
-          "dv": 2,
-          "dt": 2,
-          "saldo": 0,
-          "punten": 1,
           "positie": 3,
           "status": "derde"
         },
         {
           "team": "Tunesië",
-          "gespeeld": 1,
+          "gespeeld": 2,
           "w": 0,
           "g": 0,
-          "v": 1,
+          "v": 2,
           "dv": 1,
-          "dt": 5,
-          "saldo": -4,
+          "dt": 9,
+          "saldo": -8,
           "punten": 0,
           "positie": 4,
           "status": null
@@ -691,13 +691,23 @@ window.WK_DATA = {
   ],
   "derden": [
     {
+      "groep": "F",
+      "team": "Zweden",
+      "gespeeld": 2,
+      "punten": 3,
+      "saldo": 0,
+      "dv": 6,
+      "positie": 1,
+      "geplaatst": true
+    },
+    {
       "groep": "C",
       "team": "Schotland",
       "gespeeld": 2,
       "punten": 3,
       "saldo": 0,
       "dv": 1,
-      "positie": 1,
+      "positie": 2,
       "geplaatst": true
     },
     {
@@ -706,16 +716,6 @@ window.WK_DATA = {
       "gespeeld": 2,
       "punten": 3,
       "saldo": -2,
-      "dv": 2,
-      "positie": 2,
-      "geplaatst": true
-    },
-    {
-      "groep": "F",
-      "team": "Japan",
-      "gespeeld": 1,
-      "punten": 1,
-      "saldo": 0,
       "dv": 2,
       "positie": 3,
       "geplaatst": true
@@ -2114,9 +2114,35 @@ window.WK_DATA = {
       "stadion": "Monterrey (Guadalupe)",
       "team1": "Tunesië",
       "team2": "Japan",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          4
+        ],
+        "ht": [
+          0,
+          2
+        ]
+      },
       "goals1": [],
-      "goals2": []
+      "goals2": [
+        {
+          "naam": "Daichi Kamada",
+          "minuut": "4"
+        },
+        {
+          "naam": "Ayase Ueda",
+          "minuut": "31"
+        },
+        {
+          "naam": "Junya Ito",
+          "minuut": "69"
+        },
+        {
+          "naam": "Ayase Ueda",
+          "minuut": "83"
+        }
+      ]
     },
     {
       "id": 44,
