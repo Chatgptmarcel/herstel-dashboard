@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 37,
+  "aantalGespeeld": 38,
   "groepen": [
     {
       "id": "A",
@@ -351,15 +351,28 @@
       "stand": [
         {
           "team": "Iran",
-          "gespeeld": 1,
+          "gespeeld": 2,
           "w": 0,
-          "g": 1,
+          "g": 2,
           "v": 0,
           "dv": 2,
           "dt": 2,
           "saldo": 0,
-          "punten": 1,
+          "punten": 2,
           "positie": 1,
+          "status": "direct"
+        },
+        {
+          "team": "België",
+          "gespeeld": 2,
+          "w": 0,
+          "g": 2,
+          "v": 0,
+          "dv": 1,
+          "dt": 1,
+          "saldo": 0,
+          "punten": 2,
+          "positie": 2,
           "status": "direct"
         },
         {
@@ -370,19 +383,6 @@
           "v": 0,
           "dv": 2,
           "dt": 2,
-          "saldo": 0,
-          "punten": 1,
-          "positie": 2,
-          "status": "direct"
-        },
-        {
-          "team": "België",
-          "gespeeld": 1,
-          "w": 0,
-          "g": 1,
-          "v": 0,
-          "dv": 1,
-          "dt": 1,
           "saldo": 0,
           "punten": 1,
           "positie": 3,
@@ -722,11 +722,11 @@
     },
     {
       "groep": "G",
-      "team": "België",
+      "team": "Nieuw-Zeeland",
       "gespeeld": 1,
       "punten": 1,
       "saldo": 0,
-      "dv": 1,
+      "dv": 2,
       "positie": 4,
       "geplaatst": true
     },
@@ -2195,7 +2195,16 @@
       "stadion": "Los Angeles (Inglewood)",
       "team1": "België",
       "team2": "Iran",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          0
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
       "goals1": [],
       "goals2": []
     },
