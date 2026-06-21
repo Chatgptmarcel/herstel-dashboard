@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 34,
+  "aantalGespeeld": 35,
   "groepen": [
     {
       "id": "A",
@@ -263,27 +263,27 @@ window.WK_DATA = {
         },
         {
           "team": "Ecuador",
-          "gespeeld": 1,
+          "gespeeld": 2,
           "w": 0,
-          "g": 0,
+          "g": 1,
           "v": 1,
           "dv": 0,
           "dt": 1,
           "saldo": -1,
-          "punten": 0,
+          "punten": 1,
           "positie": 3,
           "status": "derde"
         },
         {
           "team": "Curaçao",
-          "gespeeld": 1,
+          "gespeeld": 2,
           "w": 0,
-          "g": 0,
+          "g": 1,
           "v": 1,
           "dv": 1,
           "dt": 7,
           "saldo": -6,
-          "punten": 0,
+          "punten": 1,
           "positie": 4,
           "status": null
         }
@@ -761,22 +761,22 @@ window.WK_DATA = {
       "geplaatst": true
     },
     {
+      "groep": "E",
+      "team": "Ecuador",
+      "gespeeld": 2,
+      "punten": 1,
+      "saldo": -1,
+      "dv": 0,
+      "positie": 8,
+      "geplaatst": true
+    },
+    {
       "groep": "B",
       "team": "Bosnië en Herzegovina",
       "gespeeld": 2,
       "punten": 1,
       "saldo": -3,
       "dv": 2,
-      "positie": 8,
-      "geplaatst": true
-    },
-    {
-      "groep": "E",
-      "team": "Ecuador",
-      "gespeeld": 1,
-      "punten": 0,
-      "saldo": -1,
-      "dv": 0,
       "positie": 9,
       "geplaatst": false
     },
@@ -2091,7 +2091,16 @@ window.WK_DATA = {
       "stadion": "Kansas City",
       "team1": "Ecuador",
       "team2": "Curaçao",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          0
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
       "goals1": [],
       "goals2": []
     },
