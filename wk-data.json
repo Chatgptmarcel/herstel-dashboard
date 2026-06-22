@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 38,
+  "aantalGespeeld": 40,
   "groepen": [
     {
       "id": "A",
@@ -350,6 +350,19 @@
       "id": "G",
       "stand": [
         {
+          "team": "Egypte",
+          "gespeeld": 2,
+          "w": 1,
+          "g": 1,
+          "v": 0,
+          "dv": 4,
+          "dt": 2,
+          "saldo": 2,
+          "punten": 4,
+          "positie": 1,
+          "status": "direct"
+        },
+        {
           "team": "Iran",
           "gespeeld": 2,
           "w": 0,
@@ -359,7 +372,7 @@
           "dt": 2,
           "saldo": 0,
           "punten": 2,
-          "positie": 1,
+          "positie": 2,
           "status": "direct"
         },
         {
@@ -372,31 +385,18 @@
           "dt": 1,
           "saldo": 0,
           "punten": 2,
-          "positie": 2,
-          "status": "direct"
-        },
-        {
-          "team": "Nieuw-Zeeland",
-          "gespeeld": 1,
-          "w": 0,
-          "g": 1,
-          "v": 0,
-          "dv": 2,
-          "dt": 2,
-          "saldo": 0,
-          "punten": 1,
           "positie": 3,
           "status": "derde"
         },
         {
-          "team": "Egypte",
-          "gespeeld": 1,
+          "team": "Nieuw-Zeeland",
+          "gespeeld": 2,
           "w": 0,
           "g": 1,
-          "v": 0,
-          "dv": 1,
-          "dt": 1,
-          "saldo": 0,
+          "v": 1,
+          "dv": 3,
+          "dt": 5,
+          "saldo": -2,
           "punten": 1,
           "positie": 4,
           "status": null
@@ -421,27 +421,27 @@
         },
         {
           "team": "Uruguay",
-          "gespeeld": 1,
+          "gespeeld": 2,
           "w": 0,
-          "g": 1,
+          "g": 2,
           "v": 0,
-          "dv": 1,
-          "dt": 1,
+          "dv": 3,
+          "dt": 3,
           "saldo": 0,
-          "punten": 1,
+          "punten": 2,
           "positie": 2,
           "status": "direct"
         },
         {
           "team": "Kaapverdië",
-          "gespeeld": 1,
+          "gespeeld": 2,
           "w": 0,
-          "g": 1,
+          "g": 2,
           "v": 0,
-          "dv": 0,
-          "dt": 0,
+          "dv": 2,
+          "dt": 2,
           "saldo": 0,
-          "punten": 1,
+          "punten": 2,
           "positie": 3,
           "status": "derde"
         },
@@ -721,13 +721,23 @@
       "geplaatst": true
     },
     {
-      "groep": "G",
-      "team": "Nieuw-Zeeland",
-      "gespeeld": 1,
-      "punten": 1,
+      "groep": "H",
+      "team": "Kaapverdië",
+      "gespeeld": 2,
+      "punten": 2,
       "saldo": 0,
       "dv": 2,
       "positie": 4,
+      "geplaatst": true
+    },
+    {
+      "groep": "G",
+      "team": "België",
+      "gespeeld": 2,
+      "punten": 2,
+      "saldo": 0,
+      "dv": 1,
+      "positie": 5,
       "geplaatst": true
     },
     {
@@ -737,16 +747,6 @@
       "punten": 1,
       "saldo": 0,
       "dv": 1,
-      "positie": 5,
-      "geplaatst": true
-    },
-    {
-      "groep": "H",
-      "team": "Kaapverdië",
-      "gespeeld": 1,
-      "punten": 1,
-      "saldo": 0,
-      "dv": 0,
       "positie": 6,
       "geplaatst": true
     },
@@ -2218,9 +2218,36 @@
       "stadion": "Miami (Miami Gardens)",
       "team1": "Uruguay",
       "team2": "Kaapverdië",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          2,
+          2
+        ],
+        "ht": [
+          2,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Maxi Araújo",
+          "minuut": "44"
+        },
+        {
+          "naam": "Agustín Cano",
+          "minuut": "45+6"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Kevin Pina",
+          "minuut": "21"
+        },
+        {
+          "naam": "Hélio Varela",
+          "minuut": "61"
+        }
+      ]
     },
     {
       "id": 39,
@@ -2232,9 +2259,36 @@
       "stadion": "Vancouver",
       "team1": "Nieuw-Zeeland",
       "team2": "Egypte",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          3
+        ],
+        "ht": [
+          1,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Finn Surman",
+          "minuut": "15"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Mostafa Zico",
+          "minuut": "58"
+        },
+        {
+          "naam": "Mohamed Salah",
+          "minuut": "67"
+        },
+        {
+          "naam": "Trézéguet",
+          "minuut": "82"
+        }
+      ]
     },
     {
       "id": 56,
