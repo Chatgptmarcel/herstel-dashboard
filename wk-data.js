@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 40,
+  "aantalGespeeld": 41,
   "groepen": [
     {
       "id": "A",
@@ -522,26 +522,26 @@ window.WK_DATA = {
       "stand": [
         {
           "team": "Argentinië",
-          "gespeeld": 1,
-          "w": 1,
+          "gespeeld": 2,
+          "w": 2,
           "g": 0,
           "v": 0,
-          "dv": 3,
+          "dv": 5,
           "dt": 0,
-          "saldo": 3,
-          "punten": 3,
+          "saldo": 5,
+          "punten": 6,
           "positie": 1,
           "status": "direct"
         },
         {
           "team": "Oostenrijk",
-          "gespeeld": 1,
+          "gespeeld": 2,
           "w": 1,
           "g": 0,
-          "v": 0,
+          "v": 1,
           "dv": 3,
-          "dt": 1,
-          "saldo": 2,
+          "dt": 3,
+          "saldo": 0,
           "punten": 3,
           "positie": 2,
           "status": "direct"
@@ -2300,8 +2300,26 @@ window.WK_DATA = {
       "stadion": "Dallas (Arlington)",
       "team1": "Argentinië",
       "team2": "Oostenrijk",
-      "score": null,
-      "goals1": [],
+      "score": {
+        "ft": [
+          2,
+          0
+        ],
+        "ht": [
+          1,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Lionel Messi",
+          "minuut": "38"
+        },
+        {
+          "naam": "Lionel Messi",
+          "minuut": "90+5"
+        }
+      ],
       "goals2": []
     },
     {
