@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 44,
+  "aantalGespeeld": 45,
   "groepen": [
     {
       "id": "A",
@@ -578,6 +578,19 @@ window.WK_DATA = {
       "id": "K",
       "stand": [
         {
+          "team": "Portugal",
+          "gespeeld": 2,
+          "w": 1,
+          "g": 1,
+          "v": 0,
+          "dv": 6,
+          "dt": 1,
+          "saldo": 5,
+          "punten": 4,
+          "positie": 1,
+          "status": "direct"
+        },
+        {
           "team": "Colombia",
           "gespeeld": 1,
           "w": 1,
@@ -587,24 +600,11 @@ window.WK_DATA = {
           "dt": 1,
           "saldo": 2,
           "punten": 3,
-          "positie": 1,
-          "status": "direct"
-        },
-        {
-          "team": "DR Congo",
-          "gespeeld": 1,
-          "w": 0,
-          "g": 1,
-          "v": 0,
-          "dv": 1,
-          "dt": 1,
-          "saldo": 0,
-          "punten": 1,
           "positie": 2,
           "status": "direct"
         },
         {
-          "team": "Portugal",
+          "team": "DR Congo",
           "gespeeld": 1,
           "w": 0,
           "g": 1,
@@ -618,13 +618,13 @@ window.WK_DATA = {
         },
         {
           "team": "Oezbekistan",
-          "gespeeld": 1,
+          "gespeeld": 2,
           "w": 0,
           "g": 0,
-          "v": 1,
+          "v": 2,
           "dv": 1,
-          "dt": 3,
-          "saldo": -2,
+          "dt": 8,
+          "saldo": -7,
           "punten": 0,
           "positie": 4,
           "status": null
@@ -752,7 +752,7 @@ window.WK_DATA = {
     },
     {
       "groep": "K",
-      "team": "Portugal",
+      "team": "DR Congo",
       "gespeeld": 1,
       "punten": 1,
       "saldo": 0,
@@ -2450,8 +2450,39 @@ window.WK_DATA = {
       "stadion": "Houston",
       "team1": "Portugal",
       "team2": "Oezbekistan",
-      "score": null,
-      "goals1": [],
+      "score": {
+        "ft": [
+          5,
+          0
+        ],
+        "ht": [
+          3,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Cristiano Ronaldo",
+          "minuut": "6"
+        },
+        {
+          "naam": "Nuno Mendes",
+          "minuut": "17"
+        },
+        {
+          "naam": "Cristiano Ronaldo",
+          "minuut": "39"
+        },
+        {
+          "naam": "Abduvohid Nematov",
+          "minuut": "60",
+          "eigendoelpunt": true
+        },
+        {
+          "naam": "Rafael Leão",
+          "minuut": "87"
+        }
+      ],
       "goals2": []
     },
     {
