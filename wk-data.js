@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 43,
+  "aantalGespeeld": 44,
   "groepen": [
     {
       "id": "A",
@@ -547,26 +547,26 @@ window.WK_DATA = {
           "status": "direct"
         },
         {
-          "team": "Jordanië",
-          "gespeeld": 1,
-          "w": 0,
+          "team": "Algerije",
+          "gespeeld": 2,
+          "w": 1,
           "g": 0,
           "v": 1,
-          "dv": 1,
-          "dt": 3,
+          "dv": 2,
+          "dt": 4,
           "saldo": -2,
-          "punten": 0,
+          "punten": 3,
           "positie": 3,
           "status": "derde"
         },
         {
-          "team": "Algerije",
-          "gespeeld": 1,
+          "team": "Jordanië",
+          "gespeeld": 2,
           "w": 0,
           "g": 0,
-          "v": 1,
-          "dv": 0,
-          "dt": 3,
+          "v": 2,
+          "dv": 2,
+          "dt": 5,
           "saldo": -3,
           "punten": 0,
           "positie": 4,
@@ -711,13 +711,23 @@ window.WK_DATA = {
       "geplaatst": true
     },
     {
+      "groep": "J",
+      "team": "Algerije",
+      "gespeeld": 2,
+      "punten": 3,
+      "saldo": -2,
+      "dv": 2,
+      "positie": 3,
+      "geplaatst": true
+    },
+    {
       "groep": "D",
       "team": "Paraguay",
       "gespeeld": 2,
       "punten": 3,
       "saldo": -2,
       "dv": 2,
-      "positie": 3,
+      "positie": 4,
       "geplaatst": true
     },
     {
@@ -727,7 +737,7 @@ window.WK_DATA = {
       "punten": 2,
       "saldo": 0,
       "dv": 2,
-      "positie": 4,
+      "positie": 5,
       "geplaatst": true
     },
     {
@@ -737,7 +747,7 @@ window.WK_DATA = {
       "punten": 2,
       "saldo": 0,
       "dv": 1,
-      "positie": 5,
+      "positie": 6,
       "geplaatst": true
     },
     {
@@ -747,7 +757,7 @@ window.WK_DATA = {
       "punten": 1,
       "saldo": 0,
       "dv": 1,
-      "positie": 6,
+      "positie": 7,
       "geplaatst": true
     },
     {
@@ -757,7 +767,7 @@ window.WK_DATA = {
       "punten": 1,
       "saldo": -1,
       "dv": 2,
-      "positie": 7,
+      "positie": 8,
       "geplaatst": true
     },
     {
@@ -767,8 +777,8 @@ window.WK_DATA = {
       "punten": 1,
       "saldo": -1,
       "dv": 0,
-      "positie": 8,
-      "geplaatst": true
+      "positie": 9,
+      "geplaatst": false
     },
     {
       "groep": "B",
@@ -777,7 +787,7 @@ window.WK_DATA = {
       "punten": 1,
       "saldo": -3,
       "dv": 2,
-      "positie": 9,
+      "positie": 10,
       "geplaatst": false
     },
     {
@@ -787,16 +797,6 @@ window.WK_DATA = {
       "punten": 0,
       "saldo": -1,
       "dv": 0,
-      "positie": 10,
-      "geplaatst": false
-    },
-    {
-      "groep": "J",
-      "team": "Jordanië",
-      "gespeeld": 1,
-      "punten": 0,
-      "saldo": -2,
-      "dv": 1,
       "positie": 11,
       "geplaatst": false
     },
@@ -2413,9 +2413,32 @@ window.WK_DATA = {
       "stadion": "San Francisco Bay Area (Santa Clara)",
       "team1": "Jordanië",
       "team2": "Algerije",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          2
+        ],
+        "ht": [
+          1,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Nizar Al-Rashdan",
+          "minuut": "36"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Nadhir Benbouali",
+          "minuut": "69"
+        },
+        {
+          "naam": "Amine Gouiri",
+          "minuut": "82"
+        }
+      ]
     },
     {
       "id": 62,
