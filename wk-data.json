@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 41,
+  "aantalGespeeld": 43,
   "groepen": [
     {
       "id": "A",
@@ -464,53 +464,53 @@
       "id": "I",
       "stand": [
         {
-          "team": "Noorwegen",
-          "gespeeld": 1,
-          "w": 1,
+          "team": "Frankrijk",
+          "gespeeld": 2,
+          "w": 2,
           "g": 0,
           "v": 0,
-          "dv": 4,
+          "dv": 6,
           "dt": 1,
-          "saldo": 3,
-          "punten": 3,
+          "saldo": 5,
+          "punten": 6,
           "positie": 1,
           "status": "direct"
         },
         {
-          "team": "Frankrijk",
-          "gespeeld": 1,
-          "w": 1,
+          "team": "Noorwegen",
+          "gespeeld": 2,
+          "w": 2,
           "g": 0,
           "v": 0,
-          "dv": 3,
-          "dt": 1,
-          "saldo": 2,
-          "punten": 3,
+          "dv": 7,
+          "dt": 3,
+          "saldo": 4,
+          "punten": 6,
           "positie": 2,
           "status": "direct"
         },
         {
           "team": "Senegal",
-          "gespeeld": 1,
+          "gespeeld": 2,
           "w": 0,
           "g": 0,
-          "v": 1,
-          "dv": 1,
-          "dt": 3,
-          "saldo": -2,
+          "v": 2,
+          "dv": 3,
+          "dt": 6,
+          "saldo": -3,
           "punten": 0,
           "positie": 3,
           "status": "derde"
         },
         {
           "team": "Irak",
-          "gespeeld": 1,
+          "gespeeld": 2,
           "w": 0,
           "g": 0,
-          "v": 1,
+          "v": 2,
           "dv": 1,
-          "dt": 4,
-          "saldo": -3,
+          "dt": 7,
+          "saldo": -6,
           "punten": 0,
           "positie": 4,
           "status": null
@@ -803,10 +803,10 @@
     {
       "groep": "I",
       "team": "Senegal",
-      "gespeeld": 1,
+      "gespeeld": 2,
       "punten": 0,
-      "saldo": -2,
-      "dv": 1,
+      "saldo": -3,
+      "dv": 3,
       "positie": 12,
       "geplaatst": false
     }
@@ -2332,8 +2332,30 @@
       "stadion": "Philadelphia",
       "team1": "Frankrijk",
       "team2": "Irak",
-      "score": null,
-      "goals1": [],
+      "score": {
+        "ft": [
+          3,
+          0
+        ],
+        "ht": [
+          1,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Kylian Mbappé",
+          "minuut": "14"
+        },
+        {
+          "naam": "Kylian Mbappé",
+          "minuut": "54"
+        },
+        {
+          "naam": "Ousmane Dembélé",
+          "minuut": "66"
+        }
+      ],
       "goals2": []
     },
     {
@@ -2346,9 +2368,40 @@
       "stadion": "New York/New Jersey (East Rutherford)",
       "team1": "Noorwegen",
       "team2": "Senegal",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          3,
+          2
+        ],
+        "ht": [
+          1,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Marcus Holmgren Pedersen",
+          "minuut": "43"
+        },
+        {
+          "naam": "Erling Haaland",
+          "minuut": "48"
+        },
+        {
+          "naam": "Erling Haaland",
+          "minuut": "58"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Ismaïla Sarr",
+          "minuut": "53"
+        },
+        {
+          "naam": "Ismaïla Sarr",
+          "minuut": "90+3"
+        }
+      ]
     },
     {
       "id": 57,
