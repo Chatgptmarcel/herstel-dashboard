@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 45,
+  "aantalGespeeld": 46,
   "groepen": [
     {
       "id": "A",
@@ -636,27 +636,27 @@
       "stand": [
         {
           "team": "Engeland",
-          "gespeeld": 1,
+          "gespeeld": 2,
           "w": 1,
-          "g": 0,
+          "g": 1,
           "v": 0,
           "dv": 4,
           "dt": 2,
           "saldo": 2,
-          "punten": 3,
+          "punten": 4,
           "positie": 1,
           "status": "direct"
         },
         {
           "team": "Ghana",
-          "gespeeld": 1,
+          "gespeeld": 2,
           "w": 1,
-          "g": 0,
+          "g": 1,
           "v": 0,
           "dv": 1,
           "dt": 0,
           "saldo": 1,
-          "punten": 3,
+          "punten": 4,
           "positie": 2,
           "status": "direct"
         },
@@ -2495,7 +2495,16 @@
       "stadion": "Boston (Foxborough)",
       "team1": "Engeland",
       "team2": "Ghana",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          0
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
       "goals1": [],
       "goals2": []
     },
