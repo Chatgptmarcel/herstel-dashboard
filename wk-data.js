@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 46,
+  "aantalGespeeld": 47,
   "groepen": [
     {
       "id": "A",
@@ -661,26 +661,26 @@ window.WK_DATA = {
           "status": "direct"
         },
         {
-          "team": "Panama",
-          "gespeeld": 1,
-          "w": 0,
+          "team": "Kroatië",
+          "gespeeld": 2,
+          "w": 1,
           "g": 0,
           "v": 1,
-          "dv": 0,
-          "dt": 1,
+          "dv": 3,
+          "dt": 4,
           "saldo": -1,
-          "punten": 0,
+          "punten": 3,
           "positie": 3,
           "status": "derde"
         },
         {
-          "team": "Kroatië",
-          "gespeeld": 1,
+          "team": "Panama",
+          "gespeeld": 2,
           "w": 0,
           "g": 0,
-          "v": 1,
-          "dv": 2,
-          "dt": 4,
+          "v": 2,
+          "dv": 0,
+          "dt": 2,
           "saldo": -2,
           "punten": 0,
           "positie": 4,
@@ -711,13 +711,23 @@ window.WK_DATA = {
       "geplaatst": true
     },
     {
+      "groep": "L",
+      "team": "Kroatië",
+      "gespeeld": 2,
+      "punten": 3,
+      "saldo": -1,
+      "dv": 3,
+      "positie": 3,
+      "geplaatst": true
+    },
+    {
       "groep": "J",
       "team": "Algerije",
       "gespeeld": 2,
       "punten": 3,
       "saldo": -2,
       "dv": 2,
-      "positie": 3,
+      "positie": 4,
       "geplaatst": true
     },
     {
@@ -727,7 +737,7 @@ window.WK_DATA = {
       "punten": 3,
       "saldo": -2,
       "dv": 2,
-      "positie": 4,
+      "positie": 5,
       "geplaatst": true
     },
     {
@@ -737,7 +747,7 @@ window.WK_DATA = {
       "punten": 2,
       "saldo": 0,
       "dv": 2,
-      "positie": 5,
+      "positie": 6,
       "geplaatst": true
     },
     {
@@ -747,7 +757,7 @@ window.WK_DATA = {
       "punten": 2,
       "saldo": 0,
       "dv": 1,
-      "positie": 6,
+      "positie": 7,
       "geplaatst": true
     },
     {
@@ -757,7 +767,7 @@ window.WK_DATA = {
       "punten": 1,
       "saldo": 0,
       "dv": 1,
-      "positie": 7,
+      "positie": 8,
       "geplaatst": true
     },
     {
@@ -767,8 +777,8 @@ window.WK_DATA = {
       "punten": 1,
       "saldo": -1,
       "dv": 2,
-      "positie": 8,
-      "geplaatst": true
+      "positie": 9,
+      "geplaatst": false
     },
     {
       "groep": "E",
@@ -777,7 +787,7 @@ window.WK_DATA = {
       "punten": 1,
       "saldo": -1,
       "dv": 0,
-      "positie": 9,
+      "positie": 10,
       "geplaatst": false
     },
     {
@@ -787,16 +797,6 @@ window.WK_DATA = {
       "punten": 1,
       "saldo": -3,
       "dv": 2,
-      "positie": 10,
-      "geplaatst": false
-    },
-    {
-      "groep": "L",
-      "team": "Panama",
-      "gespeeld": 1,
-      "punten": 0,
-      "saldo": -1,
-      "dv": 0,
       "positie": 11,
       "geplaatst": false
     },
@@ -2518,9 +2518,23 @@ window.WK_DATA = {
       "stadion": "Toronto",
       "team1": "Panama",
       "team2": "Kroatië",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          1
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
       "goals1": [],
-      "goals2": []
+      "goals2": [
+        {
+          "naam": "Ante Budimir",
+          "minuut": "54"
+        }
+      ]
     },
     {
       "id": 63,
