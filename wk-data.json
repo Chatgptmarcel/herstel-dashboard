@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 48,
+  "aantalGespeeld": 50,
   "groepen": [
     {
       "id": "A",
@@ -65,53 +65,53 @@
       "id": "B",
       "stand": [
         {
-          "team": "Canada",
-          "gespeeld": 2,
-          "w": 1,
+          "team": "Zwitserland",
+          "gespeeld": 3,
+          "w": 2,
           "g": 1,
           "v": 0,
           "dv": 7,
-          "dt": 1,
-          "saldo": 6,
-          "punten": 4,
+          "dt": 3,
+          "saldo": 4,
+          "punten": 7,
           "positie": 1,
           "status": "direct"
         },
         {
-          "team": "Zwitserland",
-          "gespeeld": 2,
+          "team": "Canada",
+          "gespeeld": 3,
           "w": 1,
           "g": 1,
-          "v": 0,
-          "dv": 5,
-          "dt": 2,
-          "saldo": 3,
+          "v": 1,
+          "dv": 8,
+          "dt": 3,
+          "saldo": 5,
           "punten": 4,
           "positie": 2,
           "status": "direct"
         },
         {
           "team": "Bosnië en Herzegovina",
-          "gespeeld": 2,
-          "w": 0,
+          "gespeeld": 3,
+          "w": 1,
           "g": 1,
           "v": 1,
-          "dv": 2,
-          "dt": 5,
-          "saldo": -3,
-          "punten": 1,
+          "dv": 5,
+          "dt": 6,
+          "saldo": -1,
+          "punten": 4,
           "positie": 3,
           "status": "derde"
         },
         {
           "team": "Qatar",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 0,
           "g": 1,
-          "v": 1,
-          "dv": 1,
-          "dt": 7,
-          "saldo": -6,
+          "v": 2,
+          "dv": 2,
+          "dt": 10,
+          "saldo": -8,
           "punten": 1,
           "positie": 4,
           "status": null
@@ -691,13 +691,23 @@
   ],
   "derden": [
     {
+      "groep": "B",
+      "team": "Bosnië en Herzegovina",
+      "gespeeld": 3,
+      "punten": 4,
+      "saldo": -1,
+      "dv": 5,
+      "positie": 1,
+      "geplaatst": true
+    },
+    {
       "groep": "F",
       "team": "Zweden",
       "gespeeld": 2,
       "punten": 3,
       "saldo": 0,
       "dv": 6,
-      "positie": 1,
+      "positie": 2,
       "geplaatst": true
     },
     {
@@ -707,7 +717,7 @@
       "punten": 3,
       "saldo": 0,
       "dv": 1,
-      "positie": 2,
+      "positie": 3,
       "geplaatst": true
     },
     {
@@ -717,7 +727,7 @@
       "punten": 3,
       "saldo": -1,
       "dv": 3,
-      "positie": 3,
+      "positie": 4,
       "geplaatst": true
     },
     {
@@ -727,7 +737,7 @@
       "punten": 3,
       "saldo": -2,
       "dv": 2,
-      "positie": 4,
+      "positie": 5,
       "geplaatst": true
     },
     {
@@ -737,7 +747,7 @@
       "punten": 3,
       "saldo": -2,
       "dv": 2,
-      "positie": 5,
+      "positie": 6,
       "geplaatst": true
     },
     {
@@ -747,7 +757,7 @@
       "punten": 2,
       "saldo": 0,
       "dv": 2,
-      "positie": 6,
+      "positie": 7,
       "geplaatst": true
     },
     {
@@ -757,7 +767,7 @@
       "punten": 2,
       "saldo": 0,
       "dv": 1,
-      "positie": 7,
+      "positie": 8,
       "geplaatst": true
     },
     {
@@ -767,8 +777,8 @@
       "punten": 1,
       "saldo": -1,
       "dv": 2,
-      "positie": 8,
-      "geplaatst": true
+      "positie": 9,
+      "geplaatst": false
     },
     {
       "groep": "K",
@@ -777,7 +787,7 @@
       "punten": 1,
       "saldo": -1,
       "dv": 1,
-      "positie": 9,
+      "positie": 10,
       "geplaatst": false
     },
     {
@@ -787,16 +797,6 @@
       "punten": 1,
       "saldo": -1,
       "dv": 0,
-      "positie": 10,
-      "geplaatst": false
-    },
-    {
-      "groep": "B",
-      "team": "Bosnië en Herzegovina",
-      "gespeeld": 2,
-      "punten": 1,
-      "saldo": -3,
-      "dv": 2,
       "positie": 11,
       "geplaatst": false
     },
@@ -2574,9 +2574,32 @@
       "stadion": "Vancouver",
       "team1": "Zwitserland",
       "team2": "Canada",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          2,
+          1
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Rubén Vargas",
+          "minuut": "46"
+        },
+        {
+          "naam": "Johan Manzambi",
+          "minuut": "57"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Promise David",
+          "minuut": "76"
+        }
+      ]
     },
     {
       "id": 11,
@@ -2588,9 +2611,37 @@
       "stadion": "Seattle",
       "team1": "Bosnië en Herzegovina",
       "team2": "Qatar",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          3,
+          1
+        ],
+        "ht": [
+          2,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Kerim Alajbegovic",
+          "minuut": "29"
+        },
+        {
+          "naam": "Mahmoud Abunada",
+          "minuut": "34",
+          "eigendoelpunt": true
+        },
+        {
+          "naam": "Ermin Mahmic",
+          "minuut": "80"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Hassan Al-Haydos",
+          "minuut": "42"
+        }
+      ]
     },
     {
       "id": 16,
