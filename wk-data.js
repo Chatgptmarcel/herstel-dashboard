@@ -1241,6 +1241,10 @@ window.WK_DATA = {
           "minuut": "7"
         },
         {
+          "naam": "Yasin Ayari",
+          "minuut": "90+6"
+        },
+        {
           "naam": "Alexander Isak",
           "minuut": "30"
         },
@@ -1251,10 +1255,6 @@ window.WK_DATA = {
         {
           "naam": "Mattias Svanberg",
           "minuut": "84"
-        },
-        {
-          "naam": "Yasin Ayari",
-          "minuut": "90+6"
         }
       ],
       "goals2": [
@@ -1421,12 +1421,12 @@ window.WK_DATA = {
           "minuut": "66"
         },
         {
-          "naam": "Bradley Barcola",
-          "minuut": "82"
-        },
-        {
           "naam": "Kylian Mbappé",
           "minuut": "90+6"
+        },
+        {
+          "naam": "Bradley Barcola",
+          "minuut": "82"
         }
       ],
       "goals2": [
@@ -1773,12 +1773,12 @@ window.WK_DATA = {
           "minuut": "74"
         },
         {
-          "naam": "Rubén Vargas",
-          "minuut": "84"
-        },
-        {
           "naam": "Johan Manzambi",
           "minuut": "90"
+        },
+        {
+          "naam": "Rubén Vargas",
+          "minuut": "84"
         },
         {
           "naam": "Granit Xhaka",
@@ -2135,12 +2135,12 @@ window.WK_DATA = {
           "minuut": "31"
         },
         {
-          "naam": "Junya Ito",
-          "minuut": "69"
-        },
-        {
           "naam": "Ayase Ueda",
           "minuut": "83"
+        },
+        {
+          "naam": "Junya Ito",
+          "minuut": "69"
         }
       ]
     },
@@ -2466,12 +2466,12 @@ window.WK_DATA = {
           "minuut": "6"
         },
         {
-          "naam": "Nuno Mendes",
-          "minuut": "17"
-        },
-        {
           "naam": "Cristiano Ronaldo",
           "minuut": "39"
+        },
+        {
+          "naam": "Nuno Mendes",
+          "minuut": "17"
         },
         {
           "naam": "Abduvohid Nematov",
