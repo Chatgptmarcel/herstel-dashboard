@@ -2,59 +2,59 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 52,
+  "aantalGespeeld": 54,
   "groepen": [
     {
       "id": "A",
       "stand": [
         {
           "team": "Mexico",
-          "gespeeld": 2,
-          "w": 2,
+          "gespeeld": 3,
+          "w": 3,
           "g": 0,
           "v": 0,
-          "dv": 3,
+          "dv": 6,
           "dt": 0,
-          "saldo": 3,
-          "punten": 6,
+          "saldo": 6,
+          "punten": 9,
           "positie": 1,
           "status": "direct"
         },
         {
-          "team": "Zuid-Korea",
-          "gespeeld": 2,
+          "team": "Zuid-Afrika",
+          "gespeeld": 3,
           "w": 1,
-          "g": 0,
-          "v": 1,
-          "dv": 2,
-          "dt": 2,
-          "saldo": 0,
-          "punten": 3,
-          "positie": 2,
-          "status": "direct"
-        },
-        {
-          "team": "Tsjechië",
-          "gespeeld": 2,
-          "w": 0,
           "g": 1,
           "v": 1,
           "dv": 2,
           "dt": 3,
           "saldo": -1,
-          "punten": 1,
+          "punten": 4,
+          "positie": 2,
+          "status": "direct"
+        },
+        {
+          "team": "Zuid-Korea",
+          "gespeeld": 3,
+          "w": 1,
+          "g": 0,
+          "v": 2,
+          "dv": 2,
+          "dt": 3,
+          "saldo": -1,
+          "punten": 3,
           "positie": 3,
           "status": "derde"
         },
         {
-          "team": "Zuid-Afrika",
-          "gespeeld": 2,
+          "team": "Tsjechië",
+          "gespeeld": 3,
           "w": 0,
           "g": 1,
-          "v": 1,
-          "dv": 1,
-          "dt": 3,
-          "saldo": -2,
+          "v": 2,
+          "dv": 2,
+          "dt": 6,
+          "saldo": -4,
           "punten": 1,
           "positie": 4,
           "status": null
@@ -721,13 +721,23 @@
       "geplaatst": true
     },
     {
+      "groep": "A",
+      "team": "Zuid-Korea",
+      "gespeeld": 3,
+      "punten": 3,
+      "saldo": -1,
+      "dv": 2,
+      "positie": 4,
+      "geplaatst": true
+    },
+    {
       "groep": "J",
       "team": "Algerije",
       "gespeeld": 2,
       "punten": 3,
       "saldo": -2,
       "dv": 2,
-      "positie": 4,
+      "positie": 5,
       "geplaatst": true
     },
     {
@@ -737,7 +747,7 @@
       "punten": 3,
       "saldo": -2,
       "dv": 2,
-      "positie": 5,
+      "positie": 6,
       "geplaatst": true
     },
     {
@@ -747,7 +757,7 @@
       "punten": 3,
       "saldo": -3,
       "dv": 1,
-      "positie": 6,
+      "positie": 7,
       "geplaatst": true
     },
     {
@@ -757,7 +767,7 @@
       "punten": 2,
       "saldo": 0,
       "dv": 2,
-      "positie": 7,
+      "positie": 8,
       "geplaatst": true
     },
     {
@@ -767,16 +777,6 @@
       "punten": 2,
       "saldo": 0,
       "dv": 1,
-      "positie": 8,
-      "geplaatst": true
-    },
-    {
-      "groep": "A",
-      "team": "Tsjechië",
-      "gespeeld": 2,
-      "punten": 1,
-      "saldo": -1,
-      "dv": 2,
       "positie": 9,
       "geplaatst": false
     },
@@ -2739,9 +2739,31 @@
       "stadion": "Mexico City",
       "team1": "Tsjechië",
       "team2": "Mexico",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          3
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
       "goals1": [],
-      "goals2": []
+      "goals2": [
+        {
+          "naam": "Mateo Chávez",
+          "minuut": "55"
+        },
+        {
+          "naam": "Julián Quiñones",
+          "minuut": "61"
+        },
+        {
+          "naam": "Álvaro Fidalgo",
+          "minuut": "90+4"
+        }
+      ]
     },
     {
       "id": 5,
@@ -2753,8 +2775,22 @@
       "stadion": "Monterrey (Guadalupe)",
       "team1": "Zuid-Afrika",
       "team2": "Zuid-Korea",
-      "score": null,
-      "goals1": [],
+      "score": {
+        "ft": [
+          1,
+          0
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Thapelo Maseko",
+          "minuut": "63"
+        }
+      ],
       "goals2": []
     },
     {
