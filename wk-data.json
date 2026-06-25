@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 50,
+  "aantalGespeeld": 52,
   "groepen": [
     {
       "id": "A",
@@ -123,52 +123,52 @@
       "stand": [
         {
           "team": "Brazilië",
-          "gespeeld": 2,
-          "w": 1,
+          "gespeeld": 3,
+          "w": 2,
           "g": 1,
           "v": 0,
-          "dv": 4,
+          "dv": 7,
           "dt": 1,
-          "saldo": 3,
-          "punten": 4,
+          "saldo": 6,
+          "punten": 7,
           "positie": 1,
           "status": "direct"
         },
         {
           "team": "Marokko",
-          "gespeeld": 2,
-          "w": 1,
+          "gespeeld": 3,
+          "w": 2,
           "g": 1,
           "v": 0,
-          "dv": 2,
-          "dt": 1,
-          "saldo": 1,
-          "punten": 4,
+          "dv": 6,
+          "dt": 3,
+          "saldo": 3,
+          "punten": 7,
           "positie": 2,
           "status": "direct"
         },
         {
           "team": "Schotland",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 1,
           "g": 0,
-          "v": 1,
+          "v": 2,
           "dv": 1,
-          "dt": 1,
-          "saldo": 0,
+          "dt": 4,
+          "saldo": -3,
           "punten": 3,
           "positie": 3,
           "status": "derde"
         },
         {
           "team": "Haïti",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 0,
           "g": 0,
-          "v": 2,
-          "dv": 0,
-          "dt": 4,
-          "saldo": -4,
+          "v": 3,
+          "dv": 2,
+          "dt": 8,
+          "saldo": -6,
           "punten": 0,
           "positie": 4,
           "status": null
@@ -711,23 +711,13 @@
       "geplaatst": true
     },
     {
-      "groep": "C",
-      "team": "Schotland",
-      "gespeeld": 2,
-      "punten": 3,
-      "saldo": 0,
-      "dv": 1,
-      "positie": 3,
-      "geplaatst": true
-    },
-    {
       "groep": "L",
       "team": "Kroatië",
       "gespeeld": 2,
       "punten": 3,
       "saldo": -1,
       "dv": 3,
-      "positie": 4,
+      "positie": 3,
       "geplaatst": true
     },
     {
@@ -737,7 +727,7 @@
       "punten": 3,
       "saldo": -2,
       "dv": 2,
-      "positie": 5,
+      "positie": 4,
       "geplaatst": true
     },
     {
@@ -747,6 +737,16 @@
       "punten": 3,
       "saldo": -2,
       "dv": 2,
+      "positie": 5,
+      "geplaatst": true
+    },
+    {
+      "groep": "C",
+      "team": "Schotland",
+      "gespeeld": 3,
+      "punten": 3,
+      "saldo": -3,
+      "dv": 1,
       "positie": 6,
       "geplaatst": true
     },
@@ -2653,9 +2653,31 @@
       "stadion": "Miami (Miami Gardens)",
       "team1": "Schotland",
       "team2": "Brazilië",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          3
+        ],
+        "ht": [
+          0,
+          2
+        ]
+      },
       "goals1": [],
-      "goals2": []
+      "goals2": [
+        {
+          "naam": "Vinícius Júnior",
+          "minuut": "7"
+        },
+        {
+          "naam": "Vinícius Júnior",
+          "minuut": "45+3"
+        },
+        {
+          "naam": "Matheus Cunha",
+          "minuut": "60"
+        }
+      ]
     },
     {
       "id": 17,
@@ -2667,9 +2689,45 @@
       "stadion": "Atlanta",
       "team1": "Marokko",
       "team2": "Haïti",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          4,
+          2
+        ],
+        "ht": [
+          2,
+          2
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Achraf Hakimi",
+          "minuut": "39"
+        },
+        {
+          "naam": "Ismael Saibari",
+          "minuut": "45+1"
+        },
+        {
+          "naam": "Soufiane Rahimi",
+          "minuut": "78"
+        },
+        {
+          "naam": "Gessime Yassine",
+          "minuut": "89"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Yassine Bounou",
+          "minuut": "10",
+          "eigendoelpunt": true
+        },
+        {
+          "naam": "Wilson Isidor",
+          "minuut": "43"
+        }
+      ]
     },
     {
       "id": 4,
