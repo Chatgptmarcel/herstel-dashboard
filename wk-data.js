@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 54,
+  "aantalGespeeld": 56,
   "groepen": [
     {
       "id": "A",
@@ -237,52 +237,52 @@ window.WK_DATA = {
       "stand": [
         {
           "team": "Duitsland",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 2,
           "g": 0,
-          "v": 0,
-          "dv": 9,
-          "dt": 2,
-          "saldo": 7,
+          "v": 1,
+          "dv": 10,
+          "dt": 4,
+          "saldo": 6,
           "punten": 6,
           "positie": 1,
           "status": "direct"
         },
         {
           "team": "Ivoorkust",
-          "gespeeld": 2,
-          "w": 1,
+          "gespeeld": 3,
+          "w": 2,
           "g": 0,
           "v": 1,
-          "dv": 2,
+          "dv": 4,
           "dt": 2,
-          "saldo": 0,
-          "punten": 3,
+          "saldo": 2,
+          "punten": 6,
           "positie": 2,
           "status": "direct"
         },
         {
           "team": "Ecuador",
-          "gespeeld": 2,
-          "w": 0,
+          "gespeeld": 3,
+          "w": 1,
           "g": 1,
           "v": 1,
-          "dv": 0,
-          "dt": 1,
-          "saldo": -1,
-          "punten": 1,
+          "dv": 2,
+          "dt": 2,
+          "saldo": 0,
+          "punten": 4,
           "positie": 3,
           "status": "derde"
         },
         {
           "team": "Curaçao",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 0,
           "g": 1,
-          "v": 1,
+          "v": 2,
           "dv": 1,
-          "dt": 7,
-          "saldo": -6,
+          "dt": 9,
+          "saldo": -8,
           "punten": 1,
           "positie": 4,
           "status": null
@@ -691,13 +691,23 @@ window.WK_DATA = {
   ],
   "derden": [
     {
+      "groep": "E",
+      "team": "Ecuador",
+      "gespeeld": 3,
+      "punten": 4,
+      "saldo": 0,
+      "dv": 2,
+      "positie": 1,
+      "geplaatst": true
+    },
+    {
       "groep": "B",
       "team": "Bosnië en Herzegovina",
       "gespeeld": 3,
       "punten": 4,
       "saldo": -1,
       "dv": 5,
-      "positie": 1,
+      "positie": 2,
       "geplaatst": true
     },
     {
@@ -707,7 +717,7 @@ window.WK_DATA = {
       "punten": 3,
       "saldo": 0,
       "dv": 6,
-      "positie": 2,
+      "positie": 3,
       "geplaatst": true
     },
     {
@@ -717,7 +727,7 @@ window.WK_DATA = {
       "punten": 3,
       "saldo": -1,
       "dv": 3,
-      "positie": 3,
+      "positie": 4,
       "geplaatst": true
     },
     {
@@ -727,7 +737,7 @@ window.WK_DATA = {
       "punten": 3,
       "saldo": -1,
       "dv": 2,
-      "positie": 4,
+      "positie": 5,
       "geplaatst": true
     },
     {
@@ -737,7 +747,7 @@ window.WK_DATA = {
       "punten": 3,
       "saldo": -2,
       "dv": 2,
-      "positie": 5,
+      "positie": 6,
       "geplaatst": true
     },
     {
@@ -747,7 +757,7 @@ window.WK_DATA = {
       "punten": 3,
       "saldo": -2,
       "dv": 2,
-      "positie": 6,
+      "positie": 7,
       "geplaatst": true
     },
     {
@@ -757,7 +767,7 @@ window.WK_DATA = {
       "punten": 3,
       "saldo": -3,
       "dv": 1,
-      "positie": 7,
+      "positie": 8,
       "geplaatst": true
     },
     {
@@ -767,8 +777,8 @@ window.WK_DATA = {
       "punten": 2,
       "saldo": 0,
       "dv": 2,
-      "positie": 8,
-      "geplaatst": true
+      "positie": 9,
+      "geplaatst": false
     },
     {
       "groep": "G",
@@ -777,7 +787,7 @@ window.WK_DATA = {
       "punten": 2,
       "saldo": 0,
       "dv": 1,
-      "positie": 9,
+      "positie": 10,
       "geplaatst": false
     },
     {
@@ -787,16 +797,6 @@ window.WK_DATA = {
       "punten": 1,
       "saldo": -1,
       "dv": 1,
-      "positie": 10,
-      "geplaatst": false
-    },
-    {
-      "groep": "E",
-      "team": "Ecuador",
-      "gespeeld": 2,
-      "punten": 1,
-      "saldo": -1,
-      "dv": 0,
       "positie": 11,
       "geplaatst": false
     },
@@ -2803,9 +2803,27 @@ window.WK_DATA = {
       "stadion": "Philadelphia",
       "team1": "Curaçao",
       "team2": "Ivoorkust",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          2
+        ],
+        "ht": [
+          0,
+          1
+        ]
+      },
       "goals1": [],
-      "goals2": []
+      "goals2": [
+        {
+          "naam": "Nicolas Pépé",
+          "minuut": "7"
+        },
+        {
+          "naam": "Nicolas Pépé",
+          "minuut": "64"
+        }
+      ]
     },
     {
       "id": 29,
@@ -2817,9 +2835,32 @@ window.WK_DATA = {
       "stadion": "New York/New Jersey (East Rutherford)",
       "team1": "Ecuador",
       "team2": "Duitsland",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          2,
+          1
+        ],
+        "ht": [
+          1,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Nilson Angulo",
+          "minuut": "9"
+        },
+        {
+          "naam": "Gonzalo Plata",
+          "minuut": "77"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Leroy Sané",
+          "minuut": "2"
+        }
+      ]
     },
     {
       "id": 34,
