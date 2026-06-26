@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 56,
+  "aantalGespeeld": 58,
   "groepen": [
     {
       "id": "A",
@@ -294,52 +294,52 @@
       "stand": [
         {
           "team": "Nederland",
-          "gespeeld": 2,
-          "w": 1,
+          "gespeeld": 3,
+          "w": 2,
           "g": 1,
           "v": 0,
-          "dv": 7,
-          "dt": 3,
-          "saldo": 4,
-          "punten": 4,
+          "dv": 10,
+          "dt": 4,
+          "saldo": 6,
+          "punten": 7,
           "positie": 1,
           "status": "direct"
         },
         {
           "team": "Japan",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 1,
-          "g": 1,
+          "g": 2,
           "v": 0,
-          "dv": 6,
-          "dt": 2,
+          "dv": 7,
+          "dt": 3,
           "saldo": 4,
-          "punten": 4,
+          "punten": 5,
           "positie": 2,
           "status": "direct"
         },
         {
           "team": "Zweden",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 1,
-          "g": 0,
+          "g": 1,
           "v": 1,
-          "dv": 6,
-          "dt": 6,
+          "dv": 7,
+          "dt": 7,
           "saldo": 0,
-          "punten": 3,
+          "punten": 4,
           "positie": 3,
           "status": "derde"
         },
         {
           "team": "Tunesië",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 0,
           "g": 0,
-          "v": 2,
-          "dv": 1,
-          "dt": 9,
-          "saldo": -8,
+          "v": 3,
+          "dv": 2,
+          "dt": 12,
+          "saldo": -10,
           "punten": 0,
           "positie": 4,
           "status": null
@@ -691,13 +691,23 @@
   ],
   "derden": [
     {
+      "groep": "F",
+      "team": "Zweden",
+      "gespeeld": 3,
+      "punten": 4,
+      "saldo": 0,
+      "dv": 7,
+      "positie": 1,
+      "geplaatst": true
+    },
+    {
       "groep": "E",
       "team": "Ecuador",
       "gespeeld": 3,
       "punten": 4,
       "saldo": 0,
       "dv": 2,
-      "positie": 1,
+      "positie": 2,
       "geplaatst": true
     },
     {
@@ -707,16 +717,6 @@
       "punten": 4,
       "saldo": -1,
       "dv": 5,
-      "positie": 2,
-      "geplaatst": true
-    },
-    {
-      "groep": "F",
-      "team": "Zweden",
-      "gespeeld": 2,
-      "punten": 3,
-      "saldo": 0,
-      "dv": 6,
       "positie": 3,
       "geplaatst": true
     },
@@ -2872,9 +2872,28 @@
       "stadion": "Dallas (Arlington)",
       "team1": "Japan",
       "team2": "Zweden",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          1
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Daizen Maeda",
+          "minuut": "56"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Anthony Elanga",
+          "minuut": "62"
+        }
+      ]
     },
     {
       "id": 35,
@@ -2886,9 +2905,37 @@
       "stadion": "Kansas City",
       "team1": "Tunesië",
       "team2": "Nederland",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          3
+        ],
+        "ht": [
+          0,
+          2
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Hazem Mastouri",
+          "minuut": "54"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Ellyes Skhiri",
+          "minuut": "3",
+          "eigendoelpunt": true
+        },
+        {
+          "naam": "Brian Brobbey",
+          "minuut": "7"
+        },
+        {
+          "naam": "Jan Paul van Hecke",
+          "minuut": "62"
+        }
+      ]
     },
     {
       "id": 22,
