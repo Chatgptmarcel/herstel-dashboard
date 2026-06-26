@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 58,
+  "aantalGespeeld": 60,
   "groepen": [
     {
       "id": "A",
@@ -180,53 +180,53 @@ window.WK_DATA = {
       "stand": [
         {
           "team": "Verenigde Staten",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 2,
           "g": 0,
-          "v": 0,
-          "dv": 6,
-          "dt": 1,
-          "saldo": 5,
+          "v": 1,
+          "dv": 8,
+          "dt": 4,
+          "saldo": 4,
           "punten": 6,
           "positie": 1,
           "status": "direct"
         },
         {
           "team": "Australië",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 1,
-          "g": 0,
+          "g": 1,
           "v": 1,
           "dv": 2,
           "dt": 2,
           "saldo": 0,
-          "punten": 3,
+          "punten": 4,
           "positie": 2,
           "status": "direct"
         },
         {
           "team": "Paraguay",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 1,
-          "g": 0,
+          "g": 1,
           "v": 1,
           "dv": 2,
           "dt": 4,
           "saldo": -2,
-          "punten": 3,
+          "punten": 4,
           "positie": 3,
           "status": "derde"
         },
         {
           "team": "Turkije",
-          "gespeeld": 2,
-          "w": 0,
+          "gespeeld": 3,
+          "w": 1,
           "g": 0,
           "v": 2,
-          "dv": 0,
-          "dt": 3,
-          "saldo": -3,
-          "punten": 0,
+          "dv": 3,
+          "dt": 5,
+          "saldo": -2,
+          "punten": 3,
           "positie": 4,
           "status": null
         }
@@ -721,13 +721,23 @@ window.WK_DATA = {
       "geplaatst": true
     },
     {
+      "groep": "D",
+      "team": "Paraguay",
+      "gespeeld": 3,
+      "punten": 4,
+      "saldo": -2,
+      "dv": 2,
+      "positie": 4,
+      "geplaatst": true
+    },
+    {
       "groep": "L",
       "team": "Kroatië",
       "gespeeld": 2,
       "punten": 3,
       "saldo": -1,
       "dv": 3,
-      "positie": 4,
+      "positie": 5,
       "geplaatst": true
     },
     {
@@ -737,22 +747,12 @@ window.WK_DATA = {
       "punten": 3,
       "saldo": -1,
       "dv": 2,
-      "positie": 5,
+      "positie": 6,
       "geplaatst": true
     },
     {
       "groep": "J",
       "team": "Algerije",
-      "gespeeld": 2,
-      "punten": 3,
-      "saldo": -2,
-      "dv": 2,
-      "positie": 6,
-      "geplaatst": true
-    },
-    {
-      "groep": "D",
-      "team": "Paraguay",
       "gespeeld": 2,
       "punten": 3,
       "saldo": -2,
@@ -2947,9 +2947,40 @@ window.WK_DATA = {
       "stadion": "Los Angeles (Inglewood)",
       "team1": "Turkije",
       "team2": "Verenigde Staten",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          3,
+          2
+        ],
+        "ht": [
+          2,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Arda Güler",
+          "minuut": "10"
+        },
+        {
+          "naam": "Baris Alper Yilmaz",
+          "minuut": "31"
+        },
+        {
+          "naam": "Kaan Ayhan",
+          "minuut": "90+8"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Auston Trusty",
+          "minuut": "3"
+        },
+        {
+          "naam": "Sebastian Berhalter",
+          "minuut": "49"
+        }
+      ]
     },
     {
       "id": 23,
@@ -2961,7 +2992,16 @@ window.WK_DATA = {
       "stadion": "San Francisco Bay Area (Santa Clara)",
       "team1": "Paraguay",
       "team2": "Australië",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          0
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
       "goals1": [],
       "goals2": []
     },
