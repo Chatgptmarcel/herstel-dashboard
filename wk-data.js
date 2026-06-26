@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 60,
+  "aantalGespeeld": 62,
   "groepen": [
     {
       "id": "A",
@@ -465,52 +465,52 @@ window.WK_DATA = {
       "stand": [
         {
           "team": "Frankrijk",
-          "gespeeld": 2,
-          "w": 2,
+          "gespeeld": 3,
+          "w": 3,
           "g": 0,
           "v": 0,
-          "dv": 6,
-          "dt": 1,
-          "saldo": 5,
-          "punten": 6,
+          "dv": 10,
+          "dt": 2,
+          "saldo": 8,
+          "punten": 9,
           "positie": 1,
           "status": "direct"
         },
         {
           "team": "Noorwegen",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 2,
           "g": 0,
-          "v": 0,
-          "dv": 7,
-          "dt": 3,
-          "saldo": 4,
+          "v": 1,
+          "dv": 8,
+          "dt": 7,
+          "saldo": 1,
           "punten": 6,
           "positie": 2,
           "status": "direct"
         },
         {
           "team": "Senegal",
-          "gespeeld": 2,
-          "w": 0,
+          "gespeeld": 3,
+          "w": 1,
           "g": 0,
           "v": 2,
-          "dv": 3,
+          "dv": 8,
           "dt": 6,
-          "saldo": -3,
-          "punten": 0,
+          "saldo": 2,
+          "punten": 3,
           "positie": 3,
           "status": "derde"
         },
         {
           "team": "Irak",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 0,
           "g": 0,
-          "v": 2,
+          "v": 3,
           "dv": 1,
-          "dt": 7,
-          "saldo": -6,
+          "dt": 12,
+          "saldo": -11,
           "punten": 0,
           "positie": 4,
           "status": null
@@ -731,13 +731,23 @@ window.WK_DATA = {
       "geplaatst": true
     },
     {
+      "groep": "I",
+      "team": "Senegal",
+      "gespeeld": 3,
+      "punten": 3,
+      "saldo": 2,
+      "dv": 8,
+      "positie": 5,
+      "geplaatst": true
+    },
+    {
       "groep": "L",
       "team": "Kroatië",
       "gespeeld": 2,
       "punten": 3,
       "saldo": -1,
       "dv": 3,
-      "positie": 5,
+      "positie": 6,
       "geplaatst": true
     },
     {
@@ -747,7 +757,7 @@ window.WK_DATA = {
       "punten": 3,
       "saldo": -1,
       "dv": 2,
-      "positie": 6,
+      "positie": 7,
       "geplaatst": true
     },
     {
@@ -757,7 +767,7 @@ window.WK_DATA = {
       "punten": 3,
       "saldo": -2,
       "dv": 2,
-      "positie": 7,
+      "positie": 8,
       "geplaatst": true
     },
     {
@@ -767,8 +777,8 @@ window.WK_DATA = {
       "punten": 3,
       "saldo": -3,
       "dv": 1,
-      "positie": 8,
-      "geplaatst": true
+      "positie": 9,
+      "geplaatst": false
     },
     {
       "groep": "H",
@@ -777,7 +787,7 @@ window.WK_DATA = {
       "punten": 2,
       "saldo": 0,
       "dv": 2,
-      "positie": 9,
+      "positie": 10,
       "geplaatst": false
     },
     {
@@ -787,7 +797,7 @@ window.WK_DATA = {
       "punten": 2,
       "saldo": 0,
       "dv": 1,
-      "positie": 10,
+      "positie": 11,
       "geplaatst": false
     },
     {
@@ -797,16 +807,6 @@ window.WK_DATA = {
       "punten": 1,
       "saldo": -1,
       "dv": 1,
-      "positie": 11,
-      "geplaatst": false
-    },
-    {
-      "groep": "I",
-      "team": "Senegal",
-      "gespeeld": 2,
-      "punten": 0,
-      "saldo": -3,
-      "dv": 3,
       "positie": 12,
       "geplaatst": false
     }
@@ -3015,9 +3015,40 @@ window.WK_DATA = {
       "stadion": "Boston (Foxborough)",
       "team1": "Noorwegen",
       "team2": "Frankrijk",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          4
+        ],
+        "ht": [
+          1,
+          3
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Thelo Aasgaard",
+          "minuut": "21"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Ousmane Dembélé",
+          "minuut": "7"
+        },
+        {
+          "naam": "Ousmane Dembélé",
+          "minuut": "20"
+        },
+        {
+          "naam": "Ousmane Dembélé",
+          "minuut": "32"
+        },
+        {
+          "naam": "Désiré Doué",
+          "minuut": "90+4"
+        }
+      ]
     },
     {
       "id": 53,
@@ -3029,8 +3060,38 @@ window.WK_DATA = {
       "stadion": "Toronto",
       "team1": "Senegal",
       "team2": "Irak",
-      "score": null,
-      "goals1": [],
+      "score": {
+        "ft": [
+          5,
+          0
+        ],
+        "ht": [
+          1,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Habib Diarra",
+          "minuut": "4"
+        },
+        {
+          "naam": "Ismaïla Sarr",
+          "minuut": "56"
+        },
+        {
+          "naam": "Pape Gueye",
+          "minuut": "59"
+        },
+        {
+          "naam": "Pape Gueye",
+          "minuut": "71"
+        },
+        {
+          "naam": "Iliman Ndiaye",
+          "minuut": "82"
+        }
+      ],
       "goals2": []
     },
     {
