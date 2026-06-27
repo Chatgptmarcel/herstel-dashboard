@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 62,
+  "aantalGespeeld": 64,
   "groepen": [
     {
       "id": "A",
@@ -408,53 +408,53 @@
       "stand": [
         {
           "team": "Spanje",
-          "gespeeld": 2,
-          "w": 1,
+          "gespeeld": 3,
+          "w": 2,
           "g": 1,
           "v": 0,
-          "dv": 4,
+          "dv": 5,
           "dt": 0,
-          "saldo": 4,
-          "punten": 4,
+          "saldo": 5,
+          "punten": 7,
           "positie": 1,
           "status": "direct"
         },
         {
-          "team": "Uruguay",
-          "gespeeld": 2,
-          "w": 0,
-          "g": 2,
-          "v": 0,
-          "dv": 3,
-          "dt": 3,
-          "saldo": 0,
-          "punten": 2,
-          "positie": 2,
-          "status": "direct"
-        },
-        {
           "team": "Kaapverdië",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 0,
-          "g": 2,
+          "g": 3,
           "v": 0,
           "dv": 2,
           "dt": 2,
           "saldo": 0,
+          "punten": 3,
+          "positie": 2,
+          "status": "direct"
+        },
+        {
+          "team": "Uruguay",
+          "gespeeld": 3,
+          "w": 0,
+          "g": 2,
+          "v": 1,
+          "dv": 3,
+          "dt": 4,
+          "saldo": -1,
           "punten": 2,
           "positie": 3,
           "status": "derde"
         },
         {
           "team": "Saoedi-Arabië",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 0,
-          "g": 1,
+          "g": 2,
           "v": 1,
           "dv": 1,
           "dt": 5,
           "saldo": -4,
-          "punten": 1,
+          "punten": 2,
           "positie": 4,
           "status": null
         }
@@ -781,22 +781,22 @@
       "geplaatst": false
     },
     {
-      "groep": "H",
-      "team": "Kaapverdië",
-      "gespeeld": 2,
-      "punten": 2,
-      "saldo": 0,
-      "dv": 2,
-      "positie": 10,
-      "geplaatst": false
-    },
-    {
       "groep": "G",
       "team": "België",
       "gespeeld": 2,
       "punten": 2,
       "saldo": 0,
       "dv": 1,
+      "positie": 10,
+      "geplaatst": false
+    },
+    {
+      "groep": "H",
+      "team": "Uruguay",
+      "gespeeld": 3,
+      "punten": 2,
+      "saldo": -1,
+      "dv": 3,
       "positie": 11,
       "geplaatst": false
     },
@@ -3104,7 +3104,16 @@
       "stadion": "Houston",
       "team1": "Kaapverdië",
       "team2": "Saoedi-Arabië",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          0
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
       "goals1": [],
       "goals2": []
     },
@@ -3118,9 +3127,23 @@
       "stadion": "Guadalajara (Zapopan)",
       "team1": "Uruguay",
       "team2": "Spanje",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          1
+        ],
+        "ht": [
+          0,
+          1
+        ]
+      },
       "goals1": [],
-      "goals2": []
+      "goals2": [
+        {
+          "naam": "Álex Baena",
+          "minuut": "42"
+        }
+      ]
     },
     {
       "id": 40,
