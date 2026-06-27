@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 64,
+  "aantalGespeeld": 66,
   "groepen": [
     {
       "id": "A",
@@ -350,53 +350,53 @@
       "id": "G",
       "stand": [
         {
-          "team": "Egypte",
-          "gespeeld": 2,
+          "team": "België",
+          "gespeeld": 3,
           "w": 1,
-          "g": 1,
+          "g": 2,
           "v": 0,
-          "dv": 4,
+          "dv": 6,
           "dt": 2,
-          "saldo": 2,
-          "punten": 4,
+          "saldo": 4,
+          "punten": 5,
           "positie": 1,
           "status": "direct"
         },
         {
-          "team": "Iran",
-          "gespeeld": 2,
-          "w": 0,
+          "team": "Egypte",
+          "gespeeld": 3,
+          "w": 1,
           "g": 2,
           "v": 0,
-          "dv": 2,
-          "dt": 2,
-          "saldo": 0,
-          "punten": 2,
+          "dv": 5,
+          "dt": 3,
+          "saldo": 2,
+          "punten": 5,
           "positie": 2,
           "status": "direct"
         },
         {
-          "team": "België",
-          "gespeeld": 2,
+          "team": "Iran",
+          "gespeeld": 3,
           "w": 0,
-          "g": 2,
+          "g": 3,
           "v": 0,
-          "dv": 1,
-          "dt": 1,
+          "dv": 3,
+          "dt": 3,
           "saldo": 0,
-          "punten": 2,
+          "punten": 3,
           "positie": 3,
           "status": "derde"
         },
         {
           "team": "Nieuw-Zeeland",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 0,
           "g": 1,
-          "v": 1,
-          "dv": 3,
-          "dt": 5,
-          "saldo": -2,
+          "v": 2,
+          "dv": 4,
+          "dt": 10,
+          "saldo": -6,
           "punten": 1,
           "positie": 4,
           "status": null
@@ -741,13 +741,23 @@
       "geplaatst": true
     },
     {
+      "groep": "G",
+      "team": "Iran",
+      "gespeeld": 3,
+      "punten": 3,
+      "saldo": 0,
+      "dv": 3,
+      "positie": 6,
+      "geplaatst": true
+    },
+    {
       "groep": "L",
       "team": "Kroatië",
       "gespeeld": 2,
       "punten": 3,
       "saldo": -1,
       "dv": 3,
-      "positie": 6,
+      "positie": 7,
       "geplaatst": true
     },
     {
@@ -757,7 +767,7 @@
       "punten": 3,
       "saldo": -1,
       "dv": 2,
-      "positie": 7,
+      "positie": 8,
       "geplaatst": true
     },
     {
@@ -767,8 +777,8 @@
       "punten": 3,
       "saldo": -2,
       "dv": 2,
-      "positie": 8,
-      "geplaatst": true
+      "positie": 9,
+      "geplaatst": false
     },
     {
       "groep": "C",
@@ -776,16 +786,6 @@
       "gespeeld": 3,
       "punten": 3,
       "saldo": -3,
-      "dv": 1,
-      "positie": 9,
-      "geplaatst": false
-    },
-    {
-      "groep": "G",
-      "team": "België",
-      "gespeeld": 2,
-      "punten": 2,
-      "saldo": 0,
       "dv": 1,
       "positie": 10,
       "geplaatst": false
@@ -3155,9 +3155,28 @@
       "stadion": "Seattle",
       "team1": "Egypte",
       "team2": "Iran",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          1
+        ],
+        "ht": [
+          1,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Mahmoud Saber",
+          "minuut": "5"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Ramin Rezaeian",
+          "minuut": "14"
+        }
+      ]
     },
     {
       "id": 41,
@@ -3169,9 +3188,44 @@
       "stadion": "Vancouver",
       "team1": "Nieuw-Zeeland",
       "team2": "België",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          5
+        ],
+        "ht": [
+          0,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Elijah Just",
+          "minuut": "84"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Leandro Trossard",
+          "minuut": "28"
+        },
+        {
+          "naam": "Leandro Trossard",
+          "minuut": "50"
+        },
+        {
+          "naam": "Kevin De Bruyne",
+          "minuut": "66"
+        },
+        {
+          "naam": "Romelu Lukaku",
+          "minuut": "86"
+        },
+        {
+          "naam": "Alexis Saelemaekers",
+          "minuut": "90+4"
+        }
+      ]
     },
     {
       "id": 70,
