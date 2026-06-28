@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 66,
+  "aantalGespeeld": 68,
   "groepen": [
     {
       "id": "A",
@@ -636,52 +636,52 @@
       "stand": [
         {
           "team": "Engeland",
-          "gespeeld": 2,
-          "w": 1,
+          "gespeeld": 3,
+          "w": 2,
           "g": 1,
           "v": 0,
-          "dv": 4,
+          "dv": 6,
           "dt": 2,
-          "saldo": 2,
-          "punten": 4,
+          "saldo": 4,
+          "punten": 7,
           "positie": 1,
           "status": "direct"
         },
         {
-          "team": "Ghana",
-          "gespeeld": 2,
-          "w": 1,
-          "g": 1,
-          "v": 0,
-          "dv": 1,
-          "dt": 0,
-          "saldo": 1,
-          "punten": 4,
+          "team": "Kroatië",
+          "gespeeld": 3,
+          "w": 2,
+          "g": 0,
+          "v": 1,
+          "dv": 5,
+          "dt": 5,
+          "saldo": 0,
+          "punten": 6,
           "positie": 2,
           "status": "direct"
         },
         {
-          "team": "Kroatië",
-          "gespeeld": 2,
+          "team": "Ghana",
+          "gespeeld": 3,
           "w": 1,
-          "g": 0,
+          "g": 1,
           "v": 1,
-          "dv": 3,
-          "dt": 4,
-          "saldo": -1,
-          "punten": 3,
+          "dv": 2,
+          "dt": 2,
+          "saldo": 0,
+          "punten": 4,
           "positie": 3,
           "status": "derde"
         },
         {
           "team": "Panama",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 0,
           "g": 0,
-          "v": 2,
+          "v": 3,
           "dv": 0,
-          "dt": 2,
-          "saldo": -2,
+          "dt": 4,
+          "saldo": -4,
           "punten": 0,
           "positie": 4,
           "status": null
@@ -711,13 +711,23 @@
       "geplaatst": true
     },
     {
+      "groep": "L",
+      "team": "Ghana",
+      "gespeeld": 3,
+      "punten": 4,
+      "saldo": 0,
+      "dv": 2,
+      "positie": 3,
+      "geplaatst": true
+    },
+    {
       "groep": "B",
       "team": "Bosnië en Herzegovina",
       "gespeeld": 3,
       "punten": 4,
       "saldo": -1,
       "dv": 5,
-      "positie": 3,
+      "positie": 4,
       "geplaatst": true
     },
     {
@@ -727,7 +737,7 @@
       "punten": 4,
       "saldo": -2,
       "dv": 2,
-      "positie": 4,
+      "positie": 5,
       "geplaatst": true
     },
     {
@@ -737,7 +747,7 @@
       "punten": 3,
       "saldo": 2,
       "dv": 8,
-      "positie": 5,
+      "positie": 6,
       "geplaatst": true
     },
     {
@@ -746,16 +756,6 @@
       "gespeeld": 3,
       "punten": 3,
       "saldo": 0,
-      "dv": 3,
-      "positie": 6,
-      "geplaatst": true
-    },
-    {
-      "groep": "L",
-      "team": "Kroatië",
-      "gespeeld": 2,
-      "punten": 3,
-      "saldo": -1,
       "dv": 3,
       "positie": 7,
       "geplaatst": true
@@ -3237,9 +3237,27 @@
       "stadion": "New York/New Jersey (East Rutherford)",
       "team1": "Panama",
       "team2": "Engeland",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          2
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
       "goals1": [],
-      "goals2": []
+      "goals2": [
+        {
+          "naam": "Jude Bellingham",
+          "minuut": "62"
+        },
+        {
+          "naam": "Harry Kane",
+          "minuut": "67"
+        }
+      ]
     },
     {
       "id": 71,
@@ -3251,9 +3269,32 @@
       "stadion": "Philadelphia",
       "team1": "Kroatië",
       "team2": "Ghana",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          2,
+          1
+        ],
+        "ht": [
+          1,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Petar Sucic",
+          "minuut": "31"
+        },
+        {
+          "naam": "Nikola Vlasic",
+          "minuut": "83"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Derrick Luckassen",
+          "minuut": "73"
+        }
+      ]
     },
     {
       "id": 64,
