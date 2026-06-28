@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 68,
+  "aantalGespeeld": 72,
   "groepen": [
     {
       "id": "A",
@@ -522,52 +522,52 @@ window.WK_DATA = {
       "stand": [
         {
           "team": "Argentinië",
-          "gespeeld": 2,
-          "w": 2,
+          "gespeeld": 3,
+          "w": 3,
           "g": 0,
           "v": 0,
-          "dv": 5,
-          "dt": 0,
-          "saldo": 5,
-          "punten": 6,
+          "dv": 8,
+          "dt": 1,
+          "saldo": 7,
+          "punten": 9,
           "positie": 1,
           "status": "direct"
         },
         {
           "team": "Oostenrijk",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 1,
-          "g": 0,
+          "g": 1,
           "v": 1,
-          "dv": 3,
-          "dt": 3,
+          "dv": 6,
+          "dt": 6,
           "saldo": 0,
-          "punten": 3,
+          "punten": 4,
           "positie": 2,
           "status": "direct"
         },
         {
           "team": "Algerije",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 1,
-          "g": 0,
+          "g": 1,
           "v": 1,
-          "dv": 2,
-          "dt": 4,
+          "dv": 5,
+          "dt": 7,
           "saldo": -2,
-          "punten": 3,
+          "punten": 4,
           "positie": 3,
           "status": "derde"
         },
         {
           "team": "Jordanië",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 0,
           "g": 0,
-          "v": 2,
-          "dv": 2,
-          "dt": 5,
-          "saldo": -3,
+          "v": 3,
+          "dv": 3,
+          "dt": 8,
+          "saldo": -5,
           "punten": 0,
           "positie": 4,
           "status": null
@@ -579,52 +579,52 @@ window.WK_DATA = {
       "stand": [
         {
           "team": "Colombia",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 2,
-          "g": 0,
+          "g": 1,
           "v": 0,
           "dv": 4,
           "dt": 1,
           "saldo": 3,
-          "punten": 6,
+          "punten": 7,
           "positie": 1,
           "status": "direct"
         },
         {
           "team": "Portugal",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 1,
-          "g": 1,
+          "g": 2,
           "v": 0,
           "dv": 6,
           "dt": 1,
           "saldo": 5,
-          "punten": 4,
+          "punten": 5,
           "positie": 2,
           "status": "direct"
         },
         {
           "team": "DR Congo",
-          "gespeeld": 2,
-          "w": 0,
+          "gespeeld": 3,
+          "w": 1,
           "g": 1,
           "v": 1,
-          "dv": 1,
-          "dt": 2,
-          "saldo": -1,
-          "punten": 1,
+          "dv": 4,
+          "dt": 3,
+          "saldo": 1,
+          "punten": 4,
           "positie": 3,
           "status": "derde"
         },
         {
           "team": "Oezbekistan",
-          "gespeeld": 2,
+          "gespeeld": 3,
           "w": 0,
           "g": 0,
-          "v": 2,
-          "dv": 1,
-          "dt": 8,
-          "saldo": -7,
+          "v": 3,
+          "dv": 2,
+          "dt": 11,
+          "saldo": -9,
           "punten": 0,
           "positie": 4,
           "status": null
@@ -691,13 +691,23 @@ window.WK_DATA = {
   ],
   "derden": [
     {
+      "groep": "K",
+      "team": "DR Congo",
+      "gespeeld": 3,
+      "punten": 4,
+      "saldo": 1,
+      "dv": 4,
+      "positie": 1,
+      "geplaatst": true
+    },
+    {
       "groep": "F",
       "team": "Zweden",
       "gespeeld": 3,
       "punten": 4,
       "saldo": 0,
       "dv": 7,
-      "positie": 1,
+      "positie": 2,
       "geplaatst": true
     },
     {
@@ -707,7 +717,7 @@ window.WK_DATA = {
       "punten": 4,
       "saldo": 0,
       "dv": 2,
-      "positie": 2,
+      "positie": 3,
       "geplaatst": true
     },
     {
@@ -717,7 +727,7 @@ window.WK_DATA = {
       "punten": 4,
       "saldo": 0,
       "dv": 2,
-      "positie": 3,
+      "positie": 4,
       "geplaatst": true
     },
     {
@@ -727,7 +737,17 @@ window.WK_DATA = {
       "punten": 4,
       "saldo": -1,
       "dv": 5,
-      "positie": 4,
+      "positie": 5,
+      "geplaatst": true
+    },
+    {
+      "groep": "J",
+      "team": "Algerije",
+      "gespeeld": 3,
+      "punten": 4,
+      "saldo": -2,
+      "dv": 5,
+      "positie": 6,
       "geplaatst": true
     },
     {
@@ -737,7 +757,7 @@ window.WK_DATA = {
       "punten": 4,
       "saldo": -2,
       "dv": 2,
-      "positie": 5,
+      "positie": 7,
       "geplaatst": true
     },
     {
@@ -747,7 +767,7 @@ window.WK_DATA = {
       "punten": 3,
       "saldo": 2,
       "dv": 8,
-      "positie": 6,
+      "positie": 8,
       "geplaatst": true
     },
     {
@@ -757,8 +777,8 @@ window.WK_DATA = {
       "punten": 3,
       "saldo": 0,
       "dv": 3,
-      "positie": 7,
-      "geplaatst": true
+      "positie": 9,
+      "geplaatst": false
     },
     {
       "groep": "A",
@@ -767,17 +787,7 @@ window.WK_DATA = {
       "punten": 3,
       "saldo": -1,
       "dv": 2,
-      "positie": 8,
-      "geplaatst": true
-    },
-    {
-      "groep": "J",
-      "team": "Algerije",
-      "gespeeld": 2,
-      "punten": 3,
-      "saldo": -2,
-      "dv": 2,
-      "positie": 9,
+      "positie": 10,
       "geplaatst": false
     },
     {
@@ -787,7 +797,7 @@ window.WK_DATA = {
       "punten": 3,
       "saldo": -3,
       "dv": 1,
-      "positie": 10,
+      "positie": 11,
       "geplaatst": false
     },
     {
@@ -797,16 +807,6 @@ window.WK_DATA = {
       "punten": 2,
       "saldo": -1,
       "dv": 3,
-      "positie": 11,
-      "geplaatst": false
-    },
-    {
-      "groep": "K",
-      "team": "DR Congo",
-      "gespeeld": 2,
-      "punten": 1,
-      "saldo": -1,
-      "dv": 1,
       "positie": 12,
       "geplaatst": false
     }
@@ -3306,7 +3306,16 @@ window.WK_DATA = {
       "stadion": "Miami (Miami Gardens)",
       "team1": "Colombia",
       "team2": "Portugal",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          0
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
       "goals1": [],
       "goals2": []
     },
@@ -3320,9 +3329,37 @@ window.WK_DATA = {
       "stadion": "Atlanta",
       "team1": "DR Congo",
       "team2": "Oezbekistan",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          3,
+          1
+        ],
+        "ht": [
+          0,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Yoane Wissa",
+          "minuut": "68",
+          "strafschop": true
+        },
+        {
+          "naam": "Fiston Mayele",
+          "minuut": "78"
+        },
+        {
+          "naam": "Yoane Wissa",
+          "minuut": "90+1"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Eldor Shomurodov",
+          "minuut": "10"
+        }
+      ]
     },
     {
       "id": 58,
@@ -3334,9 +3371,44 @@ window.WK_DATA = {
       "stadion": "Kansas City",
       "team1": "Algerije",
       "team2": "Oostenrijk",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          3,
+          3
+        ],
+        "ht": [
+          1,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Rafik Belghali",
+          "minuut": "45"
+        },
+        {
+          "naam": "Riyad Mahrez",
+          "minuut": "60"
+        },
+        {
+          "naam": "Riyad Mahrez",
+          "minuut": "90+3"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Marko Arnautovic",
+          "minuut": "28"
+        },
+        {
+          "naam": "Marcel Sabitzer",
+          "minuut": "55"
+        },
+        {
+          "naam": "Sasa Kalajdzic",
+          "minuut": "90+6"
+        }
+      ]
     },
     {
       "id": 59,
@@ -3348,9 +3420,37 @@ window.WK_DATA = {
       "stadion": "Dallas (Arlington)",
       "team1": "Jordanië",
       "team2": "Argentinië",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          3
+        ],
+        "ht": [
+          0,
+          2
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Mousa Al-Tamari",
+          "minuut": "55"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Giovani Lo Celso",
+          "minuut": "19"
+        },
+        {
+          "naam": "Lautaro Martínez",
+          "minuut": "31",
+          "strafschop": true
+        },
+        {
+          "naam": "Lionel Messi",
+          "minuut": "80"
+        }
+      ]
     },
     {
       "id": 72,
