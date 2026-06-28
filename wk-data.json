@@ -3489,7 +3489,7 @@
       "aftrapUtc": "2026-06-29T20:30:00.000Z",
       "stadion": "Boston (Foxborough)",
       "team1": "Duitsland",
-      "team2": "Beste 3e (A/B/C/D/F)",
+      "team2": "Paraguay",
       "score": null,
       "goals1": [],
       "goals2": []
@@ -3517,7 +3517,7 @@
       "aftrapUtc": "2026-06-30T17:00:00.000Z",
       "stadion": "Dallas (Arlington)",
       "team1": "Ivoorkust",
-      "team2": "Nummer 2 groep I",
+      "team2": "Noorwegen",
       "score": null,
       "goals1": [],
       "goals2": []
@@ -3530,8 +3530,8 @@
       "datum": "2026-06-30",
       "aftrapUtc": "2026-06-30T21:00:00.000Z",
       "stadion": "New York/New Jersey (East Rutherford)",
-      "team1": "Winnaar groep I",
-      "team2": "Beste 3e (C/D/F/G/H)",
+      "team1": "Frankrijk",
+      "team2": "Zweden",
       "score": null,
       "goals1": [],
       "goals2": []
@@ -3545,7 +3545,7 @@
       "aftrapUtc": "2026-07-01T01:00:00.000Z",
       "stadion": "Mexico City",
       "team1": "Mexico",
-      "team2": "Beste 3e (C/E/F/H/I)",
+      "team2": "Ecuador",
       "score": null,
       "goals1": [],
       "goals2": []
@@ -3558,8 +3558,8 @@
       "datum": "2026-07-01",
       "aftrapUtc": "2026-07-01T16:00:00.000Z",
       "stadion": "Atlanta",
-      "team1": "Winnaar groep L",
-      "team2": "Beste 3e (E/H/I/J/K)",
+      "team1": "Engeland",
+      "team2": "DR Congo",
       "score": null,
       "goals1": [],
       "goals2": []
@@ -3572,8 +3572,8 @@
       "datum": "2026-07-01",
       "aftrapUtc": "2026-07-01T20:00:00.000Z",
       "stadion": "Seattle",
-      "team1": "Winnaar groep G",
-      "team2": "Beste 3e (A/E/H/I/J)",
+      "team1": "België",
+      "team2": "Senegal",
       "score": null,
       "goals1": [],
       "goals2": []
@@ -3587,7 +3587,7 @@
       "aftrapUtc": "2026-07-02T00:00:00.000Z",
       "stadion": "San Francisco Bay Area (Santa Clara)",
       "team1": "Verenigde Staten",
-      "team2": "Beste 3e (B/E/F/I/J)",
+      "team2": "Bosnië en Herzegovina",
       "score": null,
       "goals1": [],
       "goals2": []
@@ -3600,8 +3600,8 @@
       "datum": "2026-07-02",
       "aftrapUtc": "2026-07-02T19:00:00.000Z",
       "stadion": "Los Angeles (Inglewood)",
-      "team1": "Winnaar groep H",
-      "team2": "Nummer 2 groep J",
+      "team1": "Spanje",
+      "team2": "Oostenrijk",
       "score": null,
       "goals1": [],
       "goals2": []
@@ -3614,8 +3614,8 @@
       "datum": "2026-07-02",
       "aftrapUtc": "2026-07-02T23:00:00.000Z",
       "stadion": "Toronto",
-      "team1": "Nummer 2 groep K",
-      "team2": "Nummer 2 groep L",
+      "team1": "Portugal",
+      "team2": "Kroatië",
       "score": null,
       "goals1": [],
       "goals2": []
@@ -3629,7 +3629,7 @@
       "aftrapUtc": "2026-07-03T03:00:00.000Z",
       "stadion": "Vancouver",
       "team1": "Zwitserland",
-      "team2": "Beste 3e (E/F/G/I/J)",
+      "team2": "Algerije",
       "score": null,
       "goals1": [],
       "goals2": []
@@ -3643,7 +3643,7 @@
       "aftrapUtc": "2026-07-03T18:00:00.000Z",
       "stadion": "Dallas (Arlington)",
       "team1": "Australië",
-      "team2": "Nummer 2 groep G",
+      "team2": "Egypte",
       "score": null,
       "goals1": [],
       "goals2": []
@@ -3656,8 +3656,8 @@
       "datum": "2026-07-03",
       "aftrapUtc": "2026-07-03T22:00:00.000Z",
       "stadion": "Miami (Miami Gardens)",
-      "team1": "Winnaar groep J",
-      "team2": "Nummer 2 groep H",
+      "team1": "Argentinië",
+      "team2": "Kaapverdië",
       "score": null,
       "goals1": [],
       "goals2": []
@@ -3670,8 +3670,8 @@
       "datum": "2026-07-03",
       "aftrapUtc": "2026-07-04T01:30:00.000Z",
       "stadion": "Kansas City",
-      "team1": "Winnaar groep K",
-      "team2": "Beste 3e (D/E/I/J/L)",
+      "team1": "Colombia",
+      "team2": "Ghana",
       "score": null,
       "goals1": [],
       "goals2": []
