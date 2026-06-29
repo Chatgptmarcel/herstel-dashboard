@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 73,
+  "aantalGespeeld": 74,
   "groepen": [
     {
       "id": "A",
@@ -3490,9 +3490,32 @@
       "stadion": "Houston",
       "team1": "Brazilië",
       "team2": "Japan",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          2,
+          1
+        ],
+        "ht": [
+          0,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Casemiro",
+          "minuut": "56"
+        },
+        {
+          "naam": "Gabriel Martinelli",
+          "minuut": "90+5"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Kaishu Sano",
+          "minuut": "29"
+        }
+      ]
     },
     {
       "id": 73,
