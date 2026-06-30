@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 75,
+  "aantalGespeeld": 76,
   "groepen": [
     {
       "id": "A",
@@ -3560,9 +3560,28 @@ window.WK_DATA = {
       "stadion": "Monterrey (Guadalupe)",
       "team1": "Nederland",
       "team2": "Marokko",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          1
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Cody Gakpo",
+          "minuut": "72"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Issa Diop",
+          "minuut": "90+1"
+        }
+      ]
     },
     {
       "id": 77,
