@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 76,
+  "aantalGespeeld": 77,
   "groepen": [
     {
       "id": "A",
@@ -3593,9 +3593,32 @@
       "stadion": "Dallas (Arlington)",
       "team1": "Ivoorkust",
       "team2": "Noorwegen",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          2
+        ],
+        "ht": [
+          0,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Amad Diallo",
+          "minuut": "74"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Antonio Nusa",
+          "minuut": "39"
+        },
+        {
+          "naam": "Erling Haaland",
+          "minuut": "86"
+        }
+      ]
     },
     {
       "id": 76,
