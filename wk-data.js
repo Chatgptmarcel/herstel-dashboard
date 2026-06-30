@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 77,
+  "aantalGespeeld": 78,
   "groepen": [
     {
       "id": "A",
@@ -3630,8 +3630,30 @@ window.WK_DATA = {
       "stadion": "New York/New Jersey (East Rutherford)",
       "team1": "Frankrijk",
       "team2": "Zweden",
-      "score": null,
-      "goals1": [],
+      "score": {
+        "ft": [
+          3,
+          0
+        ],
+        "ht": [
+          1,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Kylian Mbappé",
+          "minuut": "45"
+        },
+        {
+          "naam": "Bradley Barcola",
+          "minuut": "53"
+        },
+        {
+          "naam": "Kylian Mbappé",
+          "minuut": "74"
+        }
+      ],
       "goals2": []
     },
     {
