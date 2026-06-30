@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 74,
+  "aantalGespeeld": 75,
   "groepen": [
     {
       "id": "A",
@@ -3527,9 +3527,28 @@ window.WK_DATA = {
       "stadion": "Boston (Foxborough)",
       "team1": "Duitsland",
       "team2": "Paraguay",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          1
+        ],
+        "ht": [
+          0,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Kai Havertz",
+          "minuut": "54"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Julio Enciso",
+          "minuut": "42"
+        }
+      ]
     },
     {
       "id": 74,
