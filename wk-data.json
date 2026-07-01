@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 79,
+  "aantalGespeeld": 80,
   "groepen": [
     {
       "id": "A",
@@ -3698,9 +3698,32 @@
       "stadion": "Atlanta",
       "team1": "Engeland",
       "team2": "DR Congo",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          2,
+          1
+        ],
+        "ht": [
+          0,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Harry Kane",
+          "minuut": "75"
+        },
+        {
+          "naam": "Harry Kane",
+          "minuut": "86"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Brian Cipenga",
+          "minuut": "7"
+        }
+      ]
     },
     {
       "id": 81,
