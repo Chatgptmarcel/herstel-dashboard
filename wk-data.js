@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 80,
+  "aantalGespeeld": 81,
   "groepen": [
     {
       "id": "A",
@@ -3735,9 +3735,41 @@ window.WK_DATA = {
       "stadion": "Seattle",
       "team1": "België",
       "team2": "Senegal",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          2,
+          2
+        ],
+        "ht": [
+          0,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Romelu Lukaku",
+          "minuut": "86"
+        },
+        {
+          "naam": "Youri Tielemans",
+          "minuut": "89"
+        },
+        {
+          "naam": "Youri Tielemans",
+          "minuut": "120+5",
+          "strafschop": true
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Habib Diarra",
+          "minuut": "25"
+        },
+        {
+          "naam": "Ismaïla Sarr",
+          "minuut": "51"
+        }
+      ]
     },
     {
       "id": 80,
