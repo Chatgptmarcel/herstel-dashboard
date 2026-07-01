@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 78,
+  "aantalGespeeld": 79,
   "groepen": [
     {
       "id": "A",
@@ -3666,8 +3666,26 @@ window.WK_DATA = {
       "stadion": "Mexico City",
       "team1": "Mexico",
       "team2": "Ecuador",
-      "score": null,
-      "goals1": [],
+      "score": {
+        "ft": [
+          2,
+          0
+        ],
+        "ht": [
+          1,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Julián Quiñones",
+          "minuut": "31"
+        },
+        {
+          "naam": "Raúl Jiménez",
+          "minuut": "45+1"
+        }
+      ],
       "goals2": []
     },
     {
@@ -3805,7 +3823,7 @@ window.WK_DATA = {
       "aftrapUtc": "2026-07-04T17:00:00.000Z",
       "stadion": "Houston",
       "team1": "Canada",
-      "team2": "Winnaar wedstrijd 75",
+      "team2": "Marokko",
       "score": null,
       "goals1": [],
       "goals2": []
@@ -3818,8 +3836,8 @@ window.WK_DATA = {
       "datum": "2026-07-04",
       "aftrapUtc": "2026-07-04T21:00:00.000Z",
       "stadion": "Philadelphia",
-      "team1": "Winnaar wedstrijd 74",
-      "team2": "Winnaar wedstrijd 77",
+      "team1": "Paraguay",
+      "team2": "Frankrijk",
       "score": null,
       "goals1": [],
       "goals2": []
@@ -3832,8 +3850,8 @@ window.WK_DATA = {
       "datum": "2026-07-05",
       "aftrapUtc": "2026-07-05T20:00:00.000Z",
       "stadion": "New York/New Jersey (East Rutherford)",
-      "team1": "Winnaar wedstrijd 76",
-      "team2": "Winnaar wedstrijd 78",
+      "team1": "Brazilië",
+      "team2": "Noorwegen",
       "score": null,
       "goals1": [],
       "goals2": []
