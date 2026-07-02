@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 82,
+  "aantalGespeeld": 83,
   "groepen": [
     {
       "id": "A",
@@ -3813,8 +3813,30 @@
       "stadion": "Los Angeles (Inglewood)",
       "team1": "Spanje",
       "team2": "Oostenrijk",
-      "score": null,
-      "goals1": [],
+      "score": {
+        "ft": [
+          3,
+          0
+        ],
+        "ht": [
+          1,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Mikel Oyarzabal",
+          "minuut": "36"
+        },
+        {
+          "naam": "Pedro Porro",
+          "minuut": "66"
+        },
+        {
+          "naam": "Mikel Oyarzabal",
+          "minuut": "89"
+        }
+      ],
       "goals2": []
     },
     {
