@@ -3938,7 +3938,7 @@ window.WK_DATA = {
       "aftrapUtc": "2026-07-06T00:00:00.000Z",
       "stadion": "Mexico City",
       "team1": "Mexico",
-      "team2": "Winnaar wedstrijd 80",
+      "team2": "Engeland",
       "score": null,
       "goals1": [],
       "goals2": []
@@ -3965,8 +3965,8 @@ window.WK_DATA = {
       "datum": "2026-07-06",
       "aftrapUtc": "2026-07-07T00:00:00.000Z",
       "stadion": "Seattle",
-      "team1": "Winnaar wedstrijd 81",
-      "team2": "Winnaar wedstrijd 82",
+      "team1": "Verenigde Staten",
+      "team2": "België",
       "score": null,
       "goals1": [],
       "goals2": []
