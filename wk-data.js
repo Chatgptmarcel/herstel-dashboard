@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 81,
+  "aantalGespeeld": 82,
   "groepen": [
     {
       "id": "A",
@@ -3781,8 +3781,26 @@ window.WK_DATA = {
       "stadion": "San Francisco Bay Area (Santa Clara)",
       "team1": "Verenigde Staten",
       "team2": "Bosnië en Herzegovina",
-      "score": null,
-      "goals1": [],
+      "score": {
+        "ft": [
+          2,
+          0
+        ],
+        "ht": [
+          1,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Folarin Balogun",
+          "minuut": "45"
+        },
+        {
+          "naam": "Malik Tillman",
+          "minuut": "82"
+        }
+      ],
       "goals2": []
     },
     {
