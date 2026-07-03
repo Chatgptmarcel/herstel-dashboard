@@ -3646,12 +3646,12 @@ window.WK_DATA = {
           "minuut": "45"
         },
         {
-          "naam": "Bradley Barcola",
-          "minuut": "53"
-        },
-        {
           "naam": "Kylian Mbappé",
           "minuut": "74"
+        },
+        {
+          "naam": "Bradley Barcola",
+          "minuut": "53"
         }
       ],
       "goals2": []
@@ -3829,12 +3829,12 @@ window.WK_DATA = {
           "minuut": "36"
         },
         {
-          "naam": "Pedro Porro",
-          "minuut": "66"
-        },
-        {
           "naam": "Mikel Oyarzabal",
           "minuut": "89"
+        },
+        {
+          "naam": "Pedro Porro",
+          "minuut": "66"
         }
       ],
       "goals2": []
@@ -4015,8 +4015,8 @@ window.WK_DATA = {
       "datum": "2026-07-06",
       "aftrapUtc": "2026-07-06T19:00:00.000Z",
       "stadion": "Dallas (Arlington)",
-      "team1": "Winnaar wedstrijd 83",
-      "team2": "Winnaar wedstrijd 84",
+      "team1": "Portugal",
+      "team2": "Spanje",
       "score": null,
       "goals1": [],
       "goals2": []
@@ -4057,7 +4057,7 @@ window.WK_DATA = {
       "datum": "2026-07-07",
       "aftrapUtc": "2026-07-07T20:00:00.000Z",
       "stadion": "Vancouver",
-      "team1": "Winnaar wedstrijd 85",
+      "team1": "Zwitserland",
       "team2": "Winnaar wedstrijd 87",
       "score": null,
       "goals1": [],
