@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 85,
+  "aantalGespeeld": 86,
   "groepen": [
     {
       "id": "A",
@@ -3919,9 +3919,29 @@ window.WK_DATA = {
       "stadion": "Dallas (Arlington)",
       "team1": "Australië",
       "team2": "Egypte",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          1
+        ],
+        "ht": [
+          0,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Mohamed Hany",
+          "minuut": "55",
+          "eigendoelpunt": true
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Emam Ashour",
+          "minuut": "13"
+        }
+      ]
     },
     {
       "id": 85,
