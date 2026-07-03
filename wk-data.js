@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 84,
+  "aantalGespeeld": 85,
   "groepen": [
     {
       "id": "A",
@@ -3887,8 +3887,26 @@ window.WK_DATA = {
       "stadion": "Vancouver",
       "team1": "Zwitserland",
       "team2": "Algerije",
-      "score": null,
-      "goals1": [],
+      "score": {
+        "ft": [
+          2,
+          0
+        ],
+        "ht": [
+          1,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Breel Embolo",
+          "minuut": "10"
+        },
+        {
+          "naam": "Dan Ndoye",
+          "minuut": "46"
+        }
+      ],
       "goals2": []
     },
     {
