@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 83,
+  "aantalGespeeld": 84,
   "groepen": [
     {
       "id": "A",
@@ -3849,9 +3849,33 @@ window.WK_DATA = {
       "stadion": "Toronto",
       "team1": "Portugal",
       "team2": "Kroatië",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          2,
+          1
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Cristiano Ronaldo",
+          "minuut": "68",
+          "strafschop": true
+        },
+        {
+          "naam": "Gonçalo Ramos",
+          "minuut": "90+4"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Ivan Perisic",
+          "minuut": "53"
+        }
+      ]
     },
     {
       "id": 84,
