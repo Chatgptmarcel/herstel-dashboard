@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 88,
+  "aantalGespeeld": 89,
   "groepen": [
     {
       "id": "A",
@@ -4027,9 +4027,31 @@
       "stadion": "Houston",
       "team1": "Canada",
       "team2": "Marokko",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          3
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
       "goals1": [],
-      "goals2": []
+      "goals2": [
+        {
+          "naam": "Azzedine Ounahi",
+          "minuut": "50"
+        },
+        {
+          "naam": "Azzedine Ounahi",
+          "minuut": "82"
+        },
+        {
+          "naam": "Soufiane Rahimi",
+          "minuut": "90+8"
+        }
+      ]
     },
     {
       "id": 88,
