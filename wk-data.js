@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 86,
+  "aantalGespeeld": 87,
   "groepen": [
     {
       "id": "A",
@@ -3953,9 +3953,41 @@ window.WK_DATA = {
       "stadion": "Miami (Miami Gardens)",
       "team1": "Argentinië",
       "team2": "Kaapverdië",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          1
+        ],
+        "ht": [
+          1,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Lionel Messi",
+          "minuut": "29"
+        },
+        {
+          "naam": "Lisandro Martínez",
+          "minuut": "92"
+        },
+        {
+          "naam": "Diney Borges",
+          "minuut": "111",
+          "eigendoelpunt": true
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Deroy Duarte",
+          "minuut": "59"
+        },
+        {
+          "naam": "Sidny Lopes Cabral",
+          "minuut": "103"
+        }
+      ]
     },
     {
       "id": 86,
