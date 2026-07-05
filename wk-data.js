@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 89,
+  "aantalGespeeld": 90,
   "groepen": [
     {
       "id": "A",
@@ -4063,9 +4063,24 @@ window.WK_DATA = {
       "stadion": "Philadelphia",
       "team1": "Paraguay",
       "team2": "Frankrijk",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          1
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
       "goals1": [],
-      "goals2": []
+      "goals2": [
+        {
+          "naam": "Kylian Mbappé",
+          "minuut": "70",
+          "strafschop": true
+        }
+      ]
     },
     {
       "id": 90,
