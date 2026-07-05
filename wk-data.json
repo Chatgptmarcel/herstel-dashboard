@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 90,
+  "aantalGespeeld": 91,
   "groepen": [
     {
       "id": "A",
@@ -4092,9 +4092,33 @@
       "stadion": "New York/New Jersey (East Rutherford)",
       "team1": "Brazilië",
       "team2": "Noorwegen",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          2
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Neymar",
+          "minuut": "90+10",
+          "strafschop": true
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Erling Haaland",
+          "minuut": "79"
+        },
+        {
+          "naam": "Erling Haaland",
+          "minuut": "90"
+        }
+      ]
     },
     {
       "id": 91,
