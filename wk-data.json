@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 91,
+  "aantalGespeeld": 92,
   "groepen": [
     {
       "id": "A",
@@ -4130,9 +4130,42 @@
       "stadion": "Mexico City",
       "team1": "Mexico",
       "team2": "Engeland",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          2,
+          3
+        ],
+        "ht": [
+          1,
+          2
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Julián Quiñones",
+          "minuut": "42"
+        },
+        {
+          "naam": "Raúl Jiménez",
+          "minuut": "69",
+          "strafschop": true
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Jude Bellingham",
+          "minuut": "36"
+        },
+        {
+          "naam": "Jude Bellingham",
+          "minuut": "38"
+        },
+        {
+          "naam": "Harry Kane",
+          "minuut": "60",
+          "strafschop": true
+        }
+      ]
     },
     {
       "id": 92,
