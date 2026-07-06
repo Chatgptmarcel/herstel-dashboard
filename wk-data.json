@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 92,
+  "aantalGespeeld": 93,
   "groepen": [
     {
       "id": "A",
@@ -4177,9 +4177,23 @@
       "stadion": "Dallas (Arlington)",
       "team1": "Portugal",
       "team2": "Spanje",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          1
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
       "goals1": [],
-      "goals2": []
+      "goals2": [
+        {
+          "naam": "Mikel Merino",
+          "minuut": "90+1"
+        }
+      ]
     },
     {
       "id": 93,
