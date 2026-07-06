@@ -4259,8 +4259,8 @@ window.WK_DATA = {
       "datum": "2026-07-11",
       "aftrapUtc": "2026-07-11T21:00:00.000Z",
       "stadion": "Miami (Miami Gardens)",
-      "team1": "Winnaar wedstrijd 91",
-      "team2": "Winnaar wedstrijd 92",
+      "team1": "Noorwegen",
+      "team2": "Engeland",
       "score": null,
       "goals1": [],
       "goals2": []
