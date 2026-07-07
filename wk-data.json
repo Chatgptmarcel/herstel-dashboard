@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 93,
+  "aantalGespeeld": 94,
   "groepen": [
     {
       "id": "A",
@@ -4205,9 +4205,40 @@
       "stadion": "Seattle",
       "team1": "Verenigde Staten",
       "team2": "België",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          4
+        ],
+        "ht": [
+          1,
+          2
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Malik Tillman",
+          "minuut": "31"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Charles De Ketelaere",
+          "minuut": "9"
+        },
+        {
+          "naam": "Charles De Ketelaere",
+          "minuut": "33"
+        },
+        {
+          "naam": "Hans Vanaken",
+          "minuut": "57"
+        },
+        {
+          "naam": "Romelu Lukaku",
+          "minuut": "90+3"
+        }
+      ]
     },
     {
       "id": 94,
