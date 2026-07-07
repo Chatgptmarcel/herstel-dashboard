@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 94,
+  "aantalGespeeld": 95,
   "groepen": [
     {
       "id": "A",
@@ -4250,9 +4250,40 @@
       "stadion": "Atlanta",
       "team1": "Argentinië",
       "team2": "Egypte",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          3,
+          2
+        ],
+        "ht": [
+          0,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Cristian Romero",
+          "minuut": "79"
+        },
+        {
+          "naam": "Lionel Messi",
+          "minuut": "83"
+        },
+        {
+          "naam": "Enzo Fernández",
+          "minuut": "90+2"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Yasser Ibrahim",
+          "minuut": "15"
+        },
+        {
+          "naam": "Mostafa Zico",
+          "minuut": "67"
+        }
+      ]
     },
     {
       "id": 95,
