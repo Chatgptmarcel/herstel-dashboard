@@ -4358,8 +4358,8 @@ window.WK_DATA = {
       "datum": "2026-07-11",
       "aftrapUtc": "2026-07-12T01:00:00.000Z",
       "stadion": "Kansas City",
-      "team1": "Winnaar wedstrijd 95",
-      "team2": "Winnaar wedstrijd 96",
+      "team1": "Argentinië",
+      "team2": "Zwitserland",
       "score": null,
       "goals1": [],
       "goals2": []
