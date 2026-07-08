@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 95,
+  "aantalGespeeld": 96,
   "groepen": [
     {
       "id": "A",
@@ -4295,7 +4295,16 @@ window.WK_DATA = {
       "stadion": "Vancouver",
       "team1": "Zwitserland",
       "team2": "Colombia",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          0
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
       "goals1": [],
       "goals2": []
     },
