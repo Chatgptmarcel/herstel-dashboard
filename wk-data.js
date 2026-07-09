@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 96,
+  "aantalGespeeld": 97,
   "groepen": [
     {
       "id": "A",
@@ -4318,8 +4318,26 @@ window.WK_DATA = {
       "stadion": "Boston (Foxborough)",
       "team1": "Frankrijk",
       "team2": "Marokko",
-      "score": null,
-      "goals1": [],
+      "score": {
+        "ft": [
+          2,
+          0
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Kylian Mbappé",
+          "minuut": "60"
+        },
+        {
+          "naam": "Ousmane Dembélé",
+          "minuut": "66"
+        }
+      ],
       "goals2": []
     },
     {
