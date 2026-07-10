@@ -2,7 +2,7 @@
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 97,
+  "aantalGespeeld": 98,
   "groepen": [
     {
       "id": "A",
@@ -4350,9 +4350,32 @@
       "stadion": "Los Angeles (Inglewood)",
       "team1": "Spanje",
       "team2": "België",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          2,
+          1
+        ],
+        "ht": [
+          1,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Fabián Ruiz",
+          "minuut": "30"
+        },
+        {
+          "naam": "Mikel Merino",
+          "minuut": "88"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Charles De Ketelaere",
+          "minuut": "41"
+        }
+      ]
     },
     {
       "id": 98,
