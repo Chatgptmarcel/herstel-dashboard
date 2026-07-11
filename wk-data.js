@@ -4413,8 +4413,8 @@ window.WK_DATA = {
       "datum": "2026-07-14",
       "aftrapUtc": "2026-07-14T19:00:00.000Z",
       "stadion": "Dallas (Arlington)",
-      "team1": "Winnaar wedstrijd 97",
-      "team2": "Winnaar wedstrijd 98",
+      "team1": "Frankrijk",
+      "team2": "Spanje",
       "score": null,
       "goals1": [],
       "goals2": []
