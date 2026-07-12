@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 98,
+  "aantalGespeeld": 99,
   "groepen": [
     {
       "id": "A",
@@ -4387,9 +4387,32 @@ window.WK_DATA = {
       "stadion": "Miami (Miami Gardens)",
       "team1": "Noorwegen",
       "team2": "Engeland",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          1
+        ],
+        "ht": [
+          1,
+          1
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Andreas Schjelderup",
+          "minuut": "36"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Jude Bellingham",
+          "minuut": "45+2"
+        },
+        {
+          "naam": "Jude Bellingham",
+          "minuut": "93"
+        }
+      ]
     },
     {
       "id": 99,
