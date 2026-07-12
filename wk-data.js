@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 99,
+  "aantalGespeeld": 100,
   "groepen": [
     {
       "id": "A",
@@ -4424,9 +4424,36 @@ window.WK_DATA = {
       "stadion": "Kansas City",
       "team1": "Argentinië",
       "team2": "Zwitserland",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          1
+        ],
+        "ht": [
+          1,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Alexis Mac Allister",
+          "minuut": "10"
+        },
+        {
+          "naam": "Julián Álvarez",
+          "minuut": "112"
+        },
+        {
+          "naam": "Lautaro Martínez",
+          "minuut": "120+1"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Dan Ndoye",
+          "minuut": "67"
+        }
+      ]
     },
     {
       "id": 100,
