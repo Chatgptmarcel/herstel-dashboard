@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 100,
+  "aantalGespeeld": 101,
   "groepen": [
     {
       "id": "A",
@@ -4465,9 +4465,28 @@ window.WK_DATA = {
       "stadion": "Dallas (Arlington)",
       "team1": "Frankrijk",
       "team2": "Spanje",
-      "score": null,
+      "score": {
+        "ft": [
+          0,
+          2
+        ],
+        "ht": [
+          0,
+          1
+        ]
+      },
       "goals1": [],
-      "goals2": []
+      "goals2": [
+        {
+          "naam": "Mikel Oyarzabal",
+          "minuut": "22",
+          "strafschop": true
+        },
+        {
+          "naam": "Pedro Porro",
+          "minuut": "58"
+        }
+      ]
     },
     {
       "id": 101,
