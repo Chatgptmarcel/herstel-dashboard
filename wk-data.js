@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 101,
+  "aantalGespeeld": 102,
   "groepen": [
     {
       "id": "A",
@@ -4498,9 +4498,32 @@ window.WK_DATA = {
       "stadion": "Atlanta",
       "team1": "Engeland",
       "team2": "Argentinië",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          1,
+          2
+        ],
+        "ht": [
+          0,
+          0
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Anthony Gordon",
+          "minuut": "55"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Enzo Fernández",
+          "minuut": "86"
+        },
+        {
+          "naam": "Lautaro Martínez",
+          "minuut": "92"
+        }
+      ]
     },
     {
       "id": 102,
@@ -4511,7 +4534,7 @@ window.WK_DATA = {
       "aftrapUtc": "2026-07-18T21:00:00.000Z",
       "stadion": "Miami (Miami Gardens)",
       "team1": "Frankrijk",
-      "team2": "Verliezer wedstrijd 102",
+      "team2": "Engeland",
       "score": null,
       "goals1": [],
       "goals2": []
@@ -4525,7 +4548,7 @@ window.WK_DATA = {
       "aftrapUtc": "2026-07-19T19:00:00.000Z",
       "stadion": "New York/New Jersey (East Rutherford)",
       "team1": "Spanje",
-      "team2": "Winnaar wedstrijd 102",
+      "team2": "Argentinië",
       "score": null,
       "goals1": [],
       "goals2": []
