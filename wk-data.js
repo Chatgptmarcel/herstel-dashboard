@@ -2,7 +2,7 @@ window.WK_DATA = {
   "naam": "WK 2026",
   "bron": "openfootball/worldcup.json",
   "aantalWedstrijden": 104,
-  "aantalGespeeld": 102,
+  "aantalGespeeld": 103,
   "groepen": [
     {
       "id": "A",
@@ -4535,9 +4535,61 @@ window.WK_DATA = {
       "stadion": "Miami (Miami Gardens)",
       "team1": "Frankrijk",
       "team2": "Engeland",
-      "score": null,
-      "goals1": [],
-      "goals2": []
+      "score": {
+        "ft": [
+          4,
+          6
+        ],
+        "ht": [
+          0,
+          4
+        ]
+      },
+      "goals1": [
+        {
+          "naam": "Kylian Mbappé",
+          "minuut": "48"
+        },
+        {
+          "naam": "Bradley Barcola",
+          "minuut": "54"
+        },
+        {
+          "naam": "Kylian Mbappé",
+          "minuut": "66"
+        },
+        {
+          "naam": "Ousmane Dembélé",
+          "minuut": "90+6"
+        }
+      ],
+      "goals2": [
+        {
+          "naam": "Declan Rice",
+          "minuut": "3"
+        },
+        {
+          "naam": "Ezri Konsa",
+          "minuut": "18"
+        },
+        {
+          "naam": "Bukayo Saka",
+          "minuut": "37"
+        },
+        {
+          "naam": "Bukayo Saka",
+          "minuut": "45+1"
+        },
+        {
+          "naam": "Bukayo Saka",
+          "minuut": "87",
+          "strafschop": true
+        },
+        {
+          "naam": "Jude Bellingham",
+          "minuut": "90+8"
+        }
+      ]
     },
     {
       "id": 103,
