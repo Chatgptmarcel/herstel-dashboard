@@ -62,10 +62,6 @@
          GitHub Pages), dan valt het dashboard terug op fetch('./schedule.ics'). -->
     <script>document.write('<scr' + 'ipt src="schedule-data.js?t=' + Date.now() + '"><\/scr' + 'ipt>');</script>
 
-    <!-- Lokale WK-data (offline / file://): laadt wk-data.js (window.WK_DATA), gegenereerd door
-         sync/wk-sync.js. Op een server haalt het dashboard verse data op; dit is de offline-terugval. -->
-    <script>document.write('<scr' + 'ipt src="wk-data.js?t=' + Date.now() + '"><\/scr' + 'ipt>');</script>
-
     <!-- Import Map voor React en Iconen -->
     <script type="importmap">
     {
@@ -314,324 +310,10 @@
             Pencil
         } from 'lucide-react';
 
-        /* ============================================================
-           WK 2026 — weergave (leest wk-data.json, door sync/wk-sync.js
-           gegenereerd uit openfootball). Alleen tonen; alle rekenwerk
-           (standen, beste nummers 3) zit in het sync-script.
-           ============================================================ */
-        const WK_TZ = 'Europe/Amsterdam';
-        const hoofdletter = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
-        const wkTijd = (utc) => utc ? new Date(utc).toLocaleTimeString('nl-NL', { timeZone: WK_TZ, hour: '2-digit', minute: '2-digit' }) : '';
-        const wkDatumKort = (utc) => utc ? new Date(utc).toLocaleDateString('nl-NL', { timeZone: WK_TZ, weekday: 'short', day: 'numeric', month: 'short' }) : '';
-        const wkDatumLang = (utc) => utc ? new Date(utc).toLocaleDateString('nl-NL', { timeZone: WK_TZ, weekday: 'long', day: 'numeric', month: 'long' }) : '';
-        const wkDagSleutel = (utc) => utc ? new Date(utc).toLocaleDateString('en-CA', { timeZone: WK_TZ }) : ''; // YYYY-MM-DD, voor groeperen per dag
-
-        // Statusbadge per wedstrijd (op dag-niveau; geen valse "live"-claim).
-        const statusVan = (w) => {
-            if (w.score) return { label: 'Afgelopen', kleur: 'bg-gray-100 text-gray-500' };
-            if (!w.aftrapUtc) return null;
-            const vandaag = new Date().toLocaleDateString('en-CA', { timeZone: WK_TZ });
-            if (wkDagSleutel(w.aftrapUtc) === vandaag) return { label: 'Vandaag', kleur: 'bg-orange-100 text-orange-700' };
-            return null; // komend: de tijd spreekt voor zich
-        };
-
-        const ORANJE = 'Nederland';
-        const isOranje = (w) => w.team1 === ORANJE || w.team2 === ORANJE;
-
-        // FIFA-wereldranglijst (FIFA/Coca-Cola Men's World Ranking, 11 juni 2026).
-        // Vaste lookup op Nederlandse landnaam; placeholders ("Winnaar groep A" e.d.) staan er bewust niet in.
-        const FIFA_RANKING = {
-            'Argentinië': 1, 'Spanje': 2, 'Frankrijk': 3, 'Engeland': 4, 'Portugal': 5,
-            'Brazilië': 6, 'Marokko': 7, 'Nederland': 8, 'België': 9, 'Duitsland': 10,
-            'Kroatië': 11, 'Colombia': 13, 'Mexico': 14, 'Senegal': 15, 'Uruguay': 16,
-            'Verenigde Staten': 17, 'Japan': 18, 'Zwitserland': 19, 'Iran': 20, 'Turkije': 22,
-            'Ecuador': 23, 'Oostenrijk': 24, 'Zuid-Korea': 25, 'Australië': 27, 'Algerije': 28,
-            'Egypte': 29, 'Canada': 30, 'Noorwegen': 31, 'Ivoorkust': 33, 'Panama': 34,
-            'Zweden': 38, 'Tsjechië': 40, 'Paraguay': 41, 'Schotland': 42, 'Tunesië': 45,
-            'DR Congo': 46, 'Oezbekistan': 50, 'Qatar': 56, 'Irak': 57, 'Zuid-Afrika': 60,
-            'Saoedi-Arabië': 61, 'Jordanië': 63, 'Bosnië en Herzegovina': 64, 'Kaapverdië': 67,
-            'Ghana': 73, 'Haïti': 82, 'Curaçao': 83, 'Nieuw-Zeeland': 85,
-        };
-
-        // Kleine FIFA-ranking-badge achter een landnaam (alleen voor echte landen, niet voor placeholders).
-        const FifaRang = ({ naam }) => {
-            const r = FIFA_RANKING[naam];
-            if (!r) return null;
-            return <span title={`FIFA-ranking: #${r}`} className="shrink-0 text-[10px] leading-none text-gray-400 font-semibold tabular-nums">#{r}</span>;
-        };
-
-        // Eén wedstrijdregel: team1 — uitslag/tijd — team2, met optioneel doelpuntenmakers.
-        const WedstrijdRij = ({ w, toonScorers }) => {
-            const st = statusVan(w);
-            const gespeeld = !!w.score;
-            const scorers = (lst) => (lst || []).map(g =>
-                `${g.naam}${g.minuut ? ` ${g.minuut}'` : ''}${g.strafschop ? ' (p)' : ''}${g.eigendoelpunt ? ' (e.d.)' : ''}`).join(', ');
-            const s1 = gespeeld ? scorers(w.goals1) : '';
-            const s2 = gespeeld ? scorers(w.goals2) : '';
-            return (
-                <div className={`px-2 py-1.5 rounded-lg ${isOranje(w) ? 'bg-orange-50 ring-1 ring-orange-200' : ''}`}>
-                    <div className="flex items-center gap-2 text-sm">
-                        <div className="flex-1 min-w-0 flex items-center justify-end gap-1 font-medium">
-                            <span className="truncate">{w.team1}</span>
-                            <FifaRang naam={w.team1} />
-                        </div>
-                        <div className="shrink-0 text-center min-w-[3.25rem]">
-                            {gespeeld
-                                ? <span className="font-bold tabular-nums">{w.score.ft[0]} – {w.score.ft[1]}</span>
-                                : <span className="text-gray-500 tabular-nums text-xs">{wkTijd(w.aftrapUtc) || 'n.t.b.'}</span>}
-                        </div>
-                        <div className="flex-1 min-w-0 flex items-center gap-1 font-medium">
-                            <span className="truncate">{w.team2}</span>
-                            <FifaRang naam={w.team2} />
-                        </div>
-                        {st && <span className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded-full font-bold ${st.kleur}`}>{st.label}</span>}
-                    </div>
-                    {toonScorers && gespeeld && (s1 || s2) && (
-                        <div className="flex gap-2 mt-0.5 text-[11px] text-gray-400">
-                            <div className="flex-1 text-right truncate">{s1}</div>
-                            <div className="shrink-0 w-[3.25rem]"></div>
-                            <div className="flex-1 truncate">{s2}</div>
-                        </div>
-                    )}
-                </div>
-            );
-        };
-
-        // Standtabel van één groep.
-        const StandTabel = ({ stand }) => (
-            <table className="w-full text-xs">
-                <thead>
-                    <tr className="text-gray-400 border-b">
-                        <th className="py-1 px-1 text-left font-semibold w-5">#</th>
-                        <th className="py-1 px-1 text-left font-semibold">Team</th>
-                        <th className="py-1 px-1 text-center font-semibold" title="Gespeeld">Gs</th>
-                        <th className="py-1 px-1 text-center font-semibold hidden sm:table-cell" title="Gewonnen">W</th>
-                        <th className="py-1 px-1 text-center font-semibold hidden sm:table-cell" title="Gelijk">G</th>
-                        <th className="py-1 px-1 text-center font-semibold hidden sm:table-cell" title="Verloren">V</th>
-                        <th className="py-1 px-1 text-center font-semibold" title="Doelsaldo">+/−</th>
-                        <th className="py-1 px-1 text-center font-semibold" title="Punten">Ptn</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {stand.map(s => {
-                        const rij = s.status === 'direct' ? 'bg-green-50' : s.status === 'derde' ? 'bg-amber-50' : '';
-                        return (
-                            <tr key={s.team} className={`border-b border-gray-100 ${rij} ${s.team === ORANJE ? 'font-bold text-orange-700' : ''}`}>
-                                <td className="py-1.5 px-1 text-gray-400">{s.positie}</td>
-                                <td className="py-1.5 px-1 truncate max-w-[8rem]">{s.team}</td>
-                                <td className="py-1.5 px-1 text-center tabular-nums">{s.gespeeld}</td>
-                                <td className="py-1.5 px-1 text-center tabular-nums hidden sm:table-cell">{s.w}</td>
-                                <td className="py-1.5 px-1 text-center tabular-nums hidden sm:table-cell">{s.g}</td>
-                                <td className="py-1.5 px-1 text-center tabular-nums hidden sm:table-cell">{s.v}</td>
-                                <td className="py-1.5 px-1 text-center tabular-nums">{s.saldo > 0 ? '+' : ''}{s.saldo}</td>
-                                <td className="py-1.5 px-1 text-center font-bold tabular-nums">{s.punten}</td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-        );
-
-        // Eén groepskaart: stand + inklapbare wedstrijdenlijst.
-        const GroepKaart = ({ groep, wedstrijden }) => {
-            const eigen = wedstrijden.filter(w => w.groep === groep.id);
-            return (
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                    <div className="px-4 py-2.5 bg-gray-800 text-white">
-                        <h3 className="font-bold flex items-center gap-2"><Trophy size={15} className="text-amber-400" /> Groep {groep.id}</h3>
-                    </div>
-                    <div className="p-3">
-                        <StandTabel stand={groep.stand} />
-                    </div>
-                    <details className="group border-t border-gray-100">
-                        <summary className="cursor-pointer select-none px-4 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-50 flex items-center gap-1">
-                            <ChevronDown size={14} className="group-open:rotate-180 transition-transform" /> Wedstrijden ({eigen.length})
-                        </summary>
-                        <div className="px-2 pb-3 space-y-0.5">
-                            {eigen.map(w => <WedstrijdRij key={w.id} w={w} />)}
-                        </div>
-                    </details>
-                </div>
-            );
-        };
-
-        // Ranglijst van de groepsderden (8 beste plaatsen zich).
-        const DerdenKaart = ({ derden }) => {
-            if (!derden || derden.length === 0) return null;
-            return (
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                    <div className="px-4 py-2.5 bg-amber-500 text-white">
-                        <h3 className="font-bold flex items-center gap-2"><Star size={15} /> Beste nummers 3 — 8 plaatsen zich</h3>
-                    </div>
-                    <div className="p-3">
-                        <p className="text-[11px] text-gray-400 mb-2">Voorlopige stand. De 8 beste groepsderden gaan door naar de ronde van 32.</p>
-                        <table className="w-full text-xs">
-                            <thead>
-                                <tr className="text-gray-400 border-b">
-                                    <th className="py-1 px-1 text-left font-semibold w-5">#</th>
-                                    <th className="py-1 px-1 text-left font-semibold">Team</th>
-                                    <th className="py-1 px-1 text-center font-semibold">Groep</th>
-                                    <th className="py-1 px-1 text-center font-semibold" title="Gespeeld">Gs</th>
-                                    <th className="py-1 px-1 text-center font-semibold" title="Doelsaldo">+/−</th>
-                                    <th className="py-1 px-1 text-center font-semibold" title="Punten">Ptn</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {derden.map(d => (
-                                    <tr key={d.groep} className={`border-b border-gray-100 ${d.geplaatst ? 'bg-green-50' : 'opacity-50'} ${d.team === ORANJE ? 'font-bold text-orange-700' : ''}`}>
-                                        <td className="py-1.5 px-1 text-gray-400">{d.positie}</td>
-                                        <td className="py-1.5 px-1 truncate max-w-[8rem]">{d.team}</td>
-                                        <td className="py-1.5 px-1 text-center">{d.groep}</td>
-                                        <td className="py-1.5 px-1 text-center tabular-nums">{d.gespeeld}</td>
-                                        <td className="py-1.5 px-1 text-center tabular-nums">{d.saldo > 0 ? '+' : ''}{d.saldo}</td>
-                                        <td className="py-1.5 px-1 text-center font-bold tabular-nums">{d.punten}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            );
-        };
-
-        // Groepen-weergave: 12 kaarten + beste-nummers-3-tabel.
-        const GroepenWeergave = ({ data }) => (
-            <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {data.groepen.map(g => <GroepKaart key={g.id} groep={g} wedstrijden={data.wedstrijden} />)}
-                </div>
-                <DerdenKaart derden={data.derden} />
-            </div>
-        );
-
-        // Speelschema: alle wedstrijden per dag, met filter op Oranje.
-        const SpeelschemaWeergave = ({ data }) => {
-            const [alleenOranje, setAlleenOranje] = useState(false);
-            const lijst = alleenOranje ? data.wedstrijden.filter(isOranje) : data.wedstrijden;
-            const perDag = [];
-            let huidig = null;
-            for (const w of lijst) {
-                const sleutel = wkDagSleutel(w.aftrapUtc);
-                if (!huidig || huidig.sleutel !== sleutel) { huidig = { sleutel, utc: w.aftrapUtc, items: [] }; perDag.push(huidig); }
-                huidig.items.push(w);
-            }
-            return (
-                <div className="space-y-4">
-                    <div className="flex justify-end">
-                        <button onClick={() => setAlleenOranje(v => !v)} className={`text-xs px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-colors ${alleenOranje ? 'bg-orange-500 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}`}>
-                            <Star size={13} /> Alleen Oranje
-                        </button>
-                    </div>
-                    {perDag.map(dag => (
-                        <div key={dag.sleutel} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div className="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-bold">{hoofdletter(wkDatumLang(dag.utc))}</div>
-                            <div className="p-2 divide-y divide-gray-50">
-                                {dag.items.map(w => (
-                                    <div key={w.id} className="pt-1 first:pt-0">
-                                        <div className="px-2 text-[10px] text-gray-400 font-semibold uppercase tracking-wide">{w.ronde}{w.stadion ? ` · ${w.stadion}` : ''}</div>
-                                        <WedstrijdRij w={w} toonScorers={true} />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                    {perDag.length === 0 && <p className="text-center text-gray-400 text-sm py-8">Geen wedstrijden gevonden.</p>}
-                </div>
-            );
-        };
-
-        // Hoofdcontainer van de WK-tab.
-        const WkSectie = ({ data, laden, fout, herlaad }) => {
-            const [sub, setSub] = useState('groepen');
-            if (fout && !data) {
-                return (
-                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
-                        <AlertCircle className="mx-auto text-rose-400 mb-3" size={32} />
-                        <p className="text-gray-600 mb-1 font-semibold">WK-gegevens konden niet geladen worden.</p>
-                        <p className="text-gray-400 text-sm mb-4">Controleer je internetverbinding en probeer opnieuw.</p>
-                        <button onClick={herlaad} className="inline-flex items-center gap-2 text-sm bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700">
-                            <RefreshCw size={15} /> Opnieuw proberen
-                        </button>
-                    </div>
-                );
-            }
-            if (!data) {
-                return (
-                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center text-gray-400">
-                        <RefreshCw className="mx-auto mb-3 animate-spin" size={28} />
-                        <p>WK-gegevens laden…</p>
-                    </div>
-                );
-            }
-            const volgendeOranje = data.wedstrijden.find(w => !w.score && isOranje(w));
-            return (
-                <div className="space-y-4">
-                    <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl shadow-sm p-5 text-white">
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                            <div>
-                                <h2 className="text-xl font-extrabold flex items-center gap-2"><Trophy size={22} /> WK 2026</h2>
-                                <p className="text-white/80 text-sm">VS · Canada · Mexico — {data.aantalGespeeld} van {data.aantalWedstrijden} wedstrijden gespeeld</p>
-                            </div>
-                            <button onClick={herlaad} className="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5">
-                                <RefreshCw size={13} className={laden ? 'animate-spin' : ''} /> Ververs
-                            </button>
-                        </div>
-                        {volgendeOranje && (
-                            <div className="mt-3 bg-white/15 rounded-lg px-3 py-2 text-sm flex items-center gap-2 flex-wrap">
-                                <Star size={14} /> Volgende Oranje-duel:
-                                <span className="font-bold">{volgendeOranje.team1} – {volgendeOranje.team2}</span>
-                                <span className="text-white/80">· {hoofdletter(wkDatumKort(volgendeOranje.aftrapUtc))} {wkTijd(volgendeOranje.aftrapUtc)}</span>
-                            </div>
-                        )}
-                    </div>
-                    <div className="flex gap-2">
-                        <button onClick={() => setSub('groepen')} className={`flex items-center gap-1.5 text-sm px-4 py-2 rounded-lg font-bold transition-colors ${sub === 'groepen' ? 'bg-gray-800 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}`}><Trophy size={15} /> Groepen</button>
-                        <button onClick={() => setSub('schema')} className={`flex items-center gap-1.5 text-sm px-4 py-2 rounded-lg font-bold transition-colors ${sub === 'schema' ? 'bg-gray-800 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}`}><CalendarIcon size={15} /> Speelschema</button>
-                    </div>
-                    {sub === 'groepen' ? <GroepenWeergave data={data} /> : <SpeelschemaWeergave data={data} />}
-                </div>
-            );
-        };
-
         const App = () => {
             const [currentDate, setCurrentDate] = useState(new Date());
             const [viewDate, setViewDate] = useState(new Date());
 
-            // --- WK 2026: tabwissel + data laden ------------------------------
-            // Volgorde: 1) zelfde-origin wk-data.json (server; offline via service worker),
-            // 2) verse data rechtstreeks van GitHub (werkt ook op file:// dankzij CORS),
-            // 3) window.WK_DATA uit wk-data.js (offline/file://-terugval).
-            const [activeTab, setActiveTab] = useState('dashboard');
-            const [wkData, setWkData] = useState(null);
-            const [wkLaden, setWkLaden] = useState(false);
-            const [wkFout, setWkFout] = useState(false);
-            const laadWk = React.useCallback(async () => {
-                setWkLaden(true); setWkFout(false);
-                const RAW = 'https://raw.githubusercontent.com/Chatgptmarcel/herstel-dashboard/main/wk-data.json';
-                const probeer = async (url) => {
-                    const ctrl = new AbortController();
-                    const tid = setTimeout(() => ctrl.abort(), 6000);
-                    try {
-                        const r = await fetch(url, { cache: 'no-store', signal: ctrl.signal });
-                        if (!r.ok) throw new Error('HTTP ' + r.status);
-                        return await r.json();
-                    } finally { clearTimeout(tid); }
-                };
-                for (const url of ['./wk-data.json', RAW]) {
-                    try { const d = await probeer(url); setWkData(d); setWkLaden(false); return; } catch (e) { /* volgende bron */ }
-                }
-                // Terugval: lokaal meegeleverde data (wk-data.js → window.WK_DATA), bv. offline op file://.
-                await new Promise((res) => {
-                    const s = document.createElement('script');
-                    s.src = 'wk-data.js?t=' + Date.now();
-                    s.onload = res; s.onerror = res;
-                    document.body.appendChild(s);
-                });
-                if (typeof window !== 'undefined' && window.WK_DATA) { setWkData(window.WK_DATA); setWkLaden(false); }
-                else { setWkFout(true); setWkLaden(false); }
-            }, []);
-            useEffect(() => { laadWk(); }, [laadWk]);
-            
             // --- HELPER VOOR DATUM FORMATTERING (LOKAAL) ---
             const toLocalISOString = (date) => {
                 const year = date.getFullYear();
@@ -2373,7 +2055,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                 <p className="text-gray-600 text-sm">Notities & Automatisch Rooster</p>
                             </div>
                         </div>
-                        {activeTab === 'dashboard' && <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-2 flex-wrap">
                             {/* FILTER KNOP */}
                             <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center text-xs px-3 py-1.5 rounded-lg font-bold transition-colors ${showFilters ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}>
                                 <Filter size={14} className="mr-1.5"/> Filters
@@ -2399,22 +2081,9 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                 <HardDrive size={14} className="mr-1.5"/>
                                 {saveStatus}
                             </div>
-                        </div>}
+                        </div>
                     </div>
 
-                    {/* Tabwissel: Dashboard / WK 2026 */}
-                    <div className="flex gap-2 mb-6">
-                        <button onClick={() => setActiveTab('dashboard')} className={`flex items-center gap-2 text-sm px-4 py-2 rounded-lg font-bold transition-colors ${activeTab === 'dashboard' ? 'bg-blue-600 text-white shadow' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}`}>
-                            <Activity size={16} /> Dashboard
-                        </button>
-                        <button onClick={() => setActiveTab('wk')} className={`flex items-center gap-2 text-sm px-4 py-2 rounded-lg font-bold transition-colors ${activeTab === 'wk' ? 'bg-orange-500 text-white shadow' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}`}>
-                            <Trophy size={16} /> WK 2026
-                        </button>
-                    </div>
-
-                    {activeTab === 'wk' && <WkSectie data={wkData} laden={wkLaden} fout={wkFout} herlaad={laadWk} />}
-
-                    {activeTab === 'dashboard' && (<>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                         {/* DAGEN NUCHTER KPI */}
                         <div className="bg-white p-5 rounded-xl border border-green-100 flex flex-col items-center">
@@ -2701,7 +2370,6 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                         <div className="grid grid-cols-7 bg-gray-100 text-center py-3 text-xs font-bold text-gray-500 border-b"><div>Ma</div><div>Di</div><div>Wo</div><div>Do</div><div>Vr</div><div>Za</div><div>Zo</div></div>
                         <div className="grid grid-cols-7 bg-gray-200 gap-px">{renderCalendar()}</div>
                     </div>
-                    </>)}
 
                     {/* MODAL: Astrologie Transit Detail */}
                     {astroModalTransit && (() => {
