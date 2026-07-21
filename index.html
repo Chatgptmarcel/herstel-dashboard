@@ -30,7 +30,7 @@
         (function () {
             window.SYNC_KEYS = [
                 'dashboard_manual_shifts', 'sobriety_history', 'arm_history', 'minox_start_date',
-                'dashboard_roster_overrides', 'amber_shifts', 'tijdvak_shifts'
+                'dashboard_roster_overrides', 'amber_shifts', 'tijdvak_shifts', 'dashboard_loonstrook'
             ];
             try {
                 if (!localStorage.getItem('_sync_client_id')) {
@@ -307,11 +307,19 @@
             Sparkles,
             Zap,
             Download,
-            Pencil
+            Pencil,
+            Banknote
         } from 'lucide-react';
 
         const App = () => {
             const [currentDate, setCurrentDate] = useState(new Date());
+            // Loonstrookcontroles: op de pc uit loonstrook-data.js, op de telefoon uit de cloud-sync (dashboard_loonstrook)
+            const loonChecks = (window.LOONSTROOK_DATA && window.LOONSTROOK_DATA.checks) || (() => {
+                try { const v = JSON.parse(localStorage.getItem('dashboard_loonstrook') || 'null'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+            })();
+            const loonLaatste = loonChecks.length
+                ? [...loonChecks].sort((a, b) => (a.jaar * 100 + a.periode) - (b.jaar * 100 + b.periode))[loonChecks.length - 1]
+                : null;
             const [viewDate, setViewDate] = useState(new Date());
 
             // --- HELPER VOOR DATUM FORMATTERING (LOKAAL) ---
@@ -2084,7 +2092,24 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+                        {/* LOONSTROOK KPI */}
+                        <div className="bg-white p-5 rounded-xl border border-emerald-100 flex flex-col items-center text-center">
+                            <Banknote className="text-emerald-600 mb-2" size={24}/>
+                            <h2 className="text-xs font-bold text-gray-500">Loonstrook</h2>
+                            {loonLaatste ? (
+                                <>
+                                    <p className={`text-xl font-bold ${loonLaatste.status === 'OK' ? 'text-emerald-600' : 'text-amber-600'}`} title={loonLaatste.toelichting}>
+                                        {loonLaatste.status === 'OK' ? 'Klopt' : 'Controleren!'}
+                                    </p>
+                                    <p className="text-[11px] text-gray-500 mt-1">P{loonLaatste.periode} · € {loonLaatste.netto.toLocaleString('nl-NL', {minimumFractionDigits: 2})}</p>
+                                    <p className="text-[11px] text-gray-400">{loonLaatste.verloonde_uren.toLocaleString('nl-NL')} u verloond{loonLaatste.rooster_uren ? ` · rooster ${loonLaatste.rooster_uren.toLocaleString('nl-NL')} u` : ''}</p>
+                                </>
+                            ) : (
+                                <p className="text-xl font-bold text-gray-400">Geen data</p>
+                            )}
+                            <p className="text-[10px] text-gray-400 mt-2">Volgende check: betaalvrijdag</p>
+                        </div>
                         {/* DAGEN NUCHTER KPI */}
                         <div className="bg-white p-5 rounded-xl border border-green-100 flex flex-col items-center">
                             <Trophy className="text-green-600 mb-2" size={24}/>
