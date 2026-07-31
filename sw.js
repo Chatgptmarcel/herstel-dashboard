@@ -3,13 +3,13 @@
 // Strategie:
 //  - Eigen bestanden (index.html, schedule.ics, json): netwerk eerst, cache als
 //    offline-terugval. Zo zijn rooster en app-updates altijd vers zodra er internet is.
-//  - CDN-bestanden (React, Tailwind, Babel, pdf.js, iconen): cache eerst, daarna netwerk.
+//  - CDN-bestanden (React, Tailwind, Babel, iconen): cache eerst, daarna netwerk.
 //    Na het eerste gebruik opent de app daardoor ook offline, met het laatst bekende rooster.
 //
 // Cache-bust-parameters (?t=...) worden bij eigen bestanden genegeerd als cachesleutel,
 // anders zou elke ophaling een nieuwe kopie opslaan en zou offline nooit iets matchen.
 
-const CACHE = 'herstel-dashboard-v2';
+const CACHE = 'herstel-dashboard-v3';
 const PRECACHE = [
     './',
     './manifest.webmanifest',

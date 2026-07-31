@@ -30,7 +30,7 @@
         (function () {
             window.SYNC_KEYS = [
                 'dashboard_manual_shifts', 'sobriety_history', 'arm_history', 'minox_start_date',
-                'dashboard_roster_overrides', 'amber_shifts', 'tijdvak_shifts', 'dashboard_loonstrook'
+                'dashboard_roster_overrides', 'amber_shifts', 'dashboard_loonstrook'
             ];
             try {
                 if (!localStorage.getItem('_sync_client_id')) {
@@ -54,8 +54,6 @@
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
 
     <!-- Lokaal rooster (offline / file://): laadt schedule-data.js (window.SCHEDULE_ICS), gegenereerd door
          rooster-sync.js. Cache-bust zodat altijd de nieuwste data laadt. Bestaat dit bestand niet (bv. op
@@ -78,191 +76,8 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
 
-        /* Astrologie KPI kaart — wit, past bij de rest */
-        .astro-kpi {
-            background: white;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid #e0e7ff;
-        }
-        .astro-kpi::after {
-            content: '☉ ☽ ♃ ♄ ♅ ♆ ♇';
-            position: absolute;
-            bottom: -6px;
-            right: -8px;
-            font-size: 2rem;
-            opacity: 0.06;
-            letter-spacing: 3px;
-            pointer-events: none;
-            color: #4338ca;
-        }
-
-        /* Piek pulse */
-        .astro-piek-pulse { animation: astroPulseGlow 2s ease-in-out infinite; }
-        @keyframes astroPulseGlow {
-            0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.3); }
-            50% { box-shadow: 0 0 12px 4px rgba(245,158,11,0.15); }
-        }
-
-        /* Transit sectie — zelfde donkere stijl als KPI */
-        .astro-section {
-            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #3730a3 100%);
-            position: relative;
-            overflow: hidden;
-        }
-        .astro-section::before {
-            content: '';
-            position: absolute;
-            top: -50%; right: -30%;
-            width: 80%; height: 100%;
-            background: radial-gradient(circle, rgba(199,168,76,0.06) 0%, transparent 70%);
-            pointer-events: none;
-        }
-
-        /* Transit kaart hover */
-        .astro-transit-card {
-            transition: all 0.2s ease;
-            border-left-width: 4px;
-            border-left-style: solid;
-        }
-        .astro-transit-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px -5px rgba(0,0,0,0.1), 0 4px 10px -5px rgba(0,0,0,0.04);
-        }
-
-        /* Fase badges */
-        .astro-fase-piek {
-            animation: astroPulse 2s ease-in-out infinite;
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            color: #78350f;
-        }
-        @keyframes astroPulse { 0%,100% { opacity:1; } 50% { opacity:0.7; } }
-        .astro-fase-aanloop { background: linear-gradient(135deg, #93c5fd, #60a5fa); color: #1e3a5f; }
-        .astro-fase-uitloop { background: linear-gradient(135deg, #d1d5db, #9ca3af); color: #374151; }
-
-        /* Voortgangsbalk */
-        .astro-progress {
-            height: 6px;
-            border-radius: 3px;
-            background: rgba(0,0,0,0.06);
-            overflow: hidden;
-            position: relative;
-        }
-        .astro-progress-fill {
-            height: 100%;
-            border-radius: 3px;
-            position: relative;
-        }
-        .astro-progress-fill::after {
-            content: '';
-            position: absolute;
-            top: 0; right: 0;
-            width: 8px; height: 100%;
-            background: rgba(255,255,255,0.5);
-            border-radius: 0 3px 3px 0;
-        }
-
-        /* Samenvatting kaarten — glassmorphism op donker */
-        .astro-stat-card {
-            background: rgba(255,255,255,0.07);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: transform 0.15s;
-        }
-        .astro-stat-card:hover { transform: translateY(-1px); background: rgba(255,255,255,0.1); }
-
-        /* Modal */
-        .astro-modal-header {
-            background: linear-gradient(135deg, #312e81 0%, #4c1d95 100%);
-            position: relative;
-            overflow: hidden;
-        }
-        .astro-modal-header::before {
-            content: '';
-            position: absolute;
-            top: -30px; right: -30px;
-            width: 120px; height: 120px;
-            background: radial-gradient(circle, rgba(199,168,76,0.15) 0%, transparent 70%);
-            pointer-events: none;
-        }
-
-        /* Intensiteitsbalk met glow */
-        .astro-intensity-bar {
-            height: 8px;
-            border-radius: 4px;
-            background: rgba(0,0,0,0.06);
-            overflow: hidden;
-        }
-        .astro-intensity-fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.5s ease;
-        }
     </style>
 
-    <!-- Astrologie Transit Data (uit astrologieprogramma) -->
-    <script>
-    window.ASTRO_TRANSITS = [];
-
-    // Berekeningsconstanten
-    window.ASTRO_PLANEET_ICONEN = {'Zon':'☉','Maan':'☽','Mercurius':'☿','Venus':'♀','Mars':'♂','Jupiter':'♃','Saturnus':'♄','Uranus':'♅','Neptunus':'♆','Pluto':'♇'};
-    window.ASTRO_PLANEET_SNELHEID = {'Pluto':0.015,'Neptunus':0.020,'Uranus':0.040,'Saturnus':0.055,'Jupiter':0.083};
-    window.ASTRO_PLANEET_ORB = {'Pluto':1.5,'Neptunus':1.5,'Uranus':2.0,'Saturnus':2.0,'Jupiter':2.0};
-    window.ASTRO_PIEK_ORB = 0.5;
-    window.ASTRO_LEVENSGEBIEDEN = {identiteit:{naam:'Identiteit',icon:'☉'},emoties:{naam:'Emoties',icon:'☽'},werk:{naam:'Werk',icon:'♄'},relaties:{naam:'Relaties',icon:'♀'},creativiteit:{naam:'Creativiteit',icon:'♇'},gezondheid:{naam:'Gezondheid',icon:'♅'},financien:{naam:'Financiën',icon:'☽'}};
-
-    // Bereken actieve periodes per groep
-    window.ASTRO_GROEP_PERIODES = {};
-    (function() {
-      const groepen = {};
-      window.ASTRO_TRANSITS.forEach(t => {
-        if (!groepen[t.groepId]) groepen[t.groepId] = [];
-        groepen[t.groepId].push(t);
-      });
-      Object.entries(groepen).forEach(([groepId, passages]) => {
-        const planeet = passages[0].transitplaneet;
-        const snelheid = window.ASTRO_PLANEET_SNELHEID[planeet] || 0.05;
-        const orb = window.ASTRO_PLANEET_ORB[planeet] || 2.0;
-        const orbDagen = Math.round(orb / snelheid);
-        passages.sort((a, b) => new Date(a.datum) - new Date(b.datum));
-        const eersteHit = new Date(passages[0].datum);
-        const laatsteHit = new Date(passages[passages.length - 1].datum);
-        const startActief = new Date(eersteHit.getTime() - orbDagen * 86400000);
-        const eindActief = new Date(laatsteHit.getTime() + orbDagen * 86400000);
-        const piekDagen = Math.round(window.ASTRO_PIEK_ORB / snelheid);
-        const pieken = passages.map(p => ({
-          id: p.id, datum: new Date(p.datum),
-          piekStart: new Date(new Date(p.datum).getTime() - piekDagen * 86400000),
-          piekEind: new Date(new Date(p.datum).getTime() + piekDagen * 86400000)
-        }));
-        window.ASTRO_GROEP_PERIODES[groepId] = { startActief, eindActief, eersteHit, laatsteHit, orbDagen, piekDagen, pieken, passages };
-      });
-    })();
-
-    // Bepaal transit status voor een datum
-    window.getAstroTransitStatus = function(transit, datum) {
-      const groep = window.ASTRO_GROEP_PERIODES[transit.groepId];
-      if (!groep) return null;
-      const d = datum.getTime();
-      if (d < groep.startActief.getTime() || d > groep.eindActief.getTime()) return null;
-      const snelheid = window.ASTRO_PLANEET_SNELHEID[transit.transitplaneet] || 0.05;
-      let dichtstbijHit = null, minAfstand = Infinity;
-      groep.pieken.forEach(p => {
-        const afstand = Math.abs(p.datum.getTime() - d);
-        if (afstand < minAfstand) { minAfstand = afstand; dichtstbijHit = p; }
-      });
-      let fase;
-      if (dichtstbijHit && d >= dichtstbijHit.piekStart.getTime() && d <= dichtstbijHit.piekEind.getTime()) fase = 'piek';
-      else if (d < groep.eersteHit.getTime()) fase = 'aanloop';
-      else if (d > groep.laatsteHit.getTime()) fase = 'uitloop';
-      else fase = (dichtstbijHit && d < dichtstbijHit.datum.getTime()) ? 'aanloop' : 'uitloop';
-      const totaalDuur = groep.eindActief.getTime() - groep.startActief.getTime();
-      const voortgang = Math.min(100, Math.max(0, Math.round(((d - groep.startActief.getTime()) / totaalDuur) * 100)));
-      const dagenTotHit = dichtstbijHit ? Math.round((dichtstbijHit.datum.getTime() - d) / 86400000) : 0;
-      const orbGraden = dichtstbijHit ? (Math.abs(dichtstbijHit.datum.getTime() - d) / 86400000 * snelheid).toFixed(1) : '?';
-      return { actief: true, fase, voortgang, dagenTotHit, dichtstbijHit, orbGraden, groep };
-    };
-    </script>
 </head>
 <body class="text-slate-900" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%); min-height: 100vh;">
     <div id="root"></div>
@@ -271,41 +86,26 @@
         import React, { useState, useEffect } from 'react';
         import { createRoot } from 'react-dom/client';
         import { 
-            Calendar as CalendarIcon, 
-            CheckCircle, 
-            Activity, 
-            Droplets, 
-            Trophy, 
-            ChevronLeft, 
-            ChevronRight, 
-            Plus, 
-            X, 
-            Save, 
-            Trash2, 
-            Briefcase, 
-            StickyNote, 
-            HardDrive,
-            FileJson,
-            FolderOpen,
+            Calendar as CalendarIcon,
+            CheckCircle,
+            Activity,
+            Droplets,
+            Trophy,
+            ChevronLeft,
+            ChevronRight,
+            Plus,
+            X,
+            Save,
+            Trash2,
+            Briefcase,
+            StickyNote,
             ExternalLink,
             Settings,
             History,
             RefreshCw,
-            Clock,
             FlaskConical,
-            Upload,
-            FileText,
-            AlertCircle,
-            Check,
             Heart,
-            Eye,
-            EyeOff,
             Filter,
-            Star,
-            ChevronDown,
-            ChevronUp,
-            Sparkles,
-            Zap,
             Download,
             Pencil,
             Banknote
@@ -382,10 +182,6 @@
             const [showMinoxSettingsModal, setShowMinoxSettingsModal] = useState(false);
             const [newMinoxStartDateInput, setNewMinoxStartDateInput] = useState(toLocalISOString(minoxStartDate));
             
-            // Opslag status en File Handle
-            const [saveStatus, setSaveStatus] = useState("Niet gekoppeld");
-            const [fileHandle, setFileHandle] = useState(null);
-
             // DATA
             const [rosterShifts, setRosterShifts] = useState({});
             const [manualShifts, setManualShifts] = useState({});
@@ -404,12 +200,6 @@
             const [selectedDate, setSelectedDate] = useState(null);
             const [newNote, setNewNote] = useState(""); 
 
-            // PDF UPLOAD STATES
-            const [showPdfModal, setShowPdfModal] = useState(false);
-            const [pdfParsing, setPdfParsing] = useState(false);
-            const [parsedShifts, setParsedShifts] = useState([]);
-            const [pdfError, setPdfError] = useState(null); 
-
             // AMBER ROOSTER STATES
             const [amberShifts, setAmberShifts] = useState(() => {
                 const saved = localStorage.getItem('amber_shifts');
@@ -423,17 +213,6 @@
             const [amberAnalyzing, setAmberAnalyzing] = useState(false);
             const [amberAnalyzeError, setAmberAnalyzeError] = useState(null);
 
-            // TIJDVAK ROOSTER STATES (G4S Connect voorlopige roosters)
-            const [tijdvakShifts, setTijdvakShifts] = useState(() => {
-                const saved = localStorage.getItem('tijdvak_shifts');
-                return saved ? JSON.parse(saved) : {};
-            });
-            const [showTijdvakModal, setShowTijdvakModal] = useState(false);
-            const [tijdvakMonth, setTijdvakMonth] = useState(new Date().getMonth());
-            const [tijdvakYear, setTijdvakYear] = useState(new Date().getFullYear());
-            const [tijdvakBulkInput, setTijdvakBulkInput] = useState("");
-            const [tijdvakBulkParsed, setTijdvakBulkParsed] = useState([]);
-
             // KALENDER FILTER STATES
             const [showFilters, setShowFilters] = useState(false);
             const [calendarFilters, setCalendarFilters] = useState(() => {
@@ -446,8 +225,7 @@
                     showWork: true,
                     showNotes: true,
                     showSalary: true,
-                    showTrigion: true,
-                    showTijdvak: true
+                    showTrigion: true
                 };
                 if (saved) {
                     const parsed = JSON.parse(saved);
@@ -455,67 +233,6 @@
                 }
                 return defaults;
             }); 
-
-            // ASTROLOGIE STATES
-            const [astroOpen, setAstroOpen] = useState(false);
-            const [astroModalTransit, setAstroModalTransit] = useState(null);
-
-            // Bereken actieve transits voor vandaag
-            const getAstroToday = () => {
-                const datum = new Date();
-                datum.setHours(12, 0, 0, 0);
-                const actieve = [];
-                const getoond = new Set();
-                window.ASTRO_TRANSITS.forEach(t => {
-                    const status = window.getAstroTransitStatus(t, datum);
-                    if (status && !getoond.has(t.groepId)) {
-                        const groep = window.ASTRO_GROEP_PERIODES[t.groepId];
-                        let beste = t;
-                        let minAf = Math.abs(new Date(t.datum).getTime() - datum.getTime());
-                        groep.passages.forEach(p => {
-                            const af = Math.abs(new Date(p.datum).getTime() - datum.getTime());
-                            if (af < minAf) { minAf = af; beste = p; }
-                        });
-                        actieve.push({ transit: beste, status, groep });
-                        getoond.add(t.groepId);
-                    }
-                });
-                actieve.sort((a, b) => {
-                    if (a.status.fase === 'piek' && b.status.fase !== 'piek') return -1;
-                    if (b.status.fase === 'piek' && a.status.fase !== 'piek') return 1;
-                    return b.transit.intensiteit - a.transit.intensiteit;
-                });
-                return actieve;
-            };
-            const astroToday = getAstroToday();
-            const astroPieken = astroToday.filter(a => a.status.fase === 'piek');
-
-            const astroIntensiteitKleur = (n) => {
-                if (n <= 3) return '#22c55e';
-                if (n <= 5) return '#84cc16';
-                if (n <= 7) return '#f59e0b';
-                if (n <= 8) return '#f97316';
-                return '#ef4444';
-            };
-
-            const astroToonKleur = (toon) => {
-                if (toon === 'positief') return {bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-300'};
-                if (toon === 'negatief') return {bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300'};
-                if (toon === 'gemengd') return {bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-300'};
-                return {bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-300'};
-            };
-
-            const astroFaseLabel = (fase) => {
-                if (fase === 'piek') return {label: '⚡ Piek', cls: 'bg-amber-200 text-amber-800'};
-                if (fase === 'aanloop') return {label: '↗ Aanloop', cls: 'bg-blue-100 text-blue-700'};
-                return {label: '↘ Uitloop', cls: 'bg-gray-200 text-gray-600'};
-            };
-
-            const formatAstroDatum = (d) => {
-                const dt = typeof d === 'string' ? new Date(d) : d;
-                const maanden = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
-                return `${dt.getDate()} ${maanden[dt.getMonth()]} ${dt.getFullYear()}`;
-            };
 
             // CONFIGURATIE VAST
             // Werkrooster komt uit RostarCAS (Trigion Schiphol). De privé feed-URL staat
@@ -692,7 +409,6 @@
                             localStorage.setItem('_alleen_thuis_jul2026_injected', '1');
                         }
                         setManualShifts(parsed);
-                        setSaveStatus("Lokale kopie geladen");
                     } catch (e) { console.error("Fout laden data", e); }
                 }
 
@@ -703,11 +419,6 @@
             useEffect(() => {
                 localStorage.setItem('amber_shifts', JSON.stringify(amberShifts));
             }, [amberShifts]);
-
-            // Save Tijdvak shifts to localStorage
-            useEffect(() => {
-                localStorage.setItem('tijdvak_shifts', JSON.stringify(tijdvakShifts));
-            }, [tijdvakShifts]);
 
             // Save roster-correcties (verbergen/aanpassen van automatische diensten) to localStorage
             useEffect(() => {
@@ -798,99 +509,9 @@
             };
 
 
-            // --- FILE SYSTEM ACCESS API LOGICA ---
-            // Eén bron voor wat er naar het JSON-bestand wordt geschreven. Voorkomt dat de
-            // verschillende opslag-plekken uit sync raken als er een veld bijkomt.
-            const buildExportData = (over = {}) => ({
-                shifts: over.shifts !== undefined ? over.shifts : manualShifts,
-                sobriety: sobrietyHistory,
-                armHistory: armHistory,
-                minoxStart: minoxStartDate,
-                amberShifts: amberShifts,
-                tijdvakShifts: tijdvakShifts,
-                rosterOverrides: over.rosterOverrides !== undefined ? over.rosterOverrides : rosterOverrides,
-            });
-
-            const handleSaveAs = async () => {
-                try {
-                    const handle = await window.showSaveFilePicker({
-                        suggestedName: 'mijn_herstel_dashboard.json',
-                        types: [{
-                            description: 'JSON Data Bestand',
-                            accept: {'application/json': ['.json']},
-                        }],
-                    });
-                    setFileHandle(handle);
-                    await writeToFile(handle, buildExportData());
-                } catch (err) {
-                    console.error("Opslaan geannuleerd:", err);
-                }
-            };
-
-            const handleOpenFile = async () => {
-                try {
-                    const [handle] = await window.showOpenFilePicker({
-                        types: [{
-                            description: 'JSON Data Bestand',
-                            accept: {'application/json': ['.json']},
-                        }],
-                        multiple: false
-                    });
-                    
-                    const file = await handle.getFile();
-                    const contents = await file.text();
-                    const data = JSON.parse(contents);
-                    
-                    if (data.shifts) {
-                        setManualShifts(data.shifts);
-                        if(data.sobriety) setSobrietyHistory(data.sobriety.map(p => ({ start: new Date(p.start), end: p.end ? new Date(p.end) : null })));
-                        if(data.armHistory) {
-                            setArmHistory(data.armHistory.map(p => ({ start: new Date(p.start), end: p.end ? new Date(p.end) : null, cycle: p.cycle || 3 })));
-                        } else if(data.armStart) {
-                            setArmHistory([{ start: new Date(data.armStart), end: null, cycle: 3 }]);
-                        }
-                        if(data.minoxStart) setMinoxStartDate(new Date(data.minoxStart));
-                        if(data.amberShifts) setAmberShifts(data.amberShifts);
-                        if(data.tijdvakShifts) setTijdvakShifts(data.tijdvakShifts);
-                        if(data.rosterOverrides) setRosterOverrides(data.rosterOverrides);
-                    } else {
-                        setManualShifts(data);
-                    }
-
-                    setFileHandle(handle);
-                    setSaveStatus("Gekoppeld & Ingeladen");
-                    localStorage.setItem('dashboard_manual_shifts', JSON.stringify(data.shifts || data));
-                    if(data.amberShifts) localStorage.setItem('amber_shifts', JSON.stringify(data.amberShifts));
-                    if(data.tijdvakShifts) localStorage.setItem('tijdvak_shifts', JSON.stringify(data.tijdvakShifts));
-                    if(data.rosterOverrides) localStorage.setItem('dashboard_roster_overrides', JSON.stringify(data.rosterOverrides));
-                    
-                } catch (err) {
-                    console.error("Openen geannuleerd of mislukt:", err);
-                }
-            };
-
-            const writeToFile = async (handle, data) => {
-                if (!handle) return;
-                try {
-                    setSaveStatus("Aan het opslaan...");
-                    const writable = await handle.createWritable();
-                    await writable.write(JSON.stringify(data, null, 2));
-                    await writable.close();
-                    setSaveStatus("Bestand bijgewerkt");
-                } catch (err) {
-                    console.error("Fout bij wegschrijven:", err);
-                    setSaveStatus("Fout bij opslaan bestand!");
-                }
-            };
-
             const saveData = (newShifts) => {
                 setManualShifts(newShifts);
                 localStorage.setItem('dashboard_manual_shifts', JSON.stringify(newShifts));
-                if (fileHandle) {
-                    writeToFile(fileHandle, buildExportData({ shifts: newShifts }));
-                } else {
-                    setSaveStatus("Alleen lokaal (browser)");
-                }
             };
 
             // --- ROOSTER-CORRECTIES: automatische diensten verbergen of aanpassen ---
@@ -899,8 +520,6 @@
             const persistRosterOverrides = (next) => {
                 setRosterOverrides(next);
                 localStorage.setItem('dashboard_roster_overrides', JSON.stringify(next));
-                if (fileHandle) writeToFile(fileHandle, buildExportData({ rosterOverrides: next }));
-                else setSaveStatus("Alleen lokaal (browser)");
             };
             const handleHideRosterShift = (uid) => {
                 if (!uid) return;
@@ -1008,31 +627,6 @@
                     if (!txt.includes("BEGIN:VCALENDAR")) throw new Error("Geen rooster gevonden (draai rooster-sync.js)");
                     const parsedShifts = parseICS(txt);
                     setRosterShifts(parsedShifts);
-
-                    // Verwijder tijdvakken tot de laatste ROSTER datum
-                    const rosterDates = Object.keys(parsedShifts);
-                    if (rosterDates.length > 0) {
-                        // Vind de laatste datum in ROSTER data
-                        const latestRosterDate = rosterDates.reduce((latest, current) => {
-                            return current > latest ? current : latest;
-                        });
-
-                        // Verwijder alle tijdvakken tot en met deze datum
-                        setTijdvakShifts(prev => {
-                            const updated = { ...prev };
-                            let removed = 0;
-                            Object.keys(updated).forEach(dateKey => {
-                                if (dateKey <= latestRosterDate) {
-                                    delete updated[dateKey];
-                                    removed++;
-                                }
-                            });
-                            if (removed > 0) {
-                                console.log(`${removed} tijdvak(ken) verwijderd tot ${latestRosterDate}`);
-                            }
-                            return updated;
-                        });
-                    }
                 } catch (e) {
                     console.log("Auto-rooster laadt niet.");
                 } finally {
@@ -1154,123 +748,6 @@
                 setShowAddModal(false);
                 setSelectedDate(null);
                 setNewNote("");
-            };
-
-            // --- PDF ROOSTER UPLOAD FUNCTIES ---
-            const handlePdfUpload = async (event) => {
-                const file = event.target.files[0];
-                if (!file) return;
-                
-                setPdfParsing(true);
-                setPdfError(null);
-                setParsedShifts([]);
-
-                try {
-                    const arrayBuffer = await file.arrayBuffer();
-                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                    
-                    let fullText = '';
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        const page = await pdf.getPage(i);
-                        const textContent = await page.getTextContent();
-                        const pageText = textContent.items.map(item => item.str).join(' ');
-                        fullText += pageText + '\n';
-                    }
-                    
-                    const shifts = parseG4SRooster(fullText);
-                    
-                    if (shifts.length === 0) {
-                        setPdfError("Geen diensten gevonden in dit PDF bestand. Zorg dat het een G4S tijdvakrooster is.");
-                    } else {
-                        setParsedShifts(shifts);
-                    }
-                } catch (err) {
-                    console.error("PDF parsing error:", err);
-                    setPdfError("Kon PDF niet lezen: " + err.message);
-                } finally {
-                    setPdfParsing(false);
-                }
-            };
-
-            const parseG4SRooster = (text) => {
-                const shifts = [];
-                
-                // Normaliseer de tekst
-                const normalized = text.replace(/\s+/g, ' ');
-                
-                // Regex patronen voor G4S rooster
-                // Format: datum (d-m-yyyy of dd-mm-yyyy) gevolgd door "Tijdvak" en dan tijden (hh:mm-hh:mm)
-                const dateTimePattern = /(\d{1,2}-\d{1,2}-\d{4})\s*Tijdvak\s*(\d{2}[:.]\d{2}[-–]\d{2}[:.]\d{2})/gi;
-                
-                let match;
-                while ((match = dateTimePattern.exec(normalized)) !== null) {
-                    const dateParts = match[1].split('-');
-                    const day = parseInt(dateParts[0]);
-                    const month = parseInt(dateParts[1]) - 1; // JS months are 0-indexed
-                    const year = parseInt(dateParts[2]);
-                    
-                    const timeStr = match[2].replace(/\./g, ':').replace('–', '-');
-                    
-                    const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    const dateObj = new Date(year, month, day);
-                    
-                    // Skip invalid dates
-                    if (isNaN(dateObj.getTime())) continue;
-                    
-                    shifts.push({
-                        dateKey,
-                        dateDisplay: dateObj.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
-                        time: timeStr,
-                        summary: `Dienst ${timeStr}`,
-                        selected: true
-                    });
-                }
-                
-                // Sorteer op datum
-                shifts.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
-                
-                return shifts;
-            };
-
-            const toggleShiftSelection = (index) => {
-                setParsedShifts(prev => prev.map((shift, i) => 
-                    i === index ? { ...shift, selected: !shift.selected } : shift
-                ));
-            };
-
-            const selectAllShifts = (selected) => {
-                setParsedShifts(prev => prev.map(shift => ({ ...shift, selected })));
-            };
-
-            const importSelectedShifts = () => {
-                const selectedShifts = parsedShifts.filter(s => s.selected);
-                if (selectedShifts.length === 0) return;
-
-                const updated = { ...manualShifts };
-                
-                selectedShifts.forEach(shift => {
-                    if (!updated[shift.dateKey]) updated[shift.dateKey] = [];
-                    
-                    // Check of deze shift al bestaat (voorkom duplicaten)
-                    const exists = updated[shift.dateKey].some(
-                        s => s.summary === shift.summary || s.summary.includes(shift.time)
-                    );
-                    
-                    if (!exists) {
-                        updated[shift.dateKey].push({
-                            id: Date.now() + Math.random(),
-                            summary: shift.summary,
-                            isManual: true,
-                            isNote: false,
-                            isG4SShift: true
-                        });
-                    }
-                });
-
-                saveData(updated);
-                setShowPdfModal(false);
-                setParsedShifts([]);
-                setPdfError(null);
             };
 
             // --- AMBER ROOSTER FUNCTIES ---
@@ -1488,150 +965,6 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                 setAmberShifts(updated);
             };
 
-            // --- TIJDVAK ROOSTER FUNCTIES ---
-            const parseTijdvakBulkInput = (input, month, year) => {
-                const results = [];
-                const seenDates = new Set();
-
-                // Split input per regel of komma voor betere parsing
-                const lines = input.split(/[\n,]+/).map(l => l.trim()).filter(l => l.length > 0);
-
-                for (const line of lines) {
-                    let match;
-
-                    // Pattern 1: dd-mm-yyyy: hh:mm-hh:mm (volledige datum)
-                    match = line.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})\s*[:\s]\s*(\d{1,2}[:.]\d{2})\s*[-–]\s*(\d{1,2}[:.]\d{2})/i);
-                    if (match) {
-                        const day = parseInt(match[1]);
-                        const monthParsed = parseInt(match[2]) - 1;
-                        const yearParsed = parseInt(match[3]);
-                        const startTime = match[4].replace('.', ':');
-                        const endTime = match[5].replace('.', ':');
-
-                        const dateObj = new Date(yearParsed, monthParsed, day);
-                        if (!isNaN(dateObj.getTime())) {
-                            const dateKey = toLocalISOString(dateObj);
-                            if (!seenDates.has(dateKey)) {
-                                seenDates.add(dateKey);
-                                results.push({
-                                    day,
-                                    dateKey,
-                                    startTime,
-                                    endTime,
-                                    dateDisplay: dateObj.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
-                                    selected: true
-                                });
-                            }
-                        }
-                        continue;
-                    }
-
-                    // Pattern 2: dd-mm: hh:mm-hh:mm (dag en maand)
-                    match = line.match(/^(\d{1,2})[-\/](\d{1,2})\s*[:\s]\s*(\d{1,2}[:.]\d{2})\s*[-–]\s*(\d{1,2}[:.]\d{2})/i);
-                    if (match) {
-                        const day = parseInt(match[1]);
-                        const monthParsed = parseInt(match[2]) - 1;
-                        const startTime = match[3].replace('.', ':');
-                        const endTime = match[4].replace('.', ':');
-
-                        // Gebruik geselecteerd jaar
-                        const dateObj = new Date(year, monthParsed, day);
-                        if (!isNaN(dateObj.getTime())) {
-                            const dateKey = toLocalISOString(dateObj);
-                            if (!seenDates.has(dateKey)) {
-                                seenDates.add(dateKey);
-                                results.push({
-                                    day,
-                                    dateKey,
-                                    startTime,
-                                    endTime,
-                                    dateDisplay: dateObj.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
-                                    selected: true
-                                });
-                            }
-                        }
-                        continue;
-                    }
-
-                    // Pattern 3: dd: hh:mm-hh:mm (alleen dag, gebruikt geselecteerde maand/jaar)
-                    match = line.match(/^(\d{1,2})\s*[:\s]\s*(\d{1,2}[:.]\d{2})\s*[-–]\s*(\d{1,2}[:.]\d{2})/i);
-                    if (match) {
-                        const day = parseInt(match[1]);
-                        const startTime = match[2].replace('.', ':');
-                        const endTime = match[3].replace('.', ':');
-
-                        const daysInMonth = new Date(year, month + 1, 0).getDate();
-                        if (day >= 1 && day <= daysInMonth) {
-                            const dateObj = new Date(year, month, day);
-                            const dateKey = toLocalISOString(dateObj);
-                            if (!seenDates.has(dateKey)) {
-                                seenDates.add(dateKey);
-                                results.push({
-                                    day,
-                                    dateKey,
-                                    startTime,
-                                    endTime,
-                                    dateDisplay: dateObj.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' }),
-                                    selected: true
-                                });
-                            }
-                        }
-                    }
-                }
-
-                results.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
-                return results;
-            };
-
-            const handleTijdvakBulkParse = () => {
-                const parsed = parseTijdvakBulkInput(tijdvakBulkInput, tijdvakMonth, tijdvakYear);
-                setTijdvakBulkParsed(parsed);
-            };
-
-            const toggleTijdvakBulkSelection = (index) => {
-                setTijdvakBulkParsed(prev => prev.map((item, i) =>
-                    i === index ? { ...item, selected: !item.selected } : item
-                ));
-            };
-
-            const importTijdvakBulkShifts = () => {
-                const selected = tijdvakBulkParsed.filter(s => s.selected);
-                if (selected.length === 0) return;
-
-                const updated = { ...tijdvakShifts };
-
-                selected.forEach(entry => {
-                    updated[entry.dateKey] = {
-                        id: Date.now() + Math.random(),
-                        startTime: entry.startTime,
-                        endTime: entry.endTime
-                    };
-                });
-
-                setTijdvakShifts(updated);
-                closeTijdvakModal();
-            };
-
-            const openTijdvakModal = () => {
-                setTijdvakMonth(viewDate.getMonth());
-                setTijdvakYear(viewDate.getFullYear());
-                setTijdvakBulkInput("");
-                setTijdvakBulkParsed([]);
-                setShowTijdvakModal(true);
-            };
-
-            const closeTijdvakModal = () => {
-                setShowTijdvakModal(false);
-                setTijdvakBulkInput("");
-                setTijdvakBulkParsed([]);
-            };
-
-            const deleteTijdvakShift = (dateKey) => {
-                const updated = { ...tijdvakShifts };
-                delete updated[dateKey];
-                setTijdvakShifts(updated);
-            };
-
             const toggleFilter = (filterName) => {
                 setCalendarFilters(prev => ({
                     ...prev,
@@ -1707,9 +1040,6 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                     // AMBER SHIFT CHECK (met filter)
                     const amberShift = calendarFilters.showAmber ? amberShifts[dateKey]?.[0] : null;
 
-                    // TIJDVAK CHECK (met filter) - voorlopig rooster uit G4S Connect
-                    const tijdvakShift = calendarFilters.showTijdvak ? tijdvakShifts[dateKey] : null;
-
                     // SALARY DAY CHECK (met filter)
                     const salaryDay = calendarFilters.showSalary ? salaryDays[dateKey] : null;
 
@@ -1737,10 +1067,10 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                     const hasRealRosterShift = finalRoster.length > 0;
 
                     const manualDay = calendarFilters.showWork ? (manualShifts[dateKey] || [])
-                        // Filter G4S tijdvakken uit als er een echte Roster dienst is
+                        // Historische G4S-import verbergen als het rooster die dag al dekt
                         .filter(s => {
                             if (s.isG4SShift && hasRealRosterShift) {
-                                return false; // Verberg tijdvak als er een echte dienst is
+                                return false;
                             }
                             if (s.isNote && !calendarFilters.showNotes) {
                                 return false;
@@ -1787,21 +1117,13 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                     });
                     const isToday = currentDate.toDateString() === date.toDateString();
                     
-                    // Check voor werk: Roster diensten, handmatige shifts, OF G4S tijdvakken
+                    // Check voor werk: Roster diensten, handmatige shifts of historische G4S-import
                     const hasWork = allEvents.some(e => (e.type === 'roster' || (e.type === 'manual' && !e.isNote))) ||
-                                   (manualShifts[dateKey] || []).some(s => s.isG4SShift); // Ook checken voor verborgen G4S tijdvakken
+                                   (manualShifts[dateKey] || []).some(s => s.isG4SShift);
                     const isOnlyVerlof = hasWork && allEvents.every(e => e.type !== 'swim' && e.summary?.toLowerCase().includes('verlof'));
-
-                    // Check of er een definitieve dienst is (Roster of PDF import)
-                    const hasDefinitiveShift = finalRoster.length > 0 || (manualShifts[dateKey] || []).some(s => s.isG4SShift);
-
-                    // Bepaal of tijdvak getoond moet worden (alleen als er GEEN definitieve dienst is)
-                    const showTijdvak = tijdvakShift && !hasDefinitiveShift;
 
                     let bgClass = "bg-emerald-50 border-emerald-200";
                     if (hasWork && !isOnlyVerlof) bgClass = "bg-red-50 border-red-200";
-                    // Tijdvak zonder definitieve dienst: amber gestippelde achtergrond
-                    if (showTijdvak && !hasWork) bgClass = "bg-amber-50 border-amber-300 border-dashed";
                     if (isToday) bgClass = "bg-blue-50 ring-2 ring-blue-400"; 
 
                     days.push(
@@ -1835,17 +1157,6 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                             <span className="font-medium">Amber {amberShift.startTime}-{amberShift.endTime}</span>
                                         </div>
                                         <button onClick={(ev) => { ev.stopPropagation(); deleteAmberShift(dateKey); }} className="opacity-0 group-hover/amber:opacity-100 text-pink-500 hover:text-pink-700"><Trash2 size={10}/></button>
-                                    </div>
-                                )}
-
-                                {/* 2.25 TIJDVAK (voorlopig rooster) - alleen tonen als geen definitieve dienst */}
-                                {showTijdvak && (
-                                    <div className="flex items-center justify-between text-[9px] text-amber-700 bg-amber-50 p-0.5 rounded border-2 border-dashed border-amber-400 w-full group/tijdvak">
-                                        <div className="flex items-center">
-                                            <Clock size={10} className="mr-1"/>
-                                            <span className="font-medium">Tijdvak {tijdvakShift.startTime}-{tijdvakShift.endTime}</span>
-                                        </div>
-                                        <button onClick={(ev) => { ev.stopPropagation(); deleteTijdvakShift(dateKey); }} className="opacity-0 group-hover/tijdvak:opacity-100 text-amber-500 hover:text-amber-700"><Trash2 size={10}/></button>
                                     </div>
                                 )}
 
@@ -1895,25 +1206,11 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                         );
                                     }
                                     if (e.type === 'manual') {
-                                        // G4S Geïmporteerde tijdvak (voorlopig, wordt overschreven door echte dienst)
-                                        if (e.isG4SShift) {
-                                            return (
-                                                <div key={`m-${e.id}`} className="text-[9px] p-1 rounded border-2 border-dashed mb-0.5 flex justify-between items-center group/item bg-amber-50/50 text-amber-700 border-amber-300 w-full text-left">
-                                                    <div className="overflow-hidden w-full">
-                                                        <div className="font-bold flex items-center gap-1">
-                                                            <Clock size={8}/> Tijdvak: {e.summary.replace('Dienst ', '')}
-                                                        </div>
-                                                        <div className="text-[8px] opacity-70 italic">Wacht op definitieve dienst...</div>
-                                                    </div>
-                                                    <button onClick={(ev)=>{ev.stopPropagation(); handleDeleteShift(dateKey, e.id)}} className="opacity-0 group-hover/item:opacity-100 text-red-500 ml-1 shrink-0"><Trash2 size={10}/></button>
-                                                </div>
-                                            );
-                                        }
-                                        // Handmatige shift (geen notitie, geen G4S)
+                                        // Historische G4S-import heeft geen aparte tijdvelden; de tijden staan in de summary.
                                         return (
                                             <div key={`m-${e.id}`} className="text-[9px] p-1 rounded border mb-0.5 flex justify-between items-center group/item bg-white shadow-sm text-orange-800 border-orange-200 w-full text-left">
                                                 <div className="overflow-hidden w-full">
-                                                    <div className="font-bold">{e.startTime} - {e.endTime}</div>
+                                                    {e.startTime && <div className="font-bold">{e.startTime} - {e.endTime}</div>}
                                                     <div className="truncate opacity-80">{e.summary}</div>
                                                 </div>
                                                 <button onClick={(ev)=>{ev.stopPropagation(); handleDeleteShift(dateKey, e.id)}} className="opacity-0 group-hover/item:opacity-100 text-red-500 ml-1 shrink-0"><Trash2 size={10}/></button>
@@ -2072,27 +1369,10 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                             <button onClick={() => setShowAdminModal(true)} className="flex items-center text-xs bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg hover:bg-indigo-200 font-bold transition-colors">
                                 <Briefcase size={14} className="mr-1.5"/> Administratie
                             </button>
-                            {/* TIJDVAK ROOSTER UPLOAD */}
-                            <button onClick={openTijdvakModal} className="flex items-center text-xs bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg hover:bg-amber-200 font-bold transition-colors">
-                                <Clock size={14} className="mr-1.5"/> Tijdvakken
-                            </button>
-                            {/* OPSLAAN ALS */}
-                            <button onClick={handleSaveAs} className="flex items-center text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-200 font-bold transition-colors">
-                                <FileJson size={14} className="mr-1.5"/> Opslaan als...
-                            </button>
-                            {/* BESTAND OPENEN */}
-                            <button onClick={handleOpenFile} className="flex items-center text-xs bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg hover:bg-emerald-200 font-bold transition-colors">
-                                <FolderOpen size={14} className="mr-1.5"/> Bestand Openen
-                            </button>
-                            {/* STATUS INDICATOR */}
-                            <div className={`flex items-center text-xs px-3 py-1.5 rounded-full ${fileHandle ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}`}>
-                                <HardDrive size={14} className="mr-1.5"/>
-                                {saveStatus}
-                            </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                         {/* LOONSTROOK KPI */}
                         <div className="bg-white p-5 rounded-xl border border-emerald-100 flex flex-col items-center text-center">
                             <Banknote className="text-emerald-600 mb-2" size={24}/>
@@ -2158,233 +1438,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                             </button>
                         </div>
 
-                        {/* ASTROLOGIE KPI */}
-                        <div className="astro-kpi p-5 rounded-xl flex flex-col items-center cursor-pointer hover:shadow-lg transition-all relative z-10" onClick={() => setAstroOpen(!astroOpen)}>
-                            <Sparkles className="text-indigo-600 mb-2" size={24}/>
-                            <h2 className="text-xs font-bold text-gray-500">Transits Vandaag</h2>
-                            <p className="text-3xl font-extrabold text-indigo-600">{astroToday.length}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                                {astroPieken.length > 0 && (
-                                    <span className="inline-flex items-center text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full astro-piek-pulse">
-                                        <Zap size={9} className="mr-0.5"/> {astroPieken.length} piek
-                                    </span>
-                                )}
-                                <div className="flex items-center gap-1.5">
-                                    {astroToday.filter(a => a.transit.toon === 'positief').length > 0 && (
-                                        <span className="text-[10px] font-bold text-emerald-600">+{astroToday.filter(a => a.transit.toon === 'positief').length}</span>
-                                    )}
-                                    {astroToday.filter(a => a.transit.toon === 'negatief').length > 0 && (
-                                        <span className="text-[10px] font-bold text-rose-600">−{astroToday.filter(a => a.transit.toon === 'negatief').length}</span>
-                                    )}
-                                    {astroToday.filter(a => a.transit.toon === 'gemengd').length > 0 && (
-                                        <span className="text-[10px] font-bold text-amber-600">~{astroToday.filter(a => a.transit.toon === 'gemengd').length}</span>
-                                    )}
-                                </div>
-                            </div>
-                            <button className="mt-3 inline-flex items-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
-                                {astroOpen ? <ChevronUp size={14} className="mr-1"/> : <ChevronDown size={14} className="mr-1"/>}
-                                {astroOpen ? 'Inklappen' : 'Bekijk transits'}
-                            </button>
-                        </div>
                     </div>
-
-                    {/* ASTROLOGIE UITKLAPBARE SECTIE */}
-                    {astroOpen && (
-                        <div className="astro-section rounded-xl border border-indigo-200/50 p-5 mb-8 shadow-sm">
-                            <div className="flex items-center justify-between mb-5">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center">
-                                        <Sparkles size={16} className="text-amber-300"/>
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-white text-sm">Transitdashboard</h3>
-                                        <p className="text-[10px] text-indigo-300">Actieve kosmische invloeden vandaag</p>
-                                    </div>
-                                </div>
-                                <button onClick={() => setAstroOpen(false)} className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
-                                    <X size={14} className="text-indigo-300"/>
-                                </button>
-                            </div>
-
-                            {astroToday.length === 0 ? (
-                                <div className="text-center py-12 text-indigo-300/60">
-                                    <p className="text-4xl mb-3">☽</p>
-                                    <p className="text-sm font-medium text-indigo-200">Geen actieve transits vandaag</p>
-                                    <p className="text-xs text-indigo-400 mt-1">Een rustige dag aan de hemel</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {/* Samenvatting */}
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-                                        <div className="astro-stat-card rounded-xl p-3.5 text-center">
-                                            <div className="text-2xl font-extrabold text-white">{astroToday.length}</div>
-                                            <div className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">Actief</div>
-                                        </div>
-                                        <div className="astro-stat-card rounded-xl p-3.5 text-center">
-                                            <div className="text-2xl font-extrabold text-amber-300">{astroPieken.length}</div>
-                                            <div className="text-[10px] font-bold text-amber-400/70 uppercase tracking-wider flex items-center justify-center gap-1">{astroPieken.length > 0 && <Zap size={9}/>} In piek</div>
-                                        </div>
-                                        <div className="astro-stat-card rounded-xl p-3.5 text-center">
-                                            <div className="text-2xl font-extrabold text-indigo-200">{astroToday.length > 0 ? (Math.round(astroToday.reduce((s,a) => s + a.transit.intensiteit, 0) / astroToday.length * 10) / 10) : 0}</div>
-                                            <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Gem. intensiteit</div>
-                                        </div>
-                                        <div className="astro-stat-card rounded-xl p-3.5 text-center">
-                                            <div className="flex items-center justify-center gap-2 text-lg font-extrabold">
-                                                <span className="text-emerald-400">{astroToday.filter(a=>a.transit.toon==='positief').length}</span>
-                                                <span className="text-indigo-500">/</span>
-                                                <span className="text-rose-400">{astroToday.filter(a=>a.transit.toon==='negatief').length}</span>
-                                                <span className="text-indigo-500">/</span>
-                                                <span className="text-amber-400">{astroToday.filter(a=>a.transit.toon==='gemengd').length}</span>
-                                            </div>
-                                            <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Pos / Neg / Gem</div>
-                                        </div>
-                                    </div>
-
-                                    {/* Piekfase */}
-                                    {astroPieken.length > 0 && (
-                                        <div className="flex items-center gap-2 mb-3">
-                                            <div className="w-5 h-5 rounded bg-amber-400/20 flex items-center justify-center"><Zap size={12} className="text-amber-300"/></div>
-                                            <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">Piekfase — sterkste werking</span>
-                                            <div className="flex-1 h-px bg-amber-400/20"/>
-                                        </div>
-                                    )}
-                                    {astroPieken.map(item => {
-                                        const t = item.transit;
-                                        const s = item.status;
-                                        const kleur = astroIntensiteitKleur(t.intensiteit);
-                                        const toonStijl = astroToonKleur(t.toon);
-                                        const gebieden = t.levensgebieden.map(g => window.ASTRO_LEVENSGEBIEDEN[g]?.naam).join(' · ');
-                                        let dagenTekst = s.dagenTotHit === 0 ? 'Exacte hit vandaag!' : s.dagenTotHit > 0 ? `${s.dagenTotHit}d tot hit` : `${Math.abs(s.dagenTotHit)}d na hit`;
-                                        return (
-                                            <div key={t.id} onClick={() => setAstroModalTransit(t)} className="astro-transit-card bg-white rounded-xl p-4 cursor-pointer shadow-sm mb-2" style={{borderLeftColor: kleur}}>
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <div className="font-bold text-sm text-gray-800 flex items-center gap-1.5">
-                                                        <span className="text-xl leading-none">{window.ASTRO_PLANEET_ICONEN[t.transitplaneet]}</span>
-                                                        <span>{t.transitplaneet}</span>
-                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${toonStijl.bg} ${toonStijl.text} font-bold uppercase`}>{t.aspect}</span>
-                                                        <span>{t.nataalPunt}</span>
-                                                    </div>
-                                                    <span className="astro-fase-piek text-[10px] px-2.5 py-1 rounded-full font-bold shadow-sm">⚡ Piek</span>
-                                                </div>
-                                                <div className="flex gap-3 text-[10px] text-gray-400 mb-2 flex-wrap font-medium">
-                                                    <span>📐 ~{s.orbGraden}°</span>
-                                                    <span>⏱ {dagenTekst}</span>
-                                                    {t.totaalPassages > 1 && <span>🔄 {t.passageNummer}/{t.totaalPassages}</span>}
-                                                    <span>📍 H{t.transitHuis}→{t.nataalHuis}</span>
-                                                </div>
-                                                <div className="astro-progress mb-2">
-                                                    <div className="astro-progress-fill" style={{width: `${s.voortgang}%`, background: `linear-gradient(90deg, ${kleur}88, ${kleur})`}}/>
-                                                </div>
-                                                <p className="text-xs text-gray-600 leading-relaxed mb-2">{t.samenvatting}</p>
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="astro-intensity-bar w-20">
-                                                            <div className="astro-intensity-fill" style={{width: `${t.intensiteit*10}%`, background: `linear-gradient(90deg, ${kleur}aa, ${kleur})`}}/>
-                                                        </div>
-                                                        <span className="text-xs font-extrabold" style={{color: kleur}}>{t.intensiteit}/10</span>
-                                                    </div>
-                                                    <span className="text-[10px] text-gray-400 font-medium">{gebieden}</span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-
-                                    {/* Aanloop */}
-                                    {astroToday.filter(a => a.status.fase === 'aanloop').length > 0 && (
-                                        <div className="flex items-center gap-2 mb-3 mt-4">
-                                            <div className="w-5 h-5 rounded bg-blue-400/20 flex items-center justify-center"><ChevronUp size={12} className="text-blue-300"/></div>
-                                            <span className="text-xs font-bold text-blue-300 uppercase tracking-wider">Aanloop — bouwt op</span>
-                                            <div className="flex-1 h-px bg-blue-400/20"/>
-                                        </div>
-                                    )}
-                                    {astroToday.filter(a => a.status.fase === 'aanloop').map(item => {
-                                        const t = item.transit;
-                                        const s = item.status;
-                                        const kleur = astroIntensiteitKleur(t.intensiteit);
-                                        const toonStijl = astroToonKleur(t.toon);
-                                        const gebieden = t.levensgebieden.map(g => window.ASTRO_LEVENSGEBIEDEN[g]?.naam).join(' · ');
-                                        let dagenTekst = s.dagenTotHit === 0 ? 'Exacte hit vandaag!' : s.dagenTotHit > 0 ? `${s.dagenTotHit}d tot hit` : `${Math.abs(s.dagenTotHit)}d na hit`;
-                                        return (
-                                            <div key={t.id} onClick={() => setAstroModalTransit(t)} className="astro-transit-card bg-white rounded-xl p-4 cursor-pointer shadow-sm mb-2" style={{borderLeftColor: kleur}}>
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <div className="font-bold text-sm text-gray-800 flex items-center gap-1.5">
-                                                        <span className="text-xl leading-none">{window.ASTRO_PLANEET_ICONEN[t.transitplaneet]}</span>
-                                                        <span>{t.transitplaneet}</span>
-                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${toonStijl.bg} ${toonStijl.text} font-bold uppercase`}>{t.aspect}</span>
-                                                        <span>{t.nataalPunt}</span>
-                                                    </div>
-                                                    <span className="astro-fase-aanloop text-[10px] px-2.5 py-1 rounded-full font-bold shadow-sm">↗ Aanloop</span>
-                                                </div>
-                                                <div className="flex gap-3 text-[10px] text-gray-400 mb-2 flex-wrap font-medium">
-                                                    <span>📐 ~{s.orbGraden}°</span>
-                                                    <span>⏱ {dagenTekst}</span>
-                                                    {t.totaalPassages > 1 && <span>🔄 {t.passageNummer}/{t.totaalPassages}</span>}
-                                                </div>
-                                                <div className="astro-progress mb-2">
-                                                    <div className="astro-progress-fill" style={{width: `${s.voortgang}%`, background: `linear-gradient(90deg, ${kleur}88, ${kleur})`}}/>
-                                                </div>
-                                                <p className="text-xs text-gray-600 leading-relaxed mb-2">{t.samenvatting}</p>
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="astro-intensity-bar w-20">
-                                                            <div className="astro-intensity-fill" style={{width: `${t.intensiteit*10}%`, background: `linear-gradient(90deg, ${kleur}aa, ${kleur})`}}/>
-                                                        </div>
-                                                        <span className="text-xs font-extrabold" style={{color: kleur}}>{t.intensiteit}/10</span>
-                                                    </div>
-                                                    <span className="text-[10px] text-gray-400 font-medium">{gebieden}</span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-
-                                    {/* Uitloop */}
-                                    {astroToday.filter(a => a.status.fase === 'uitloop').length > 0 && (
-                                        <div className="flex items-center gap-2 mb-3 mt-4">
-                                            <div className="w-5 h-5 rounded bg-indigo-400/20 flex items-center justify-center"><ChevronDown size={12} className="text-indigo-300"/></div>
-                                            <span className="text-xs font-bold text-indigo-300/70 uppercase tracking-wider">Uitloop — neemt af</span>
-                                            <div className="flex-1 h-px bg-indigo-400/15"/>
-                                        </div>
-                                    )}
-                                    {astroToday.filter(a => a.status.fase === 'uitloop').map(item => {
-                                        const t = item.transit;
-                                        const s = item.status;
-                                        const kleur = astroIntensiteitKleur(t.intensiteit);
-                                        const toonStijl = astroToonKleur(t.toon);
-                                        const gebieden = t.levensgebieden.map(g => window.ASTRO_LEVENSGEBIEDEN[g]?.naam).join(' · ');
-                                        let dagenTekst = `${Math.abs(s.dagenTotHit)}d na hit`;
-                                        return (
-                                            <div key={t.id} onClick={() => setAstroModalTransit(t)} className="astro-transit-card bg-white/70 rounded-xl p-4 cursor-pointer shadow-sm mb-2 opacity-75 hover:opacity-100" style={{borderLeftColor: `${kleur}88`}}>
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <div className="font-bold text-sm text-gray-600 flex items-center gap-1.5">
-                                                        <span className="text-xl leading-none opacity-60">{window.ASTRO_PLANEET_ICONEN[t.transitplaneet]}</span>
-                                                        <span>{t.transitplaneet}</span>
-                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${toonStijl.bg} ${toonStijl.text} font-bold uppercase opacity-70`}>{t.aspect}</span>
-                                                        <span>{t.nataalPunt}</span>
-                                                    </div>
-                                                    <span className="astro-fase-uitloop text-[10px] px-2.5 py-1 rounded-full font-bold">↘ Uitloop</span>
-                                                </div>
-                                                <div className="flex gap-3 text-[10px] text-gray-400 mb-2 flex-wrap font-medium">
-                                                    <span>📐 ~{s.orbGraden}°</span>
-                                                    <span>⏱ {dagenTekst}</span>
-                                                    {t.totaalPassages > 1 && <span>🔄 {t.passageNummer}/{t.totaalPassages}</span>}
-                                                </div>
-                                                <p className="text-xs text-gray-500 leading-relaxed mb-2">{t.samenvatting}</p>
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="astro-intensity-bar w-16">
-                                                            <div className="astro-intensity-fill" style={{width: `${t.intensiteit*10}%`, background: `linear-gradient(90deg, ${kleur}77, ${kleur}aa)`}}/>
-                                                        </div>
-                                                        <span className="text-xs font-bold text-gray-400">{t.intensiteit}/10</span>
-                                                    </div>
-                                                    <span className="text-[10px] text-gray-400 font-medium">{gebieden}</span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-                    )}
 
                     <div className="bg-white rounded-xl shadow-lg border border-gray-200">
                         <div className="p-4 bg-gray-800 text-white flex justify-between items-center">
@@ -2395,104 +1449,6 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                         <div className="grid grid-cols-7 bg-gray-100 text-center py-3 text-xs font-bold text-gray-500 border-b"><div>Ma</div><div>Di</div><div>Wo</div><div>Do</div><div>Vr</div><div>Za</div><div>Zo</div></div>
                         <div className="grid grid-cols-7 bg-gray-200 gap-px">{renderCalendar()}</div>
                     </div>
-
-                    {/* MODAL: Astrologie Transit Detail */}
-                    {astroModalTransit && (() => {
-                        const t = astroModalTransit;
-                        const kleur = astroIntensiteitKleur(t.intensiteit);
-                        const toonStijl = astroToonKleur(t.toon);
-                        const groep = window.ASTRO_GROEP_PERIODES[t.groepId];
-                        const verwachtingKleur = t.verwachting === 'positief' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : t.verwachting === 'negatief' ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-amber-100 text-amber-700 border-amber-200';
-                        return (
-                            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => { if(e.target === e.currentTarget) setAstroModalTransit(null); }}>
-                                <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl custom-scrollbar" style={{animation: 'fadeInUp 0.2s ease-out'}}>
-                                    <style>{`@keyframes fadeInUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }`}</style>
-                                    <div className="astro-modal-header sticky top-0 text-white p-5 rounded-t-2xl">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <span className="text-3xl">{window.ASTRO_PLANEET_ICONEN[t.transitplaneet]}</span>
-                                                    <div>
-                                                        <h3 className="font-bold text-lg leading-tight">
-                                                            {t.transitplaneet} {t.aspect} {t.nataalPunt}
-                                                        </h3>
-                                                        <p className="text-indigo-300 text-xs">
-                                                            {t.nataalPositie} · Huis {t.transitHuis} → {t.nataalHuis}
-                                                            {t.totaalPassages > 1 ? ` · Passage ${t.passageNummer}/${t.totaalPassages}` : ''}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-3 text-[11px] text-indigo-300/80">
-                                                    <span>📅 Exacte hit: {formatAstroDatum(t.datum)}</span>
-                                                </div>
-                                                {groep && <div className="text-[11px] text-indigo-300/80 mt-0.5">📍 Actief: {formatAstroDatum(groep.startActief)} – {formatAstroDatum(groep.eindActief)}</div>}
-                                            </div>
-                                            <button onClick={() => setAstroModalTransit(null)} className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors ml-3 shrink-0">
-                                                <X size={16}/>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="p-5 space-y-5">
-                                        {/* Samenvatting */}
-                                        <div>
-                                            <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1.5">Samenvatting</h4>
-                                            <p className="text-sm text-gray-700 leading-relaxed">{t.samenvatting}</p>
-                                        </div>
-
-                                        {/* Verwachting + Intensiteit naast elkaar */}
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div className={`rounded-xl p-3 border ${verwachtingKleur} text-center`}>
-                                                <div className="text-[10px] font-bold uppercase tracking-wider opacity-70 mb-1">Verwachting</div>
-                                                <div className="text-sm font-bold capitalize">{t.verwachting}</div>
-                                            </div>
-                                            <div className="rounded-xl p-3 border border-gray-100 bg-gray-50 text-center">
-                                                <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Intensiteit</div>
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <div className="astro-intensity-bar flex-1 max-w-[80px]">
-                                                        <div className="astro-intensity-fill" style={{width: `${t.intensiteit*10}%`, background: `linear-gradient(90deg, ${kleur}aa, ${kleur})`}}/>
-                                                    </div>
-                                                    <span className="text-lg font-extrabold" style={{color: kleur}}>{t.intensiteit}/10</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Meevaller */}
-                                        <div>
-                                            <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1.5">Meevaller of tegenvaller</h4>
-                                            <p className="text-sm text-gray-700 leading-relaxed">{t.meevaller}</p>
-                                        </div>
-
-                                        {/* Duur */}
-                                        <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
-                                            <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Duur</h4>
-                                            <p className="text-sm text-gray-700">{t.duurBeschrijving}</p>
-                                        </div>
-
-                                        {/* Scenario's */}
-                                        <div>
-                                            <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2">Concrete scenario's</h4>
-                                            <ul className="space-y-2">
-                                                {t.situaties.map((s, i) => (
-                                                    <li key={i} className="text-sm text-gray-700 flex items-start gap-2.5 leading-relaxed">
-                                                        <span className="w-5 h-5 rounded bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold text-indigo-500">{i+1}</span>
-                                                        {s}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-
-                                        {/* Advies */}
-                                        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100">
-                                            <h4 className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-                                                <Star size={12}/> Advies
-                                            </h4>
-                                            <p className="text-sm text-indigo-900 leading-relaxed">{t.advies}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })()}
 
                     {/* MODAL: Notitie Toevoegen */}
                     {showAddModal && (
@@ -2799,250 +1755,10 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                     <span className="text-yellow-500">💰</span>
                                     <span className="text-sm">Trigion betaaldag</span>
                                 </label>
-                                <label className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
-                                    <input type="checkbox" checked={calendarFilters.showTijdvak} onChange={() => toggleFilter('showTijdvak')} className="w-4 h-4 rounded text-amber-600"/>
-                                    <Clock size={16} className="text-amber-500"/>
-                                    <span className="text-sm">Tijdvakken</span>
-                                </label>
                             </div>
                         </div>
                     )}
 
-                    {/* MODAL: PDF Rooster Upload */}
-                    {showPdfModal && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                            <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] flex flex-col">
-                                <div className="flex justify-between items-center mb-4 border-b pb-2">
-                                    <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
-                                        <Upload size={20}/> G4S Rooster Importeren
-                                    </h3>
-                                    <button onClick={() => { setShowPdfModal(false); setParsedShifts([]); setPdfError(null); }}>
-                                        <X className="text-gray-400 hover:text-gray-600"/>
-                                    </button>
-                                </div>
-                                
-                                {/* Upload Sectie */}
-                                {parsedShifts.length === 0 && (
-                                    <div className="space-y-4">
-                                        <p className="text-sm text-gray-600">
-                                            Upload je G4S tijdvakrooster PDF. Het systeem herkent automatisch de diensten en voegt ze toe aan je kalender.
-                                        </p>
-                                        
-                                        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-orange-300 rounded-lg cursor-pointer bg-orange-50 hover:bg-orange-100 transition-colors">
-                                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                                {pdfParsing ? (
-                                                    <>
-                                                        <RefreshCw className="w-8 h-8 text-orange-500 animate-spin mb-2"/>
-                                                        <p className="text-sm text-orange-600 font-medium">PDF wordt verwerkt...</p>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <FileText className="w-8 h-8 text-orange-500 mb-2"/>
-                                                        <p className="text-sm text-gray-600"><span className="font-semibold text-orange-600">Klik om PDF te selecteren</span></p>
-                                                        <p className="text-xs text-gray-500 mt-1">G4S Tijdvakrooster PDF</p>
-                                                    </>
-                                                )}
-                                            </div>
-                                            <input 
-                                                type="file" 
-                                                className="hidden" 
-                                                accept=".pdf"
-                                                onChange={handlePdfUpload}
-                                                disabled={pdfParsing}
-                                            />
-                                        </label>
-
-                                        {pdfError && (
-                                            <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                                                <AlertCircle size={18} className="shrink-0 mt-0.5"/>
-                                                <span>{pdfError}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* Preview Sectie */}
-                                {parsedShifts.length > 0 && (
-                                    <div className="flex flex-col flex-1 min-h-0">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <p className="text-sm text-gray-600">
-                                                <span className="font-bold text-green-600">{parsedShifts.filter(s => s.selected).length}</span> van <span className="font-bold">{parsedShifts.length}</span> diensten geselecteerd
-                                            </p>
-                                            <div className="flex gap-2">
-                                                <button 
-                                                    onClick={() => selectAllShifts(true)} 
-                                                    className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                                                >
-                                                    Alles selecteren
-                                                </button>
-                                                <span className="text-gray-300">|</span>
-                                                <button 
-                                                    onClick={() => selectAllShifts(false)} 
-                                                    className="text-xs text-gray-500 hover:text-gray-700 font-medium"
-                                                >
-                                                    Niets selecteren
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex-1 overflow-y-auto border rounded-lg divide-y custom-scrollbar min-h-0 max-h-64">
-                                            {parsedShifts.map((shift, index) => (
-                                                <div 
-                                                    key={index}
-                                                    onClick={() => toggleShiftSelection(index)}
-                                                    className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${
-                                                        shift.selected ? 'bg-green-50 hover:bg-green-100' : 'bg-white hover:bg-gray-50'
-                                                    }`}
-                                                >
-                                                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ${
-                                                        shift.selected ? 'bg-green-500 border-green-500' : 'border-gray-300'
-                                                    }`}>
-                                                        {shift.selected && <Check size={14} className="text-white"/>}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-medium text-gray-800 truncate">{shift.dateDisplay}</p>
-                                                        <p className="text-xs text-orange-600 font-bold">{shift.time}</p>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        <div className="flex gap-2 mt-4 pt-4 border-t">
-                                            <button 
-                                                onClick={() => { setParsedShifts([]); setPdfError(null); }}
-                                                className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                                            >
-                                                Andere PDF
-                                            </button>
-                                            <button 
-                                                onClick={importSelectedShifts}
-                                                disabled={parsedShifts.filter(s => s.selected).length === 0}
-                                                className="flex-1 px-4 py-2 text-sm font-bold bg-green-600 text-white rounded-lg hover:bg-green-700 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                <Check size={16}/> Importeren ({parsedShifts.filter(s => s.selected).length})
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* MODAL: Tijdvak Rooster Upload */}
-                    {showTijdvakModal && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                            <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] flex flex-col">
-                                <div className="flex justify-between items-center mb-4 border-b pb-2">
-                                    <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
-                                        <Clock size={20} className="text-amber-500"/> Tijdvakkenrooster Invoeren
-                                    </h3>
-                                    <button onClick={closeTijdvakModal}>
-                                        <X className="text-gray-400 hover:text-gray-600"/>
-                                    </button>
-                                </div>
-
-                                {/* Maand/Jaar selectie */}
-                                <div className="flex gap-4 mb-4">
-                                    <select
-                                        className="flex-1 border p-2 rounded text-sm"
-                                        value={tijdvakMonth}
-                                        onChange={e => { setTijdvakMonth(parseInt(e.target.value)); setTijdvakBulkParsed([]); }}
-                                    >
-                                        {mNames.map((name, idx) => (
-                                            <option key={idx} value={idx}>{name}</option>
-                                        ))}
-                                    </select>
-                                    <select
-                                        className="flex-1 border p-2 rounded text-sm"
-                                        value={tijdvakYear}
-                                        onChange={e => { setTijdvakYear(parseInt(e.target.value)); setTijdvakBulkParsed([]); }}
-                                    >
-                                        <option value="2025">2025</option>
-                                        <option value="2026">2026</option>
-                                        <option value="2027">2027</option>
-                                    </select>
-                                </div>
-
-                                {tijdvakBulkParsed.length === 0 && (
-                                    <div className="space-y-4">
-                                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                                            <p className="text-sm text-amber-800 font-medium mb-2">📋 Hoe werkt het?</p>
-                                            <ol className="text-xs text-amber-700 space-y-1 list-decimal list-inside">
-                                                <li>Maak een screenshot van je tijdvakkenrooster in de G4S Connect app</li>
-                                                <li>Lees de tijden af en typ ze hieronder in</li>
-                                                <li>Of kopieer/plak de tekst als je die hebt</li>
-                                            </ol>
-                                        </div>
-
-                                        {/* Handmatige invoer */}
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-bold text-gray-500 uppercase">Voer tijdvakken in</label>
-                                            <p className="text-xs text-gray-500">Format: <code className="bg-gray-100 px-1 rounded">29: 07:15-13:45</code> of <code className="bg-gray-100 px-1 rounded">29-1: 07:15-13:45</code></p>
-                                            <textarea
-                                                className="w-full border p-3 rounded text-sm min-h-[120px] font-mono"
-                                                placeholder="29: 07:15-13:45&#10;30: 08:30-12:00&#10;4-2: 04:15-14:15&#10;5-2: 05:15-15:15"
-                                                value={tijdvakBulkInput}
-                                                onChange={e => setTijdvakBulkInput(e.target.value)}
-                                            />
-                                            <button
-                                                onClick={handleTijdvakBulkParse}
-                                                disabled={!tijdvakBulkInput.trim()}
-                                                className="w-full px-4 py-2 text-sm font-bold bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors"
-                                            >
-                                                Tijdvakken Verwerken
-                                            </button>
-                                        </div>
-
-                                        {/* Tip */}
-                                        <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
-                                            <strong>💡 Tip:</strong> Als je de tijdvakken van meerdere weken hebt, kun je ze allemaal tegelijk invoeren. Het systeem herkent automatisch de datums.
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Parsed results */}
-                                {tijdvakBulkParsed.length > 0 && (
-                                    <div className="flex flex-col flex-1 min-h-0">
-                                        <div className="flex justify-between mb-3">
-                                            <p className="text-sm"><span className="font-bold text-amber-600">{tijdvakBulkParsed.filter(s => s.selected).length}</span> tijdvakken gevonden</p>
-                                            <button onClick={() => { setTijdvakBulkParsed([]); setTijdvakBulkInput(""); }} className="text-xs text-gray-500 hover:text-gray-700">← Terug</button>
-                                        </div>
-
-                                        <div className="flex-1 overflow-y-auto border rounded-lg divide-y max-h-64">
-                                            {tijdvakBulkParsed.map((shift, index) => (
-                                                <div
-                                                    key={index}
-                                                    onClick={() => toggleTijdvakBulkSelection(index)}
-                                                    className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${shift.selected ? 'bg-amber-50 hover:bg-amber-100' : 'bg-white hover:bg-gray-50'}`}
-                                                >
-                                                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${shift.selected ? 'bg-amber-500 border-amber-500' : 'border-gray-300'}`}>
-                                                        {shift.selected && <Check size={14} className="text-white"/>}
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <p className="text-sm font-medium">{shift.dateDisplay}</p>
-                                                        <p className="text-xs text-amber-600 font-bold">{shift.startTime} - {shift.endTime}</p>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        <div className="flex gap-2 mt-4 pt-4 border-t">
-                                            <button onClick={closeTijdvakModal} className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">
-                                                Annuleren
-                                            </button>
-                                            <button
-                                                onClick={importTijdvakBulkShifts}
-                                                disabled={tijdvakBulkParsed.filter(s => s.selected).length === 0}
-                                                className="flex-1 px-4 py-2 text-sm font-bold bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 flex items-center justify-center gap-2"
-                                            >
-                                                <Check size={16}/> Importeren ({tijdvakBulkParsed.filter(s => s.selected).length})
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
                 </div>
             );
         };
