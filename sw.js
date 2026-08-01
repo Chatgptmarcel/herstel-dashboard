@@ -9,7 +9,7 @@
 // Cache-bust-parameters (?t=...) worden bij eigen bestanden genegeerd als cachesleutel,
 // anders zou elke ophaling een nieuwe kopie opslaan en zou offline nooit iets matchen.
 
-const CACHE = 'herstel-dashboard-v3';
+const CACHE = 'herstel-dashboard-v4';
 const PRECACHE = [
     './',
     './manifest.webmanifest',
