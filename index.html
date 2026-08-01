@@ -151,7 +151,7 @@
 
         /* Aangetikte dag (alleen in de compacte weergave zichtbaar gemarkeerd) */
         @media (max-width: 639.9px), (max-height: 539.9px) {
-            .dag-geselecteerd { border-width: 2px; border-color: #d946ef; }
+            .dag-geselecteerd { border-width: 2px; border-color: #2563eb; }
         }
 
         /* Touch-apparaten kennen geen hover: actieknopjes daar altijd zichtbaar maken */
@@ -1261,11 +1261,12 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                     const werkItems = allEvents.filter(e => e.type === 'roster' || (e.type === 'manual' && !e.isNote));
                     const isOnlyVerlof = hasWork && werkItems.length > 0 && werkItems.every(e => isVerlofachtig(e.summary));
 
-                    // Kleurcode: groen = vrij, rood = werken, oranje = vakantie/verlof/RNVB, blauw = vandaag
+                    // Kleurcode: groen = vrij, rood = werken, oranje = vakantie/verlof/RNVB.
+                    // Op mobiel verhuist blauw mee met de dag die voor de detailkaart is aangetikt.
                     let bgClass = "bg-gradient-to-br from-emerald-50 to-teal-100/70 border-emerald-200";
                     if (isVakantieDag || isVerlofDag) bgClass = "bg-gradient-to-br from-amber-100 via-orange-100 to-yellow-100 border-orange-300";
                     if (hasWork && !isOnlyVerlof) bgClass = "bg-gradient-to-br from-red-50 to-rose-100/80 border-red-200";
-                    if (isToday) bgClass = "bg-gradient-to-br from-sky-100 to-indigo-100 ring-2 ring-blue-500 shadow-[0_0_18px_rgba(59,130,246,0.45)] z-10";
+                    if (detailDate === dateKey) bgClass = "bg-gradient-to-br from-sky-100 to-indigo-100 ring-2 ring-blue-500 shadow-[0_0_18px_rgba(59,130,246,0.45)] z-10";
 
                     // Label voor een vrije dag: de eigen tekst ("Vakantie", "Verlof", "RNVB")
                     const vrijLabel = vakantieEntries.length
@@ -1316,14 +1317,17 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                 {vrijLabel && <span className="text-orange-700 truncate">{vrijLabel}</span>}
                                 {allEvents.filter(e => (e.type === 'roster' || (e.type === 'manual' && !e.isNote)) && !isVerlofachtig(e.summary))
                                     .map((e, i) => (
-                                        <span key={`mw-${i}`} className="text-red-700 leading-[1.15]">
-                                            {formatTime(e.sortStart)}<br/><span className="font-semibold opacity-80">-{formatTime(e.sortEnd)}</span>
+                                        <span key={`mw-${i}`} className="text-[7px] text-red-700 leading-[1.15] font-extrabold tracking-[-0.04em] whitespace-nowrap">
+                                            {formatTime(e.sortStart)}–{formatTime(e.sortEnd)}
                                         </span>
                                     ))}
                                 {allEvents.filter(e => e.isNote).map(e => <span key={`mn-${e.id}`} className="text-slate-700 break-words line-clamp-2">{e.summary}</span>)}
                                 {amberShift && <span className="text-pink-600 truncate">A {amberShift.startTime}</span>}
                                 {(salaryDay || trigionDay) && <span className="text-yellow-700 truncate">💰 P{(salaryDay || trigionDay).periode}</span>}
-                                {allEvents.filter(e => e.type === 'swim').slice(0, 2).map((e, i) => <span key={`ms-${i}`} className="text-sky-700 truncate">🏊 {e.summary.split(' - ')[0]}</span>)}
+                                {allEvents.filter(e => e.type === 'swim').slice(0, 2).map((e, i) => {
+                                    const begintijd = e.summary.split(' - ')[0].replace(/^0/, '').replace(/:00$/, 'u');
+                                    return <span key={`ms-${i}`} className="text-[7px] leading-tight text-blue-800 bg-sky-200 border border-sky-300 rounded px-px truncate">Zwem {begintijd}</span>;
+                                })}
                                 {isArmDay && <span className="text-red-600 truncate">Armen</span>}
                             </div>
 
@@ -1582,7 +1586,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                             <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span> Vrij</span>
                             <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.8)]"></span> Werken</span>
                             <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.8)]"></span> Vakantie</span>
-                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]"></span> Vandaag</span>
+                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]"></span> Geselecteerd</span>
                         </div>
                         <div className="grid grid-cols-7 bg-slate-900/80 text-center py-1.5 text-xs sm:text-sm font-bold text-slate-300 uppercase tracking-wider border-b border-white/10 shrink-0"><div>Ma</div><div>Di</div><div>Wo</div><div>Do</div><div>Vr</div><div>Za</div><div>Zo</div></div>
                         <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar grid grid-cols-7 dagen-grid bg-slate-200 gap-px">{renderCalendar()}</div>
