@@ -61,6 +61,11 @@
                         sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
                         display: ['"Bricolage Grotesque"', 'Outfit', 'ui-sans-serif', 'sans-serif'],
                     },
+                    // "sm" = breed ÉN hoog genoeg: een gedraaide telefoon (breed maar laag)
+                    // houdt zo de compacte maandweergave met dagdetail-kaart.
+                    screens: {
+                        sm: { raw: '(min-width: 640px) and (min-height: 540px)' },
+                    },
                 },
             },
         };
@@ -132,16 +137,22 @@
            de invoervelden en datumpickers in de witte modals donker) */
         .bg-white { color-scheme: light; }
 
-        /* Kalender: op mobiel compact op inhoud (dagdetail-kaart eronder blijft in beeld),
-           vanaf sm beeldvullend onder de kopbalk. dvh vangt mobiele browserbalken op. */
-        @media (min-width: 640px) { .kalender-vol { height: calc(100vh - 7.5rem); height: calc(100dvh - 7.5rem); } }
+        /* Kalender: op de telefoon (staand én liggend) compact op inhoud met de
+           dagdetail-kaart eronder; alleen op brede ÉN hoge schermen beeldvullend.
+           Deze media query moet gelijk blijven aan het "sm"-scherm in tailwind.config. */
+        @media (min-width: 640px) and (min-height: 540px) { .kalender-vol { height: calc(100vh - 7.5rem); height: calc(100dvh - 7.5rem); } }
         /* Korte schermen (liggende telefoon): legenda weg voor meer kalenderruimte */
         @media (max-height: 520px) { .legenda-rij { display: none !important; } }
 
         /* Dagcellen: rijen verdelen de ruimte maar worden nooit lager dan het minimum
-           (mobiel compact, vanaf sm ruim; bij te weinig hoogte scrollt het grid) */
+           (compact op de telefoon, ruim op grote schermen) */
         .dagen-grid { grid-auto-rows: minmax(3rem, 1fr); }
-        @media (min-width: 640px) { .dagen-grid { grid-auto-rows: minmax(5.5rem, 1fr); } }
+        @media (min-width: 640px) and (min-height: 540px) { .dagen-grid { grid-auto-rows: minmax(5.5rem, 1fr); } }
+
+        /* Aangetikte dag (alleen in de compacte weergave zichtbaar gemarkeerd) */
+        @media (max-width: 639.9px), (max-height: 539.9px) {
+            .dag-geselecteerd { border-width: 2px; border-color: #d946ef; }
+        }
 
         /* Touch-apparaten kennen geen hover: actieknopjes daar altijd zichtbaar maken */
         @media (hover: none) {
@@ -641,8 +652,9 @@
             };
 
             // Vakantie is een eigen dagtype met een eigen kleur (oranje) — geen losse notitie meer nodig.
-            // Oude notities met precies de tekst "Vakantie" tellen automatisch ook mee.
-            const isVakantieEntry = (e) => !!e && (e.isVakantie === true || /^\s*vakantie\s*$/i.test(e.summary || ''));
+            // Oude notities met precies de tekst "Vakantie", "Verlof" of "RNVB" tellen automatisch ook mee
+            // (zo kleuren ook handmatig genoteerde verlofperiodes gewoon oranje).
+            const isVakantieEntry = (e) => !!e && (e.isVakantie === true || /^\s*(vakantie|verlof|rnvb)\s*$/i.test(e.summary || ''));
 
             // Verlof- en RNVB-diensten uit het rooster kleuren als vakantie (oranje) en tellen
             // niet als werkdag of gewerkte uren.
@@ -1276,7 +1288,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                             isToday, hasWork, isOnlyVerlof, bgClass } = berekenDag(date);
 
                     days.push(
-                        <div key={day} onClick={() => setDetailDate(dateKey)} className={`min-h-[3rem] sm:min-h-[5.5rem] border p-1 relative flex flex-col ${bgClass} ${detailDate === dateKey ? 'max-sm:border-2 max-sm:border-fuchsia-500' : ''} group transition-colors cursor-pointer sm:cursor-auto`}>
+                        <div key={day} onClick={() => setDetailDate(dateKey)} className={`min-h-[3rem] sm:min-h-[5.5rem] border p-1 relative flex flex-col ${bgClass} ${detailDate === dateKey ? 'dag-geselecteerd' : ''} group transition-colors cursor-pointer sm:cursor-auto`}>
                             <div className="flex justify-between items-start mb-1">
                                 <span className={`text-sm sm:text-lg leading-none font-bold font-display ${isToday ? 'text-blue-600' : (hasWork && !isOnlyVerlof ? 'text-red-700' : ((isVakantieDag || isVerlofDag) ? 'text-orange-600' : 'text-emerald-700'))}`}>{day}{(isVakantieDag || isVerlofDag) && <Palmtree size={13} className="inline-block ml-1 -mt-0.5 text-orange-500" title="Vakantie"/>}{getMoonPhase(date) && <span className="ml-1 text-xs" title={getMoonPhase(date) === '🌑' ? 'Nieuwe maan' : 'Volle maan'}>{getMoonPhase(date)}</span>}</span>
                                 {isToday && <span className="hidden sm:inline-block text-[10px] bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-1.5 py-0.5 rounded-full font-bold shadow">Vandaag</span>}
