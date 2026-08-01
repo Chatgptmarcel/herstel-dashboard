@@ -132,6 +132,11 @@
            de invoervelden en datumpickers in de witte modals donker) */
         .bg-white { color-scheme: light; }
 
+        /* Kalender beeldvullend: vult de viewport onder de compacte kopbalk.
+           dvh-regel overschrijft vh waar ondersteund (mobiele browserbalken). */
+        .kalender-vol { height: calc(100vh - 6rem); height: calc(100dvh - 6rem); }
+        @media (min-width: 640px) { .kalender-vol { height: calc(100vh - 7.5rem); height: calc(100dvh - 7.5rem); } }
+
         /* Touch-apparaten kennen geen hover: actieknopjes daar altijd zichtbaar maken */
         @media (hover: none) {
             .touch-zichtbaar { opacity: 1 !important; }
@@ -1114,7 +1119,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                 const firstDay = new Date(year, month, 1).getDay() === 0 ? 6 : new Date(year, month, 1).getDay() - 1;
                 const days = [];
                 
-                for (let i = 0; i < firstDay; i++) days.push(<div key={`e-${i}`} className="h-36 bg-slate-100/80 border border-slate-100"></div>);
+                for (let i = 0; i < firstDay; i++) days.push(<div key={`e-${i}`} className="min-h-[5.5rem] bg-slate-100/80 border border-slate-100"></div>);
 
                 for (let day = 1; day <= daysInMonth; day++) {
                     const date = new Date(year, month, day);
@@ -1226,7 +1231,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                     if (isToday) bgClass = "bg-gradient-to-br from-sky-100 to-indigo-100 ring-2 ring-blue-500 shadow-[0_0_18px_rgba(59,130,246,0.45)] z-10";
 
                     days.push(
-                        <div key={day} className={`h-36 border p-1 relative flex flex-col ${bgClass} group transition-colors`}>
+                        <div key={day} className={`min-h-[5.5rem] border p-1 relative flex flex-col ${bgClass} group transition-colors`}>
                             <div className="flex justify-between items-start mb-1">
                                 <span className={`text-sm font-bold font-display ${isToday ? 'text-blue-600' : (hasWork && !isOnlyVerlof ? 'text-red-700' : (isVakantieDag ? 'text-orange-600' : 'text-emerald-700'))}`}>{day}{getMoonPhase(date) && <span className="ml-1 text-xs" title={getMoonPhase(date) === '🌑' ? 'Nieuwe maan' : 'Volle maan'}>{getMoonPhase(date)}</span>}</span>
                                 {isToday && <span className="hidden sm:inline-block text-[10px] bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-1.5 py-0.5 rounded-full font-bold shadow">Vandaag</span>}
@@ -1240,7 +1245,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                     <span className="sm:hidden">{weather[dateKey].max}°</span>
                                 </div>
                             )}
-                            <div className="flex-1 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
+                            <div className="flex-1 min-h-0 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
                                 {/* 0. VAKANTIE (eigen dagtype, oranje) */}
                                 {vakantieEntries.map((e) => (
                                     <div key={`v-${e.id}`} className="text-[10px] font-bold p-1 rounded-lg mb-0.5 flex justify-between items-center group/item bg-gradient-to-r from-orange-400 to-amber-400 text-white shadow-sm w-full text-left">
@@ -1337,7 +1342,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                 }
                 // Laatste rij aanvullen met lege cellen, zodat er geen kale strook overblijft
                 const rest = (7 - ((firstDay + daysInMonth) % 7)) % 7;
-                for (let i = 0; i < rest; i++) days.push(<div key={`t-${i}`} className="h-36 bg-slate-100/80 border border-slate-100"></div>);
+                for (let i = 0; i < rest; i++) days.push(<div key={`t-${i}`} className="min-h-[5.5rem] bg-slate-100/80 border border-slate-100"></div>);
                 return days;
             };
 
@@ -1463,28 +1468,47 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
             };
 
             return (
-                <div className="max-w-6xl mx-auto p-4 sm:p-6 font-sans min-h-screen relative">
+                <div className="max-w-[1800px] mx-auto p-4 sm:p-6 font-sans min-h-screen relative">
                     <div className="aurora-vast" aria-hidden="true"></div>
-                    <div className="glass rounded-2xl p-6 mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 verschijn">
-                        <div className="text-center sm:text-left">
-                            <h1 className="font-display text-3xl font-bold bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(168,85,247,0.35)]">Mijn Herstel Dashboard</h1>
-                            <p className="text-slate-300 text-sm mt-1">Notities & automatisch rooster</p>
+                    {/* Compacte kopbalk: één regel, zodat de kalender maximaal de ruimte krijgt */}
+                    <div className="glass rounded-2xl px-4 py-2 sm:px-5 sm:py-3 mb-3 flex justify-between items-center gap-3 verschijn">
+                        <div className="min-w-0">
+                            <h1 className="font-display text-lg sm:text-2xl font-bold bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(168,85,247,0.35)] truncate">Mijn Herstel Dashboard</h1>
                         </div>
-                        <div className="flex items-center gap-2 flex-wrap justify-center">
+                        <div className="flex items-center gap-2 shrink-0">
                             {/* FILTER KNOP */}
-                            <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center text-xs px-4 py-2 rounded-full font-bold transition-all shadow-lg ${showFilters ? 'bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white shadow-fuchsia-500/40' : 'bg-white/10 text-fuchsia-200 border border-white/15 hover:bg-white/20'}`}>
-                                <Filter size={14} className="mr-1.5"/> Filters
+                            <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center text-xs px-3 py-1.5 rounded-full font-bold transition-all shadow-lg ${showFilters ? 'bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white shadow-fuchsia-500/40' : 'bg-white/10 text-fuchsia-200 border border-white/15 hover:bg-white/20'}`}>
+                                <Filter size={14} className="sm:mr-1.5"/><span className="hidden sm:inline">Filters</span>
                             </button>
                             {/* ADMINISTRATIE / GEWERKTE UREN */}
-                            <button onClick={() => setShowAdminModal(true)} className="flex items-center text-xs px-4 py-2 rounded-full font-bold transition-all bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/40 hover:brightness-110">
-                                <Briefcase size={14} className="mr-1.5"/> Administratie
+                            <button onClick={() => setShowAdminModal(true)} className="flex items-center text-xs px-3 py-1.5 rounded-full font-bold transition-all bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/40 hover:brightness-110">
+                                <Briefcase size={14} className="sm:mr-1.5"/><span className="hidden sm:inline">Administratie</span>
                             </button>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                    {/* KALENDER — beeldvullend hoofdpodium */}
+                    <div className="glass rounded-2xl overflow-hidden verschijn flex flex-col kalender-vol" style={{animationDelay:'0.05s'}}>
+                        <div className="px-4 py-2 bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white flex justify-between items-center shrink-0">
+                            <button onClick={prevM} className="p-1.5 bg-white/15 hover:bg-white/30 rounded-full transition-colors"><ChevronLeft size={20}/></button>
+                            <h2 className="font-display text-lg sm:text-xl font-bold flex items-center gap-2 drop-shadow"><CalendarIcon size={20}/> {mNames[viewDate.getMonth()]} {viewDate.getFullYear()}</h2>
+                            <button onClick={nextM} className="p-1.5 bg-white/15 hover:bg-white/30 rounded-full transition-colors"><ChevronRight size={20}/></button>
+                        </div>
+                        {/* Kleurlegenda */}
+                        <div className="flex flex-wrap items-center justify-center gap-x-3 sm:gap-x-4 gap-y-0.5 px-2 py-1 bg-slate-900/80 text-[10px] sm:text-[11px] font-semibold text-slate-300 border-b border-white/10 shrink-0">
+                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span> Vrij</span>
+                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.8)]"></span> Werken</span>
+                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.8)]"></span> Vakantie</span>
+                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]"></span> Vandaag</span>
+                        </div>
+                        <div className="grid grid-cols-7 bg-slate-900/80 text-center py-1.5 text-xs font-bold text-slate-300 uppercase tracking-wider border-b border-white/10 shrink-0"><div>Ma</div><div>Di</div><div>Wo</div><div>Do</div><div>Vr</div><div>Za</div><div>Zo</div></div>
+                        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar grid grid-cols-7 auto-rows-fr bg-slate-200 gap-px">{renderCalendar()}</div>
+                    </div>
+
+                    {/* STATUSKAARTEN — compact onder de kalender */}
+                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mt-4 sm:mt-6 mb-4">
                         {/* LOONSTROOK KPI */}
-                        <div className="glass kpi-card p-5 rounded-2xl flex flex-col items-center text-center verschijn" style={{animationDelay:'0.05s'}}>
+                        <div className="glass kpi-card p-4 rounded-2xl flex flex-col items-center text-center verschijn" style={{animationDelay:'0.15s'}}>
                             <span className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-emerald-400 to-teal-400"></span>
                             <span className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-500/40 mb-2"><Banknote size={22}/></span>
                             <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wide">Loonstrook</h2>
@@ -1502,7 +1526,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                             <p className="text-[10px] text-slate-400 mt-2">Volgende check: betaalvrijdag</p>
                         </div>
                         {/* DAGEN NUCHTER KPI */}
-                        <div className="glass kpi-card p-5 rounded-2xl flex flex-col items-center verschijn" style={{animationDelay:'0.1s'}}>
+                        <div className="glass kpi-card p-4 rounded-2xl flex flex-col items-center verschijn" style={{animationDelay:'0.1s'}}>
                             <span className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-green-400 to-lime-400"></span>
                             <span className="p-2.5 rounded-xl bg-gradient-to-br from-green-400 to-lime-500 text-white shadow-lg shadow-green-500/40 mb-2"><Trophy size={22}/></span>
                             <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wide">Dagen Nuchter</h2>
@@ -1513,7 +1537,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                         </div>
 
                         {/* ARM TRAINING KPI */}
-                        <div className="glass kpi-card p-5 rounded-2xl flex flex-col items-center verschijn" style={{animationDelay:'0.15s'}}>
+                        <div className="glass kpi-card p-4 rounded-2xl flex flex-col items-center verschijn" style={{animationDelay:'0.15s'}}>
                             <span className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-red-400 to-orange-400"></span>
                             <span className="p-2.5 rounded-xl bg-gradient-to-br from-red-400 to-orange-500 text-white shadow-lg shadow-red-500/40 mb-2"><Activity size={22}/></span>
                             <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wide">Arm Training</h2>
@@ -1524,7 +1548,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                         </div>
 
                         {/* ZWEMMEN KPI */}
-                        <div className="glass kpi-card p-5 rounded-2xl flex flex-col items-center text-center verschijn" style={{animationDelay:'0.2s'}}>
+                        <div className="glass kpi-card p-4 rounded-2xl flex flex-col items-center text-center verschijn" style={{animationDelay:'0.2s'}}>
                             <span className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-sky-400 to-cyan-400"></span>
                             <span className="p-2.5 rounded-xl bg-gradient-to-br from-sky-400 to-cyan-500 text-white shadow-lg shadow-cyan-500/40 mb-2"><Droplets size={22}/></span>
                             <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wide mb-1">Victoriabad Vandaag</h2>
@@ -1543,7 +1567,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                         </div>
 
                         {/* MINOXIDIL KPI */}
-                        <div className="glass kpi-card p-5 rounded-2xl flex flex-col items-center verschijn" style={{animationDelay:'0.25s'}}>
+                        <div className="glass kpi-card p-4 rounded-2xl flex flex-col items-center verschijn" style={{animationDelay:'0.25s'}}>
                             <span className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-fuchsia-400 to-purple-400"></span>
                             <span className="p-2.5 rounded-xl bg-gradient-to-br from-fuchsia-400 to-purple-500 text-white shadow-lg shadow-fuchsia-500/40 mb-2"><FlaskConical size={22}/></span>
                             <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wide">Minoxidil Voortgang</h2>
@@ -1555,22 +1579,6 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
 
                     </div>
 
-                    <div className="glass rounded-2xl overflow-hidden verschijn" style={{animationDelay:'0.2s'}}>
-                        <div className="p-4 bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white flex justify-between items-center">
-                            <button onClick={prevM} className="p-2 bg-white/15 hover:bg-white/30 rounded-full transition-colors"><ChevronLeft/></button>
-                            <h2 className="font-display text-xl font-bold flex items-center gap-2 drop-shadow"><CalendarIcon/> {mNames[viewDate.getMonth()]} {viewDate.getFullYear()}</h2>
-                            <button onClick={nextM} className="p-2 bg-white/15 hover:bg-white/30 rounded-full transition-colors"><ChevronRight/></button>
-                        </div>
-                        {/* Kleurlegenda */}
-                        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 px-3 py-2 bg-slate-900/80 text-[11px] font-semibold text-slate-300 border-b border-white/10">
-                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span> Vrij</span>
-                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.8)]"></span> Werken</span>
-                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.8)]"></span> Vakantie</span>
-                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]"></span> Vandaag</span>
-                        </div>
-                        <div className="grid grid-cols-7 bg-slate-900/80 text-center py-2.5 text-xs font-bold text-slate-300 uppercase tracking-wider border-b border-white/10"><div>Ma</div><div>Di</div><div>Wo</div><div>Do</div><div>Vr</div><div>Za</div><div>Zo</div></div>
-                        <div className="grid grid-cols-7 bg-slate-200 gap-px">{renderCalendar()}</div>
-                    </div>
 
                     {/* MODAL: Notitie of Vakantie Toevoegen */}
                     {showAddModal && (
