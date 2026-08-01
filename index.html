@@ -146,7 +146,7 @@
 
         /* Dagcellen: rijen verdelen de ruimte maar worden nooit lager dan het minimum
            (compact op de telefoon, ruim op grote schermen) */
-        .dagen-grid { grid-auto-rows: minmax(3rem, 1fr); }
+        .dagen-grid { grid-auto-rows: minmax(4.6rem, 1fr); }
         @media (min-width: 640px) and (min-height: 540px) { .dagen-grid { grid-auto-rows: minmax(5.5rem, 1fr); } }
 
         /* Aangetikte dag (alleen in de compacte weergave zichtbaar gemarkeerd) */
@@ -1267,8 +1267,17 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                     if (hasWork && !isOnlyVerlof) bgClass = "bg-gradient-to-br from-red-50 to-rose-100/80 border-red-200";
                     if (isToday) bgClass = "bg-gradient-to-br from-sky-100 to-indigo-100 ring-2 ring-blue-500 shadow-[0_0_18px_rgba(59,130,246,0.45)] z-10";
 
+                    // Label voor een vrije dag: de eigen tekst ("Vakantie", "Verlof", "RNVB")
+                    const vrijLabel = vakantieEntries.length
+                        ? (vakantieEntries[0].summary || 'Vakantie').trim()
+                        : (isVerlofDag
+                            ? ((rosterShifts[dateKey] || [])
+                                .map(s => { const ov = s.uid ? rosterOverrides[s.uid] : null; return ov && ov.summary !== undefined ? ov.summary : s.summary; })
+                                .filter(isVerlofachtig).map(cleanSummary)[0] || 'Verlof')
+                            : null);
+
                     return { dateKey, daySoberCount, isArmDay, amberShift, salaryDay, trigionDay,
-                             vakantieEntries, isVakantieDag, isVerlofDag, finalRoster, allEvents,
+                             vakantieEntries, isVakantieDag, isVerlofDag, vrijLabel, finalRoster, allEvents,
                              isToday, hasWork, isOnlyVerlof, bgClass };
             };
 
@@ -1284,7 +1293,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                 for (let day = 1; day <= daysInMonth; day++) {
                     const date = new Date(year, month, day);
                     const { dateKey, daySoberCount, isArmDay, amberShift, salaryDay, trigionDay,
-                            vakantieEntries, isVakantieDag, isVerlofDag, finalRoster, allEvents,
+                            vakantieEntries, isVakantieDag, isVerlofDag, vrijLabel, finalRoster, allEvents,
                             isToday, hasWork, isOnlyVerlof, bgClass } = berekenDag(date);
 
                     days.push(
@@ -1302,19 +1311,31 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                     <span className="sm:hidden">{weather[dateKey].max}°</span>
                                 </div>
                             )}
-                            {/* Mobiel: alleen begintijd van de dienst + stipjes; alles leesbaar in de dagkaart eronder */}
-                            {(() => { const w = allEvents.find(e => !e.isNote && e.type !== 'swim' && !isVerlofachtig(e.summary) && (e.type === 'roster' || e.startTime)); return w ? <span className="sm:hidden text-[9px] font-bold text-red-700 leading-tight px-0.5 whitespace-nowrap">{formatTime(w.sortStart)}</span> : null; })()}
-                            <div className="sm:hidden mt-auto flex flex-wrap items-center gap-1 px-0.5 pb-0.5">
-                                {allEvents.some(e => e.type === 'swim') && <span className="w-1.5 h-1.5 rounded-full bg-sky-500"></span>}
-                                {allEvents.some(e => e.isNote) && <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>}
-                                {amberShift && <span className="w-1.5 h-1.5 rounded-full bg-pink-500"></span>}
-                                {(salaryDay || trigionDay) && <span className="w-1.5 h-1.5 rounded-full bg-yellow-400"></span>}
-                                {isArmDay && <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>}
+                            {/* Telefoon: korte leesbare regels (alles voluit in de dagkaart eronder) */}
+                            <div className="sm:hidden flex-1 min-h-0 overflow-hidden flex flex-col gap-px px-[1px] text-[8px] leading-[1.3] font-bold tracking-tighter">
+                                {vrijLabel && <span className="text-orange-700 truncate">{vrijLabel}</span>}
+                                {allEvents.filter(e => (e.type === 'roster' || (e.type === 'manual' && !e.isNote)) && !isVerlofachtig(e.summary))
+                                    .map((e, i) => (
+                                        <span key={`mw-${i}`} className="text-red-700 leading-[1.15]">
+                                            {formatTime(e.sortStart)}<br/><span className="font-semibold opacity-80">-{formatTime(e.sortEnd)}</span>
+                                        </span>
+                                    ))}
+                                {allEvents.filter(e => e.isNote).map(e => <span key={`mn-${e.id}`} className="text-slate-700 break-words line-clamp-2">{e.summary}</span>)}
+                                {amberShift && <span className="text-pink-600 truncate">A {amberShift.startTime}</span>}
+                                {(salaryDay || trigionDay) && <span className="text-yellow-700 truncate">💰 P{(salaryDay || trigionDay).periode}</span>}
+                                {allEvents.filter(e => e.type === 'swim').slice(0, 2).map((e, i) => <span key={`ms-${i}`} className="text-sky-700 truncate">🏊 {e.summary.split(' - ')[0]}</span>)}
+                                {isArmDay && <span className="text-red-600 truncate">Armen</span>}
                             </div>
 
                             <div className="hidden sm:flex flex-1 min-h-0 flex-col gap-1 overflow-y-auto custom-scrollbar">
-                                {/* Vakantie heeft geen eigen balk: de oranje dagkleur + het palmpje
-                                    bij het dagnummer zeggen het al; verwijderen kan via de dagmodal (+) */}
+                                {/* Vakantie/verlof uit een notitie: platte tekst (geen gekleurde balk).
+                                    Verlof/RNVB uit het rooster heeft verderop zijn eigen dienst-chip. */}
+                                {vakantieEntries.length > 0 && (
+                                    <div className="flex items-center justify-between gap-1 group/vak">
+                                        <span className="flex items-center gap-1 text-[11px] sm:text-xs font-bold text-orange-700 truncate"><Palmtree size={12} className="shrink-0"/> {vrijLabel}</span>
+                                        <button onClick={(ev)=>{ev.stopPropagation(); handleRemoveVakantie(dateKey);}} className="touch-zichtbaar opacity-0 group-hover/vak:opacity-100 text-orange-400 hover:text-red-500 shrink-0" title="Vakantie verwijderen"><Trash2 size={11}/></button>
+                                    </div>
+                                )}
 
                                 {/* 1. NOTITIES EERST */}
                                 {allEvents.filter(e => e.isNote).map((e) => (
@@ -1530,7 +1551,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
             };
 
             return (
-                <div className="max-w-[1800px] mx-auto p-4 sm:p-6 font-sans min-h-screen relative">
+                <div className="max-w-[1800px] mx-auto p-2 sm:p-6 font-sans min-h-screen relative">
                     <div className="aurora-vast" aria-hidden="true"></div>
                     {/* Compacte kopbalk: één regel, zodat de kalender maximaal de ruimte krijgt */}
                     <div className="glass rounded-2xl px-4 py-2 sm:px-5 sm:py-3 mb-3 flex justify-between items-center gap-3 verschijn">
@@ -1574,7 +1595,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                             const d = berekenDag(datum);
                             const status = d.hasWork && !d.isOnlyVerlof
                                 ? { t: 'Werken', c: 'text-red-300' }
-                                : ((d.isVakantieDag || d.isVerlofDag) ? { t: 'Vakantie', c: 'text-orange-300' } : { t: 'Vrij', c: 'text-emerald-300' });
+                                : ((d.isVakantieDag || d.isVerlofDag) ? { t: d.vrijLabel || 'Vakantie', c: 'text-orange-300' } : { t: 'Vrij', c: 'text-emerald-300' });
                             const heeftIets = d.vakantieEntries.length > 0 || d.allEvents.length > 0 || d.amberShift || d.salaryDay || d.trigionDay || d.daySoberCount > 0 || d.isArmDay;
                             return (
                                 <>
@@ -1588,7 +1609,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                     <div className="space-y-1.5">
                                         {d.vakantieEntries.length > 0 && (
                                             <div className="flex items-center justify-between text-xs font-bold p-2 rounded-lg bg-gradient-to-r from-orange-400 to-amber-400 text-white">
-                                                <span className="flex items-center gap-1.5"><Palmtree size={14}/> Vakantie</span>
+                                                <span className="flex items-center gap-1.5"><Palmtree size={14}/> {d.vrijLabel || 'Vakantie'}</span>
                                                 <button onClick={() => handleRemoveVakantie(d.dateKey)} className="text-white/80 hover:text-white"><Trash2 size={14}/></button>
                                             </div>
                                         )}
