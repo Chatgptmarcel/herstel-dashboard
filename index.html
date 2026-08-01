@@ -636,6 +636,23 @@
             // Oude notities met precies de tekst "Vakantie" tellen automatisch ook mee.
             const isVakantieEntry = (e) => !!e && (e.isVakantie === true || /^\s*vakantie\s*$/i.test(e.summary || ''));
 
+            // Verlof- en RNVB-diensten uit het rooster kleuren als vakantie (oranje) en tellen
+            // niet als werkdag of gewerkte uren.
+            const isVerlofachtig = (summary) => /verlof|rnvb/i.test(summary || '');
+
+            // Alle vakantie-items van één dag verwijderen (route via de dagmodal; de kalender
+            // toont vakantie als dagkleur + palmpje, zonder eigen balk in de cel).
+            const handleRemoveVakantie = (dateKey) => {
+                const updated = { ...manualShifts };
+                if (updated[dateKey]) {
+                    updated[dateKey] = updated[dateKey].filter(e => !isVakantieEntry(e));
+                    if (updated[dateKey].length === 0) delete updated[dateKey];
+                    saveData(updated);
+                }
+                setShowAddModal(false);
+                setSelectedDate(null);
+            };
+
             const parseICS = (icsData) => {
                 const events = {};
                 const lines = icsData.split(/\r\n|\n|\r/);
@@ -1102,8 +1119,8 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                 swimEnd.setHours(endH, endM, 0, 0);
                 
                 return shifts.some(shift => {
-                    if (shift.isNote) return false; 
-                    if (shift.summary?.toLowerCase().includes('verlof')) return false;
+                    if (shift.isNote) return false;
+                    if (/verlof|rnvb/i.test(shift.summary || '')) return false;
                     return (swimStart < shift.sortEnd && swimEnd > shift.sortStart);
                 });
             };
@@ -1144,6 +1161,13 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                     // VAKANTIE CHECK (eigen dagtype met eigen kleur, los van het Werk-filter)
                     const vakantieEntries = calendarFilters.showVakantie ? (manualShifts[dateKey] || []).filter(isVakantieEntry) : [];
                     const isVakantieDag = vakantieEntries.length > 0;
+
+                    // VERLOF/RNVB uit het rooster kleurt ook als vakantie
+                    const isVerlofDag = calendarFilters.showVakantie && (rosterShifts[dateKey] || []).some(s => {
+                        const ov = s.uid ? rosterOverrides[s.uid] : null;
+                        if (ov && ov.hidden) return false;
+                        return isVerlofachtig(ov && ov.summary !== undefined ? ov.summary : s.summary);
+                    });
 
                     // Pas handmatige correcties toe: verborgen diensten eruit, aangepaste tijden/omschrijving erin.
                     const rosterRaw = (rosterShifts[dateKey] || [])
@@ -1222,41 +1246,38 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                     // Check voor werk: Roster diensten, handmatige shifts of historische G4S-import
                     const hasWork = allEvents.some(e => (e.type === 'roster' || (e.type === 'manual' && !e.isNote))) ||
                                    (manualShifts[dateKey] || []).some(s => s.isG4SShift);
-                    const isOnlyVerlof = hasWork && allEvents.every(e => e.type !== 'swim' && e.summary?.toLowerCase().includes('verlof'));
+                    // Alleen-verlof/RNVB telt niet als werkdag; zwem- en notitie-items tellen hier niet mee
+                    const werkItems = allEvents.filter(e => e.type === 'roster' || (e.type === 'manual' && !e.isNote));
+                    const isOnlyVerlof = hasWork && werkItems.length > 0 && werkItems.every(e => isVerlofachtig(e.summary));
 
-                    // Kleurcode: groen = vrij, rood = werken, oranje = vakantie, blauw = vandaag
+                    // Kleurcode: groen = vrij, rood = werken, oranje = vakantie/verlof/RNVB, blauw = vandaag
                     let bgClass = "bg-gradient-to-br from-emerald-50 to-teal-100/70 border-emerald-200";
-                    if (isVakantieDag) bgClass = "bg-gradient-to-br from-amber-100 via-orange-100 to-yellow-100 border-orange-300";
+                    if (isVakantieDag || isVerlofDag) bgClass = "bg-gradient-to-br from-amber-100 via-orange-100 to-yellow-100 border-orange-300";
                     if (hasWork && !isOnlyVerlof) bgClass = "bg-gradient-to-br from-red-50 to-rose-100/80 border-red-200";
                     if (isToday) bgClass = "bg-gradient-to-br from-sky-100 to-indigo-100 ring-2 ring-blue-500 shadow-[0_0_18px_rgba(59,130,246,0.45)] z-10";
 
                     days.push(
                         <div key={day} className={`min-h-[5.5rem] border p-1 relative flex flex-col ${bgClass} group transition-colors`}>
                             <div className="flex justify-between items-start mb-1">
-                                <span className={`text-sm font-bold font-display ${isToday ? 'text-blue-600' : (hasWork && !isOnlyVerlof ? 'text-red-700' : (isVakantieDag ? 'text-orange-600' : 'text-emerald-700'))}`}>{day}{getMoonPhase(date) && <span className="ml-1 text-xs" title={getMoonPhase(date) === '🌑' ? 'Nieuwe maan' : 'Volle maan'}>{getMoonPhase(date)}</span>}</span>
+                                <span className={`text-sm sm:text-lg leading-none font-bold font-display ${isToday ? 'text-blue-600' : (hasWork && !isOnlyVerlof ? 'text-red-700' : ((isVakantieDag || isVerlofDag) ? 'text-orange-600' : 'text-emerald-700'))}`}>{day}{(isVakantieDag || isVerlofDag) && <Palmtree size={13} className="inline-block ml-1 -mt-0.5 text-orange-500" title="Vakantie"/>}{getMoonPhase(date) && <span className="ml-1 text-xs" title={getMoonPhase(date) === '🌑' ? 'Nieuwe maan' : 'Volle maan'}>{getMoonPhase(date)}</span>}</span>
                                 {isToday && <span className="hidden sm:inline-block text-[10px] bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-1.5 py-0.5 rounded-full font-bold shadow">Vandaag</span>}
                                 <button onClick={() => { setSelectedDate(dateKey); setNewNote(""); setNewEntryType('note'); setVakantieTotEnMet(dateKey); setShowAddModal(true); }} className="touch-zichtbaar opacity-30 group-hover:opacity-100 text-blue-600 p-1 -m-0.5 hover:bg-white/60 rounded transition-opacity"><Plus size={15}/></button>
                             </div>
                             
                             {weather[dateKey] && (
-                                <div className="text-[9px] font-semibold text-sky-700 flex items-center gap-1 mb-0.5 px-0.5 whitespace-nowrap" title="Weersvoorspelling Weesp">
-                                    <span className="text-[11px] leading-none">{weatherIcon(weather[dateKey].code)}</span>
+                                <div className="text-[9px] sm:text-[11px] font-semibold text-sky-700 flex items-center gap-1 mb-0.5 px-0.5 whitespace-nowrap" title="Weersvoorspelling Weesp">
+                                    <span className="text-[11px] sm:text-sm leading-none">{weatherIcon(weather[dateKey].code)}</span>
                                     <span className="hidden sm:inline">{weather[dateKey].max}° / {weather[dateKey].min}°</span>
                                     <span className="sm:hidden">{weather[dateKey].max}°</span>
                                 </div>
                             )}
                             <div className="flex-1 min-h-0 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
-                                {/* 0. VAKANTIE (eigen dagtype, oranje) */}
-                                {vakantieEntries.map((e) => (
-                                    <div key={`v-${e.id}`} className="text-[10px] font-bold p-1 rounded-lg mb-0.5 flex justify-between items-center group/item bg-gradient-to-r from-orange-400 to-amber-400 text-white shadow-sm w-full text-left">
-                                        <span className="flex items-center gap-1 leading-tight"><Palmtree size={11} className="shrink-0"/> <span className="hidden sm:inline">Vakantie</span></span>
-                                        <button onClick={(ev)=>{ev.stopPropagation(); if (window.confirm('Deze vakantiedag verwijderen?')) handleDeleteShift(dateKey, e.id);}} className="touch-zichtbaar opacity-0 group-hover/item:opacity-100 text-white/80 hover:text-white ml-1 shrink-0"><Trash2 size={10}/></button>
-                                    </div>
-                                ))}
+                                {/* Vakantie heeft geen eigen balk: de oranje dagkleur + het palmpje
+                                    bij het dagnummer zeggen het al; verwijderen kan via de dagmodal (+) */}
 
                                 {/* 1. NOTITIES EERST */}
                                 {allEvents.filter(e => e.isNote).map((e) => (
-                                    <div key={`m-${e.id}`} className="text-[10px] font-bold p-1 rounded-lg border border-slate-200 mb-0.5 flex justify-between items-start group/item bg-white shadow-sm text-slate-800 w-full text-left">
+                                    <div key={`m-${e.id}`} className="text-[10px] sm:text-xs font-bold p-1 rounded-lg border border-slate-200 mb-0.5 flex justify-between items-start group/item bg-white shadow-sm text-slate-800 w-full text-left">
                                         <span className="break-words w-full leading-tight">{e.summary}</span>
                                         <button onClick={(ev)=>{ev.stopPropagation(); handleDeleteShift(dateKey, e.id)}} className="touch-zichtbaar opacity-0 group-hover/item:opacity-100 text-gray-400 hover:text-red-500 ml-1 shrink-0"><Trash2 size={10}/></button>
                                     </div>
@@ -1264,7 +1285,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
 
                                 {/* 2. AMBER'S SHIFT */}
                                 {amberShift && (
-                                    <div className="flex items-center justify-between text-[9px] text-pink-700 bg-pink-50 p-0.5 rounded border border-pink-200 w-full group/amber">
+                                    <div className="flex items-center justify-between text-[9px] sm:text-[11px] text-pink-700 bg-pink-50 p-0.5 rounded border border-pink-200 w-full group/amber">
                                         <div className="flex items-center">
                                             <Heart size={10} className="mr-1 fill-pink-300"/>
                                             <span className="font-medium">Amber {amberShift.startTime}-{amberShift.endTime}</span>
@@ -1275,7 +1296,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
 
                                 {/* 2.5 SALARISDAG */}
                                 {salaryDay && (
-                                    <div className="flex items-center text-[9px] text-yellow-800 bg-yellow-100 p-0.5 rounded border border-yellow-300 w-full font-bold">
+                                    <div className="flex items-center text-[9px] sm:text-[11px] text-yellow-800 bg-yellow-100 p-0.5 rounded border border-yellow-300 w-full font-bold">
                                         <span className="mr-1">💰</span>
                                         <span>G4S P{salaryDay.periode}{salaryDay.note ? ` (${salaryDay.note})` : ''}</span>
                                     </div>
@@ -1283,7 +1304,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
 
                                 {/* 2.6 TRIGION BETAALDAG */}
                                 {trigionDay && (
-                                    <div className="flex items-center text-[9px] text-yellow-800 bg-yellow-100 p-0.5 rounded border border-yellow-300 w-full font-bold">
+                                    <div className="flex items-center text-[9px] sm:text-[11px] text-yellow-800 bg-yellow-100 p-0.5 rounded border border-yellow-300 w-full font-bold">
                                         <span className="mr-1">💰</span>
                                         <span>Trigion P{trigionDay.periode}</span>
                                     </div>
@@ -1293,19 +1314,19 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                 {allEvents.filter(e => !e.isNote).map((e, idx) => {
                                     if (e.type === 'swim') {
                                         return (
-                                            <div key={`s-${idx}`} className="flex flex-col items-start text-[9px] text-blue-700 bg-white/80 p-1 rounded border border-blue-100 mb-0.5 w-full text-left shadow-sm">
-                                                <div className="flex items-center font-bold mb-0.5"><Droplets size={8} className="mr-1"/> <span>Zwemmen</span></div>
+                                            <div key={`s-${idx}`} className="flex flex-col items-start text-[9px] sm:text-[11px] text-blue-700 bg-white/80 p-1 rounded border border-blue-100 mb-0.5 w-full text-left shadow-sm">
+                                                <div className="flex items-center font-bold mb-0.5"><Droplets size={10} className="mr-1"/> <span>Zwemmen</span></div>
                                                 <span className="font-medium block">{e.summary}</span>
                                             </div>
                                         );
                                     }
                                     if (e.type === 'roster') {
-                                        const isVerlof = e.summary?.toLowerCase().includes('verlof');
+                                        const isVerlof = isVerlofachtig(e.summary);
                                         const txt = cleanSummary(e.summary);
                                         return (
-                                            <div key={`o-${idx}`} className="text-[9px] p-1 rounded bg-white shadow-sm text-purple-800 border border-purple-200 mb-0.5 w-full text-left group/shift relative">
+                                            <div key={`o-${idx}`} className={`text-[9px] sm:text-[11px] p-1 rounded bg-white shadow-sm border mb-0.5 w-full text-left group/shift relative ${isVerlof ? 'text-orange-700 border-orange-200' : 'text-purple-800 border-purple-200'}`}>
                                                 <div className="font-bold flex items-center justify-between gap-1">
-                                                    <span className="flex items-center min-w-0"><Briefcase size={8} className="mr-1 shrink-0"/> <span className="truncate">{isVerlof ? "Verlof" : `${formatTime(e.sortStart)} - ${formatTime(e.sortEnd)}`}</span></span>
+                                                    <span className="flex items-center min-w-0">{isVerlof ? <Palmtree size={10} className="mr-1 shrink-0"/> : <Briefcase size={10} className="mr-1 shrink-0"/>} <span className="truncate">{isVerlof ? (txt || "Verlof") : `${formatTime(e.sortStart)} - ${formatTime(e.sortEnd)}`}</span></span>
                                                     {e.uid && (
                                                         <span className="touch-zichtbaar flex items-center gap-1 shrink-0 opacity-0 group-hover/shift:opacity-100 transition-opacity">
                                                             <button onClick={(ev)=>{ev.stopPropagation(); openEditShift(dateKey, e);}} className="text-gray-400 hover:text-blue-600" title="Dienst aanpassen"><Pencil size={10}/></button>
@@ -1314,14 +1335,14 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                                     )}
                                                 </div>
                                                 {!isVerlof && txt && <div className="truncate opacity-80">{txt}</div>}
-                                                {e.edited && <div className="text-[8px] text-blue-600 italic flex items-center gap-0.5"><Pencil size={7}/> aangepast</div>}
+                                                {e.edited && <div className="text-[8px] sm:text-[10px] text-blue-600 italic flex items-center gap-0.5"><Pencil size={7}/> aangepast</div>}
                                             </div>
                                         );
                                     }
                                     if (e.type === 'manual') {
                                         // Historische G4S-import heeft geen aparte tijdvelden; de tijden staan in de summary.
                                         return (
-                                            <div key={`m-${e.id}`} className="text-[9px] p-1 rounded border mb-0.5 flex justify-between items-center group/item bg-white shadow-sm text-orange-800 border-orange-200 w-full text-left">
+                                            <div key={`m-${e.id}`} className="text-[9px] sm:text-[11px] p-1 rounded border mb-0.5 flex justify-between items-center group/item bg-white shadow-sm text-orange-800 border-orange-200 w-full text-left">
                                                 <div className="overflow-hidden w-full">
                                                     {e.startTime && <div className="font-bold">{e.startTime} - {e.endTime}</div>}
                                                     <div className="truncate opacity-80">{e.summary}</div>
@@ -1334,8 +1355,8 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                 })}
                                 
                                 {/* 4. TRACKING INDICATORS ONDERAAN */}
-                                {daySoberCount > 0 && <div className={`flex items-center text-[9px] ${currentDate.toDateString() === date.toDateString() ? "text-white bg-green-600 border-green-600 font-bold" : "text-green-700 bg-white/50 border-green-100"} p-0.5 rounded border w-full mt-auto transition-colors`}><CheckCircle size={10} className="mr-1"/> Dag {daySoberCount}</div>}
-                                {isArmDay && <div className="flex items-center text-[9px] text-red-700 font-bold bg-white/50 p-0.5 rounded border border-red-100 w-full"><Activity size={10} className="mr-1"/> Armen</div>}
+                                {daySoberCount > 0 && <div className={`flex items-center text-[9px] sm:text-[11px] ${currentDate.toDateString() === date.toDateString() ? "text-white bg-green-600 border-green-600 font-bold" : "text-green-700 bg-white/50 border-green-100"} p-0.5 rounded border w-full mt-auto transition-colors`}><CheckCircle size={10} className="mr-1"/> Dag {daySoberCount}</div>}
+                                {isArmDay && <div className="flex items-center text-[9px] sm:text-[11px] text-red-700 font-bold bg-white/50 p-0.5 rounded border border-red-100 w-full"><Activity size={10} className="mr-1"/> Armen</div>}
                             </div>
                         </div>
                     );
@@ -1398,7 +1419,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                     }).filter(Boolean);
                     filterRosterShifts(raw).forEach(s => {
                         if (!s.start || !s.end) return;
-                        if (s.summary?.toLowerCase().includes('verlof')) return;
+                        if (/verlof|rnvb/i.test(s.summary || '')) return;   // verlof/RNVB is geen gewerkte tijd
                         (byDate[dateKey] = byDate[dateKey] || []).push({
                             dateKey, begin: formatTime(s.start), eind: formatTime(s.end),
                             uren: urenTussen(s.start, s.end),
@@ -1501,7 +1522,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                             <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.8)]"></span> Vakantie</span>
                             <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]"></span> Vandaag</span>
                         </div>
-                        <div className="grid grid-cols-7 bg-slate-900/80 text-center py-1.5 text-xs font-bold text-slate-300 uppercase tracking-wider border-b border-white/10 shrink-0"><div>Ma</div><div>Di</div><div>Wo</div><div>Do</div><div>Vr</div><div>Za</div><div>Zo</div></div>
+                        <div className="grid grid-cols-7 bg-slate-900/80 text-center py-1.5 text-xs sm:text-sm font-bold text-slate-300 uppercase tracking-wider border-b border-white/10 shrink-0"><div>Ma</div><div>Di</div><div>Wo</div><div>Do</div><div>Vr</div><div>Za</div><div>Zo</div></div>
                         <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar grid grid-cols-7 auto-rows-fr bg-slate-200 gap-px">{renderCalendar()}</div>
                     </div>
 
@@ -1611,13 +1632,18 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                     <div>
                                         <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Tot en met</label>
                                         <input type="date" value={vakantieTotEnMet} min={selectedDate || undefined} onChange={e => setVakantieTotEnMet(e.target.value)} className="w-full border p-3 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 outline-none"/>
-                                        <p className="text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded-lg p-2 mt-3">Alle dagen in deze periode kleuren oranje als vakantie — geen notitie meer nodig. Per dag te verwijderen via het prullenbakje. Maximaal 62 dagen per keer.</p>
+                                        <p className="text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded-lg p-2 mt-3">Alle dagen in deze periode kleuren oranje als vakantie — geen notitie meer nodig. Maximaal 62 dagen per keer.</p>
                                     </div>
                                 )}
 
-                                <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
-                                    <button onClick={() => setShowAddModal(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Annuleren</button>
-                                    <button onClick={handleAddNote} className={`px-4 py-2 text-sm font-bold text-white rounded-lg shadow-sm flex items-center gap-2 hover:brightness-110 transition-all ${newEntryType === 'vakantie' ? 'bg-gradient-to-r from-orange-500 to-amber-500' : 'bg-gradient-to-r from-blue-600 to-indigo-600'}`}><Save size={16}/> Opslaan</button>
+                                <div className="flex justify-between items-center gap-2 mt-6 pt-4 border-t">
+                                    {selectedDate && (manualShifts[selectedDate] || []).some(isVakantieEntry) ? (
+                                        <button onClick={() => handleRemoveVakantie(selectedDate)} className="px-3 py-2 text-xs font-bold text-orange-600 border border-orange-300 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors flex items-center gap-1.5"><Trash2 size={14}/> Vakantie verwijderen</button>
+                                    ) : <span></span>}
+                                    <div className="flex gap-2">
+                                        <button onClick={() => setShowAddModal(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Annuleren</button>
+                                        <button onClick={handleAddNote} className={`px-4 py-2 text-sm font-bold text-white rounded-lg shadow-sm flex items-center gap-2 hover:brightness-110 transition-all ${newEntryType === 'vakantie' ? 'bg-gradient-to-r from-orange-500 to-amber-500' : 'bg-gradient-to-r from-blue-600 to-indigo-600'}`}><Save size={16}/> Opslaan</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
