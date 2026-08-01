@@ -21,7 +21,24 @@
     <!-- Service worker (offline gebruik): alleen op https (GitHub Pages); op file:// gebeurt er niets -->
     <script>
         if ('serviceWorker' in navigator && location.protocol === 'https:') {
-            window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+            // De versie in de URL dwingt bestaande installaties de gewijzigde worker
+            // te vergelijken. updateViaCache voorkomt dat de worker zelf uit de
+            // HTTP-cache komt. Na de wissel herladen we precies één keer, zodat ook
+            // de al geopende PWA direct de nieuwste HTML gebruikt.
+            const pwaHerlaadSleutel = 'herstel-pwa-v5-actief';
+            let pwaHerlaadt = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (pwaHerlaadt || sessionStorage.getItem(pwaHerlaadSleutel) === '1') return;
+                pwaHerlaadt = true;
+                sessionStorage.setItem(pwaHerlaadSleutel, '1');
+                location.reload();
+            });
+            window.addEventListener('load', async () => {
+                try {
+                    const registratie = await navigator.serviceWorker.register('./sw.js?v=5', { updateViaCache: 'none' });
+                    await registratie.update();
+                } catch (e) {}
+            });
         }
     </script>
     <!-- CLOUD-SYNC (1/2): registreer lokale wijzigingen. Draait vóór de app, zodat geen enkele

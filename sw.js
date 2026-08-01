@@ -9,7 +9,7 @@
 // Cache-bust-parameters (?t=...) worden bij eigen bestanden genegeerd als cachesleutel,
 // anders zou elke ophaling een nieuwe kopie opslaan en zou offline nooit iets matchen.
 
-const CACHE = 'herstel-dashboard-v4';
+const CACHE = 'herstel-dashboard-v5';
 const PRECACHE = [
     './',
     './manifest.webmanifest',
@@ -47,10 +47,12 @@ self.addEventListener('fetch', (event) => {
     const url = new URL(req.url);
 
     if (url.origin === self.location.origin) {
-        // Netwerk eerst; gelukte antwoorden opslaan onder de URL zonder query
+        // Netwerk eerst en omzeil ook de HTTP-cache van de browser. GitHub Pages
+        // geeft HTML anders tijdelijk als geldig terug, waardoor een geïnstalleerde
+        // PWA na opnieuw openen toch een oude interface kan blijven tonen.
         const sleutel = eigenSleutel(req.url);
         event.respondWith(
-            fetch(req).then((res) => {
+            fetch(req, { cache: 'no-store' }).then((res) => {
                 if (res && res.ok) {
                     const kopie = res.clone();
                     caches.open(CACHE).then((c) => c.put(sleutel, kopie));
