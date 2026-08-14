@@ -1302,7 +1302,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                             <div className="flex justify-between items-start mb-1">
                                 <span className={`text-sm sm:text-lg leading-none font-bold font-display ${isToday ? 'text-blue-600' : (hasWork && !isOnlyVerlof ? 'text-red-700' : ((isVakantieDag || isVerlofDag) ? 'text-orange-600' : 'text-emerald-700'))}`}>{day}{(isVakantieDag || isVerlofDag) && <Palmtree size={13} className="inline-block ml-1 -mt-0.5 text-orange-500" title="Vakantie"/>}{getMoonPhase(date) && <span className="ml-1 text-xs" title={getMoonPhase(date) === '🌑' ? 'Nieuwe maan' : 'Volle maan'}>{getMoonPhase(date)}</span>}</span>
                                 {isToday && <span className="hidden sm:inline-block text-[10px] bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-1.5 py-0.5 rounded-full font-bold shadow">Vandaag</span>}
-                                <button onClick={() => { setSelectedDate(dateKey); setNewNote(""); setNewEntryType('note'); setVakantieTotEnMet(dateKey); setShowAddModal(true); }} className="hidden sm:block touch-zichtbaar opacity-30 group-hover:opacity-100 text-blue-600 p-1 -m-0.5 hover:bg-white/60 rounded transition-opacity"><Plus size={15}/></button>
+                                <button onClick={() => { setSelectedDate(dateKey); setNewNote(""); setNewEntryType('note'); setVakantieTotEnMet(dateKey); setShowAddModal(true); }} className="hidden sm:block touch-zichtbaar opacity-60 group-hover:opacity-100 text-black p-1 -m-0.5 hover:bg-white/60 rounded transition-opacity"><Plus size={15}/></button>
                             </div>
                             
                             {weather[dateKey] && (
@@ -1608,7 +1608,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                             <h3 className="font-display font-bold text-base text-white capitalize truncate">{datum.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
                                             <p className={`text-xs font-bold ${status.c}`}>{status.t}{weather[d.dateKey] ? ` · ${weatherIcon(weather[d.dateKey].code)} ${weather[d.dateKey].max}° / ${weather[d.dateKey].min}°` : ''}</p>
                                         </div>
-                                        <button onClick={() => { setSelectedDate(d.dateKey); setNewNote(""); setNewEntryType('note'); setVakantieTotEnMet(d.dateKey); setShowAddModal(true); }} className="p-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-indigo-500/40 shrink-0"><Plus size={18}/></button>
+                                        <button onClick={() => { setSelectedDate(d.dateKey); setNewNote(""); setNewEntryType('note'); setVakantieTotEnMet(d.dateKey); setShowAddModal(true); }} className="p-2 rounded-full bg-black text-white shadow-lg shadow-black/40 shrink-0"><Plus size={18}/></button>
                                     </div>
                                     <div className="space-y-1.5">
                                         {d.vakantieEntries.length > 0 && (
