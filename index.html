@@ -1302,7 +1302,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                             <div className="flex justify-between items-start mb-1">
                                 <span className={`text-sm sm:text-lg leading-none font-bold font-display ${isToday ? 'text-blue-600' : (hasWork && !isOnlyVerlof ? 'text-red-700' : ((isVakantieDag || isVerlofDag) ? 'text-orange-600' : 'text-emerald-700'))}`}>{day}{(isVakantieDag || isVerlofDag) && <Palmtree size={13} className="inline-block ml-1 -mt-0.5 text-orange-500" title="Vakantie"/>}{getMoonPhase(date) && <span className="ml-1 text-xs" title={getMoonPhase(date) === '🌑' ? 'Nieuwe maan' : 'Volle maan'}>{getMoonPhase(date)}</span>}</span>
                                 {isToday && <span className="hidden sm:inline-block text-[10px] bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-1.5 py-0.5 rounded-full font-bold shadow">Vandaag</span>}
-                                <button onClick={() => { setSelectedDate(dateKey); setNewNote(""); setNewEntryType('note'); setVakantieTotEnMet(dateKey); setShowAddModal(true); }} className="hidden sm:block touch-zichtbaar opacity-60 group-hover:opacity-100 text-black p-1 -m-0.5 hover:bg-white/60 rounded transition-opacity"><Plus size={15}/></button>
+                                <button onClick={() => { setSelectedDate(dateKey); setNewNote(""); setNewEntryType('note'); setVakantieTotEnMet(dateKey); setShowAddModal(true); }} className="hidden sm:block touch-zichtbaar text-black p-1 -m-0.5 hover:bg-white/60 rounded"><Plus size={15} strokeWidth={2.75}/></button>
                             </div>
                             
                             {weather[dateKey] && (
