@@ -9,7 +9,7 @@
 // Cache-bust-parameters (?t=...) worden bij eigen bestanden genegeerd als cachesleutel,
 // anders zou elke ophaling een nieuwe kopie opslaan en zou offline nooit iets matchen.
 
-const CACHE = 'herstel-dashboard-v4';
+const CACHE = 'herstel-dashboard-v5';
 const PRECACHE = [
     './',
     './manifest.webmanifest',
@@ -45,6 +45,24 @@ self.addEventListener('fetch', (event) => {
     const req = event.request;
     if (req.method !== 'GET') return;
     const url = new URL(req.url);
+
+    // De weer-URL blijft gelijk terwijl de voorspelling dagelijks verandert.
+    // Daarom altijd eerst het netwerk gebruiken; de cache is alleen offline-terugval.
+    if (url.origin === 'https://api.open-meteo.com') {
+        event.respondWith(
+            fetch(req).then((res) => {
+                if (res && res.ok) {
+                    const kopie = res.clone();
+                    caches.open(CACHE).then((c) => c.put(req, kopie));
+                }
+                return res;
+            }).catch(async () => {
+                const hit = await caches.match(req);
+                return hit || Response.error();
+            })
+        );
+        return;
+    }
 
     if (url.origin === self.location.origin) {
         // Netwerk eerst; gelukte antwoorden opslaan onder de URL zonder query
