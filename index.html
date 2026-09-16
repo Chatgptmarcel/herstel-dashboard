@@ -775,17 +775,28 @@
                 if (code >= 95) return '⛈️';
                 return '🌡️';
             };
+            const weatherCacheIsActueel = (cache) => {
+                if (!cache || !cache.data || !Number.isFinite(cache.ts)) return false;
+                const nu = Date.now();
+                if (cache.ts > nu || (nu - cache.ts) >= 3 * 60 * 60 * 1000) return false;
+                const delen = new Intl.DateTimeFormat('nl-NL', {
+                    timeZone: 'Europe/Amsterdam', year: 'numeric', month: '2-digit', day: '2-digit'
+                }).formatToParts(new Date());
+                const deel = (type) => delen.find((item) => item.type === type)?.value;
+                const vandaag = `${deel('year')}-${deel('month')}-${deel('day')}`;
+                return Boolean(cache.data[vandaag]);
+            };
             const [weather, setWeather] = useState(() => {
                 try {
                     const c = JSON.parse(localStorage.getItem('weather_cache') || 'null');
-                    if (c && (Date.now() - c.ts) < 3 * 60 * 60 * 1000) return c.data;
+                    if (weatherCacheIsActueel(c)) return c.data;
                 } catch (e) {}
                 return {};
             });
             useEffect(() => {
                 try {
                     const c = JSON.parse(localStorage.getItem('weather_cache') || 'null');
-                    if (c && (Date.now() - c.ts) < 3 * 60 * 60 * 1000) return;
+                    if (weatherCacheIsActueel(c)) return;
                 } catch (e) {}
                 const url = "https://api.open-meteo.com/v1/forecast?latitude=52.31&longitude=5.04&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe/Amsterdam&forecast_days=16";
                 fetch(url).then(r => r.json()).then(d => {
