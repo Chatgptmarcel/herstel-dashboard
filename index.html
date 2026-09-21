@@ -1211,7 +1211,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                     // Check of er een echte Roster dienst is (niet alleen verlof)
                     const hasRealRosterShift = finalRoster.length > 0;
 
-                    const manualDay = calendarFilters.showWork ? (manualShifts[dateKey] || [])
+                    const manualDay = (manualShifts[dateKey] || [])
                         // Historische G4S-import verbergen als het rooster die dag al dekt
                         .filter(s => {
                             if (s.isG4SShift && hasRealRosterShift) {
@@ -1221,6 +1221,11 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                 return false;      // vakantie rendert als eigen dagtype, niet als notitie
                             }
                             if (s.isNote && !calendarFilters.showNotes) {
+                                return false;
+                            }
+                            // Notities hebben een eigen filter en blijven zichtbaar wanneer
+                            // alleen de werklaag is uitgezet.
+                            if (!s.isNote && !calendarFilters.showWork) {
                                 return false;
                             }
                             return true;
@@ -1238,7 +1243,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                             end.setHours(h2, m2);
                         }
                         return { ...s, type: 'manual', sortStart: start, sortEnd: end };
-                    }) : [];
+                    });
 
                     const swimInfo = poolSchedule[dayOfWeek];
                     const swimEvents = [];

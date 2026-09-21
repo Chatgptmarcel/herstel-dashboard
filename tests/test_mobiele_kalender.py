@@ -56,7 +56,13 @@ class MobieleKalenderTest(unittest.TestCase):
                     "isManual": True,
                     "isNote": True,
                     "isVakantie": True,
-                }
+                },
+                {
+                    "id": 6002,
+                    "summary": "Aziatische kraam Slijkstraat",
+                    "isManual": True,
+                    "isNote": True,
+                },
             ]
         }
         vaste_tijd = "2026-08-01T12:00:00+02:00"
@@ -114,6 +120,13 @@ class MobieleKalenderTest(unittest.TestCase):
         self.page.locator('button:has-text("Filters")').click()
         self.page.get_by_text("Zwemtijden", exact=True).click()
         self.assertEqual(self._dagcel(6).get_by_text("Zwem 10u", exact=True).count(), 0)
+
+    def test_notitie_blijft_zichtbaar_als_werkfilter_uitstaat(self):
+        dag_zes = self._dagcel(6)
+        self.assertIn("Aziatische kraam Slijkstraat", dag_zes.inner_text())
+        self.page.locator('button:has-text("Filters")').click()
+        self.page.get_by_text("Werk/Diensten", exact=True).click()
+        self.assertIn("Aziatische kraam Slijkstraat", dag_zes.inner_text())
 
     def test_werktijd_staat_op_een_regel(self):
         werktijd = self._dagcel(3).get_by_text("04:45–12:45", exact=True)
