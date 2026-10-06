@@ -2,6 +2,7 @@
 # (mijn_herstel_dashboard.enc.json mag wél: dat is de AES-versleutelde versie voor de telefoon)
 mijn_herstel_dashboard.json
 *.local.json
+*.local.js
 telefoon-wachtwoord.txt
 
 # Tijdelijke bestanden van de sync

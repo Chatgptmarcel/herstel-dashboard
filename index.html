@@ -30,7 +30,7 @@
         (function () {
             window.SYNC_KEYS = [
                 'dashboard_manual_shifts', 'sobriety_history', 'arm_history', 'minox_start_date',
-                'dashboard_roster_overrides', 'amber_shifts', 'dashboard_loonstrook'
+                'dashboard_roster_overrides', 'amber_shifts', 'dashboard_loonstrook', 'dashboard_inkomen_profiel'
             ];
             try {
                 if (!localStorage.getItem('_sync_client_id')) {
@@ -79,6 +79,26 @@
          rooster-sync.js. Cache-bust zodat altijd de nieuwste data laadt. Bestaat dit bestand niet (bv. op
          GitHub Pages), dan valt het dashboard terug op fetch('./schedule.ics'). -->
     <script>document.write('<scr' + 'ipt src="schedule-data.js?t=' + Date.now() + '"><\/scr' + 'ipt>');</script>
+    <script src="loonbelasting-2026.js"></script>
+    <script src="inkomensraming.js"></script>
+    <script>
+        // Persoonlijke loonbasis blijft buiten de publieke websitebron.
+        if (location.protocol === 'file:') {
+            document.write('<scr' + 'ipt src="inkomen-data.local.js"><\/scr' + 'ipt>');
+            document.write('<scr' + 'ipt src="loonstrook-data.js?t=' + Date.now() + '"><\/scr' + 'ipt>');
+        }
+    </script>
+    <script>
+        try {
+            const lokaal = window.INKOMEN_PROFIEL;
+            const bewaard = JSON.parse(localStorage.getItem('dashboard_inkomen_profiel') || 'null');
+            if (lokaal && (!bewaard || lokaal.versie > bewaard.versie)) localStorage.setItem('dashboard_inkomen_profiel', JSON.stringify(lokaal));
+            if (window.LOONSTROOK_DATA?.checks?.length) {
+                const checks = JSON.stringify(window.LOONSTROOK_DATA.checks);
+                if (checks !== localStorage.getItem('dashboard_loonstrook')) localStorage.setItem('dashboard_loonstrook', checks);
+            }
+        } catch (e) {}
+    </script>
 
     <!-- Import Map voor React en Iconen -->
     <script type="importmap">
@@ -165,7 +185,7 @@
     <div id="root"></div>
 
     <script type="text/babel" data-type="module">
-        import React, { useState, useEffect } from 'react';
+        import React, { useState, useEffect, useMemo } from 'react';
         import { createRoot } from 'react-dom/client';
         import { 
             Calendar as CalendarIcon,
@@ -196,6 +216,11 @@
 
         const App = () => {
             const [currentDate, setCurrentDate] = useState(new Date());
+            const [showIncomeModal, setShowIncomeModal] = useState(false);
+            const [inkomenProfiel] = useState(() => {
+                try { return JSON.parse(localStorage.getItem('dashboard_inkomen_profiel') || 'null') || window.INKOMEN_PROFIEL || null; }
+                catch (e) { return window.INKOMEN_PROFIEL || null; }
+            });
             // Loonstrookcontroles: op de pc uit loonstrook-data.js, op de telefoon uit de cloud-sync (dashboard_loonstrook)
             const loonChecks = (window.LOONSTROOK_DATA && window.LOONSTROOK_DATA.checks) || (() => {
                 try { const v = JSON.parse(localStorage.getItem('dashboard_loonstrook') || 'null'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
@@ -362,6 +387,14 @@
                 '2027-03-05': { periode: 2, jaar: 2027 },
                 '2027-04-02': { periode: 3, jaar: 2027 },
             };
+
+            const inkomsten = useMemo(() => window.Inkomensraming?.bereken({
+                rooster: rosterShifts, overrides: rosterOverrides, profiel: inkomenProfiel,
+                betaaldagen: trigionDays, tabel: window.LOONBELASTING_2026, nu: currentDate,
+            }), [rosterShifts, rosterOverrides, inkomenProfiel, currentDate]);
+            const euro = (n, decimalen = 2) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: decimalen, maximumFractionDigits: decimalen }).format(n);
+            const kortDatum = d => new Date(d + 'T12:00:00Z').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', timeZone: 'Europe/Amsterdam' });
+            const aantalUren = n => n.toLocaleString('nl-NL', { maximumFractionDigits: 2 });
 
             // Helper: Calculate days sober for a specific date based on history
             const getDaySoberCount = (dateToCheck) => {
@@ -706,6 +739,7 @@
                         else if (line.startsWith('DTEND')) currentEvent.end = parseDate(line.split(':')[1]);
                         else if (line.startsWith('SUMMARY')) currentEvent.summary = line.substring(8);
                         else if (line.startsWith('UID')) currentEvent.uid = line.slice(line.indexOf(':') + 1).trim();
+                        else if (line.startsWith('STATUS:')) currentEvent.status = line.slice(7).trim();
                     }
                 });
                 return events;
@@ -741,6 +775,7 @@
                     console.log("Auto-rooster laadt niet.");
                 } finally {
                     setLoadingShifts(false);
+                    setCurrentDate(new Date());
                 }
             };
 
@@ -1695,19 +1730,19 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                         <div className="glass kpi-card p-4 rounded-2xl flex flex-col items-center text-center verschijn" style={{animationDelay:'0.15s'}}>
                             <span className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-emerald-400 to-teal-400"></span>
                             <span className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-500/40 mb-2"><Banknote size={22}/></span>
-                            <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wide">Loonstrook</h2>
-                            {loonLaatste ? (
+                            <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wide">Volgende uitbetaling</h2>
+                            {inkomsten?.beschikbaar ? (
                                 <>
-                                    <p className={`text-xl font-bold font-display ${loonLaatste.status === 'OK' ? 'text-emerald-300' : 'text-amber-300'}`} title={loonLaatste.toelichting}>
-                                        {loonLaatste.status === 'OK' ? 'Klopt' : 'Controleren!'}
-                                    </p>
-                                    <p className="text-[11px] text-slate-300 mt-1">P{loonLaatste.periode} · € {loonLaatste.netto.toLocaleString('nl-NL', {minimumFractionDigits: 2})}</p>
-                                    <p className="text-[11px] text-slate-400">{loonLaatste.verloonde_uren.toLocaleString('nl-NL')} u verloond{loonLaatste.rooster_uren ? ` · rooster ${loonLaatste.rooster_uren.toLocaleString('nl-NL')} u` : ''}</p>
+                                    <p data-testid="inkomen-bedrag" className="text-3xl font-bold font-display text-emerald-300 mt-1">≈ {euro(inkomsten.afgerond, 0)}</p>
+                                    <p className="text-[11px] text-slate-300">Geschat netto · incl. reiskosten</p>
+                                    <p className="text-xs text-white mt-1">{kortDatum(inkomsten.periode.betaaldag)} · P{inkomsten.periode.nr}</p>
+                                    <p className="text-[11px] text-slate-400">{aantalUren(inkomsten.uren)} betaalde uren geraamd</p>
                                 </>
                             ) : (
-                                <p className="text-xl font-bold text-slate-500">Geen data</p>
+                                <p className="text-xs text-slate-300 mt-2">{loadingShifts ? 'Rooster laden…' : inkomsten?.reden || 'Raming nog niet beschikbaar.'}</p>
                             )}
-                            <p className="text-[10px] text-slate-400 mt-2">Volgende check: betaalvrijdag</p>
+                            <button onClick={() => setShowIncomeModal(true)} className="mt-2 text-xs font-semibold text-emerald-300 underline underline-offset-4 hover:text-white">Berekening bekijken</button>
+                            {loonLaatste && <p className="text-[10px] text-slate-400 mt-2" title={loonLaatste.toelichting}>Laatste looncheck P{loonLaatste.periode}: {loonLaatste.status === 'OK' ? 'klopt' : 'controleren'}</p>}
                         </div>
                         {/* DAGEN NUCHTER KPI */}
                         <div className="glass kpi-card p-4 rounded-2xl flex flex-col items-center verschijn" style={{animationDelay:'0.1s'}}>
@@ -1845,6 +1880,63 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    )}
+
+                    {/* MODAL: herleidbare inkomstenraming */}
+                    {showIncomeModal && (
+                        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6" onClick={() => setShowIncomeModal(false)}>
+                            <section role="dialog" aria-modal="true" aria-labelledby="inkomen-titel" data-testid="inkomen-uitleg" className="bg-slate-900 text-slate-200 border border-slate-600 rounded-2xl w-full max-w-3xl max-h-[90dvh] overflow-y-auto p-4 sm:p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+                                <div className="flex justify-between items-start gap-4 mb-4">
+                                    <div><h2 id="inkomen-titel" className="text-xl font-bold text-white">Je verwachte uitbetaling</h2><p className="text-xs text-slate-400 mt-1">Gebaseerd op je rooster en beschikbare loonstroken</p></div>
+                                    <button onClick={() => setShowIncomeModal(false)} aria-label="Berekening sluiten" className="p-2 text-slate-300 hover:text-white"><X size={22}/></button>
+                                </div>
+                                {inkomsten?.beschikbaar ? (() => {
+                                    const r = inkomsten, p = r.periode, b = r.bedragen;
+                                    const loonregels = [
+                                        ['Basisloon', r.posten.basis], ['Nacht 20%', r.posten.nacht], ['Avond 10%', r.posten.avond],
+                                        ['Weekend 35%', r.posten.weekend], ['Vroege opkomst 35%', r.posten.vroeg], ['Feestdagen 50%', r.posten.feest],
+                                        ['Toegezegde verschuivingstoeslagen', r.posten.verschuiving], ['Brutoloon', b.bruto],
+                                        ['Pensioen (raming)', -b.pensioen], ['PAWW', -b.paww], ['FBA + Sociaal Fonds', -b.fba - b.sociaalFonds],
+                                        ['Loonheffing', -b.loonheffing], ['Whk/WGA', -b.whk], ['Reiskosten', b.reiskosten],
+                                    ];
+                                    return <>
+                                        <div className="rounded-xl bg-emerald-950/70 border border-emerald-700 p-4 mb-4">
+                                            <p className="text-3xl font-bold text-emerald-300">≈ {euro(r.afgerond, 0)} netto</p>
+                                            <p className="text-sm mt-1">Verwacht op {kortDatum(p.betaaldag)} {p.betaaldag.slice(0,4)} · periode {p.nr}</p>
+                                            <p className="text-xs text-slate-300 mt-2">Uren van {kortDatum(p.start)} tot en met {kortDatum(p.einde)}. Uren na {kortDatum(p.einde)} horen bij de volgende loonperiode, ook als ze vóór de betaaldag vallen.</p>
+                                        </div>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm mb-4">
+                                            <div><span className="block text-slate-400 text-xs">Verwacht betaald</span>{aantalUren(r.uren)} uur</div>
+                                            <div><span className="block text-slate-400 text-xs">Waarvan nog gepland</span>{aantalUren(r.gepland)} uur</div>
+                                            <div><span className="block text-slate-400 text-xs">Reisdagen</span>{r.reisdagen}</div>
+                                        </div>
+                                        <h3 className="font-bold text-white mb-2">Van uren naar netto</h3>
+                                        <dl className="text-sm space-y-1 mb-4">
+                                            {loonregels.filter(([, n]) => n !== 0).map(([label, n]) => <div key={label} className={`flex justify-between gap-4 py-1 ${label === 'Brutoloon' ? 'border-t border-slate-600 font-bold' : ''}`}><dt>{label}</dt><dd className="whitespace-nowrap tabular-nums">{euro(n)}</dd></div>)}
+                                            <div className="flex justify-between gap-4 pt-2 border-t border-slate-600 font-bold text-emerald-300"><dt>Rekenuitkomst netto</dt><dd className="whitespace-nowrap">{euro(b.netto)}</dd></div>
+                                        </dl>
+                                        <p className="text-xs text-slate-300 bg-slate-800 rounded-lg p-3 mb-4">Bij een ander pauzemoment komt de berekening afgerond uit op {euro(r.minimum, 0)}–{euro(r.maximum, 0)} netto. Dit is alleen de invloed van de pauzeplaats, geen gegarandeerde onder- of bovengrens. Werkelijke uren, gewijzigde loonvoorwaarden en correcties kunnen het bedrag verder veranderen.</p>
+                                        <details className="mb-4"><summary className="cursor-pointer font-bold text-white py-2">Alle {r.regels.length} diensten en uren</summary>
+                                            <div className="overflow-x-auto"><table className="w-full text-xs text-left mt-2 whitespace-nowrap"><thead><tr className="text-slate-400 border-b border-slate-600"><th className="p-2">Datum / tijd</th><th className="p-2 text-right">Duur</th><th className="p-2 text-right">Pauze</th><th className="p-2 text-right">Betaald</th><th className="p-2 text-right">Bruto incl. toeslag</th></tr></thead><tbody>
+                                                {r.regels.map((d, i) => <tr key={i} className="border-b border-slate-800"><td className="p-2"><span className="block">{kortDatum(d.datum)} · {d.begin}–{d.eind}{d.aangepast ? ' · aangepast' : ''}</span><span className="block text-slate-400 whitespace-normal max-w-[200px]">{d.omschrijving}</span></td><td className="p-2 text-right">{aantalUren(d.brutoUren)}</td><td className="p-2 text-right">{aantalUren(d.pauze)}</td><td className="p-2 text-right">{aantalUren(d.uren)}</td><td className="p-2 text-right">{euro(d.bruto)}</td></tr>)}
+                                            </tbody><tfoot><tr className="font-bold"><td className="p-2">Totaal</td><td></td><td></td><td className="p-2 text-right">{aantalUren(r.uren)}</td><td className="p-2 text-right">{euro(b.bruto)}</td></tr></tfoot></table></div>
+                                            <p className="text-xs text-slate-400 mt-2">Aansluitende werk- en trainingsblokken zijn samengevoegd. Overlap telt één keer. Afronding per dienst kan enkele centen afwijken van de totaalsom per loonpost.</p>
+                                        </details>
+                                        <h3 className="font-bold text-white mb-2">Uitgangspunten en bronnen</h3>
+                                        <ul className="list-disc pl-5 text-xs text-slate-300 space-y-2">
+                                            <li>Uurloon {euro(inkomenProfiel.uurloon)} inclusief Schipholtoeslag. {inkomenProfiel.loonbron}. Gecontroleerd op {kortDatum(inkomenProfiel.bewijsDatum)} {inkomenProfiel.bewijsDatum.slice(0,4)}; nieuwere stroken ontbreken.</li>
+                                            <li>30 minuten onbetaalde pauze bij een aaneengesloten dienst langer dan 5,5 uur, volgens de geobserveerde loonpraktijk. Het midden van de dienst is het gekozen pauzemoment; de werkelijke pauze ontbreekt.</li>
+                                            <li>Toeslagen per betaalde minuut volgens <a className="underline text-emerald-300" href="https://www.beveiligingsbranche.nl/wp-content/uploads/CAO-PB-18-dec-2024-27-dec-2026-versie-3-juli-2026-.pdf" target="_blank" rel="noreferrer">cao art. 40–44 en Schipholafspraak vroege opkomst</a>. Voor vroege opkomst geldt een dienststart vóór 05:30 en betaling tot 06:00.</li>
+                                            {(inkomenProfiel.verschuivingen || []).filter(v => v.datum >= p.start && v.datum <= p.einde).map(v => <li key={v.datum}>{kortDatum(v.datum)}: {v.bron}. Alleen de betaalde minuten binnen de afgesproken tijd tellen mee.</li>)}
+                                            <li>Pensioen circa {euro(inkomenProfiel.pensioenPerUur)} per betaald uur, afgeleid uit P6–P8. PAWW 0,10%; FBA 0,0374%; Sociaal Fonds 0,06125%; Whk 0,21% volgens de beschikbare stroken. De cumulatieve pensioenberekening is niet volledig bekend.</li>
+                                            <li>Loonheffing volgens de <a className="underline text-emerald-300" href="https://download.belastingdienst.nl/belastingdienst/dl/rekenhulpen/loonheffing/2026/v01/pdf/wit_4wk_nl_std_20260101.pdf" target="_blank" rel="noreferrer">witte vierwekentabel 2026</a>, jonger dan AOW en met loonheffingskorting, zoals op je strook. Reiskosten: {euro(inkomenProfiel.reiskostenPerDag)} per werkdag, op basis van P8.</li>
+                                            <li>Vakantiegeldopbouw, eindejaarsuitkering, onbekende declaraties en mogelijke nabetalingen zijn niet meegerekend. Verlof of te weinig bekende uren blokkeert een volledige raming. Een rooster bewijst geen aanwezigheid of bankontvangst.</li>
+                                        </ul>
+                                    </>;
+                                })() : <p className="text-sm">{inkomsten?.reden || 'Raming nog niet beschikbaar.'}</p>}
+                                {loonLaatste && <div className="border-t border-slate-600 mt-5 pt-4 text-xs"><h3 className="font-bold text-white mb-1">Laatste loonstrookcontrole: P{loonLaatste.periode} {loonLaatste.jaar}</h3><p>{euro(loonLaatste.netto)} op de strook · {loonLaatste.status === 'OK' ? 'klopt' : 'nog controleren'}</p><p className="text-slate-400 mt-1">{loonLaatste.toelichting}</p></div>}
+                            </section>
                         </div>
                     )}
 
