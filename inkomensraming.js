@@ -16,9 +16,13 @@
         const einde = nr === 13 ? verschuifDatum(periode(jaar + 1, 1).start, -1) : verschuifDatum(start, 27);
         return { jaar, nr, start, einde };
     }
-    function volgendePeriode(betaaldagen, nu) {
+    function volgendePeriode(betaaldagen, nu, ontvangenBetaaldag = '') {
         const vandaag = datum(nu);
-        const betaaldag = Object.keys(betaaldagen).sort().find(d => d >= vandaag);
+        // Alleen een bestaande, niet-toekomstige betaaldag kan zijn bevestigd.
+        const ontvangen = typeof ontvangenBetaaldag === 'string'
+            && Object.prototype.hasOwnProperty.call(betaaldagen, ontvangenBetaaldag)
+            && ontvangenBetaaldag <= vandaag ? ontvangenBetaaldag : '';
+        const betaaldag = Object.keys(betaaldagen).sort().find(d => d >= vandaag && d > ontvangen);
         return betaaldag ? { ...periode(betaaldagen[betaaldag].jaar, betaaldagen[betaaldag].periode), betaaldag } : null;
     }
     function belasting(fiscaal, tabel) {
@@ -108,8 +112,8 @@
         for (let i = 0; i <= lengte - pauze; i++) { const bedrag = prefix[lengte] - (prefix[i + pauze] - prefix[i]); klein = Math.min(klein, bedrag); groot = Math.max(groot, bedrag); }
         return { datum: startDatum, begin: tijd(d.start), eind: tijd(d.eind), omschrijving: [...new Set(d.labels)].join(' / '), uren: betaald / 60, gepland: gepland / 60, brutoUren: brutoMinuten / 60, pauze: afgetrokken / 60, basis, posten, bruto, minimum: klein, maximum: groot, aangepast: d.aangepast, grensdienst: brutoMinuten !== lengte };
     }
-    function bereken({ rooster, overrides, profiel, betaaldagen, tabel, nu = new Date() }) {
-        const p = volgendePeriode(betaaldagen, nu);
+    function bereken({ rooster, overrides, profiel, betaaldagen, tabel, ontvangenBetaaldag = '', nu = new Date() }) {
+        const p = volgendePeriode(betaaldagen, nu, ontvangenBetaaldag);
         const fout = reden => ({ beschikbaar: false, reden, periode: p });
         if (!p) return fout('Betaalkalender moet worden bijgewerkt.');
         if (!profiel) return fout('Persoonlijke loonbasis nog niet geladen.');

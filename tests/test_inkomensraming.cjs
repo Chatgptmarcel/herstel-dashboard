@@ -16,6 +16,55 @@ test('betaaldag selecteert afgesloten periode; uren vlak voor betaaldag schuiven
     const r = bereken([dienst('2026-10-04T07:00Z', '2026-10-04T11:00Z'), dienst('2026-10-06T07:00Z', '2026-10-06T15:00Z', 'toekomst')]);
     assert.equal(r.uren, 4); assert.equal(r.reisdagen, 1);
 });
+test('ontvangen op betaaldag begint de volgende periode met uitsluitend haar diensten en bedragen', () => {
+    const nu = new Date('2026-10-09T08:00:00Z');
+    const ontvangenBetaaldag = '2026-10-09';
+    const volgende = { jaar: 2026, nr: 11, start: '2026-10-05', einde: '2026-11-01', betaaldag: '2026-11-06' };
+    assert.deepEqual(R.volgendePeriode(dagen, nu, ontvangenBetaaldag), volgende);
+    const r = bereken([
+        dienst('2026-09-08T07:00Z', '2026-09-08T15:00Z', 'uitbetaald'),
+        dienst('2026-10-06T07:00Z', '2026-10-06T10:00Z', 'gewerkt'),
+        dienst('2026-10-12T07:00Z', '2026-10-12T11:00Z', 'gepland'),
+    ], { nu, ontvangenBetaaldag });
+    assert.equal(r.beschikbaar, true);
+    assert.deepEqual(r.periode, volgende);
+    assert.deepEqual(r.regels.map(regel => regel.datum), ['2026-10-06', '2026-10-12']);
+    assert.equal(r.uren, 7);
+    assert.equal(r.gepland, 4);
+    assert.equal(r.reisdagen, 2);
+    assert.deepEqual(r.posten, { basis: 140, nacht: 0, avond: 0, weekend: 0, vroeg: 0, feest: 0, verschuiving: 0 });
+    assert.deepEqual(r.bedragen, {
+        bruto: 140, pensioen: 7, paww: .14, fba: .05, sociaalFonds: .08,
+        fiscaal: 132.73, loonheffing: 0, whk: .28, reiskosten: 20, netto: 152.45,
+    });
+    assert.equal(r.minimum, 150);
+    assert.equal(r.maximum, 160);
+    assert.equal(r.afgerond, 150);
+});
+test('ongeldige, onbekende en toekomstige ontvangst schuiven de betaalperiode niet vooruit', () => {
+    const nu = new Date('2026-10-09T08:00:00Z');
+    const verwacht = { ...p, betaaldag: '2026-10-09' };
+    for (const ontvangst of [undefined, null, '', 'ongeldig', '2026-02-30', '2026-10-08', '2026-11-06', '2027-01-01']) {
+        assert.deepEqual(R.volgendePeriode(dagen, nu, ontvangst), verwacht, String(ontvangst));
+    }
+    assert.deepEqual(R.volgendePeriode(dagen, new Date('2026-10-08T08:00:00Z'), '2026-10-09'), verwacht);
+});
+test('de dag na betaling begint vanzelf de volgende periode en oudere ontvangst houdt die niet tegen', () => {
+    const nu = new Date('2026-10-10T08:00:00Z');
+    const verwacht = { jaar: 2026, nr: 11, start: '2026-10-05', einde: '2026-11-01', betaaldag: '2026-11-06' };
+    assert.deepEqual(R.volgendePeriode(dagen, nu), verwacht);
+    assert.deepEqual(R.volgendePeriode(dagen, nu, '2026-10-09'), verwacht);
+});
+test('ontvangst na periode 13 met vijf weken schakelt door naar het nieuwe loonjaar', () => {
+    const betaaldagen = { '2027-01-08': { jaar: 2026, periode: 13 }, '2027-02-05': { jaar: 2027, periode: 1 } };
+    const nu = new Date('2027-01-08T08:00:00Z');
+    assert.deepEqual(R.volgendePeriode(betaaldagen, nu), {
+        jaar: 2026, nr: 13, start: '2026-11-30', einde: '2027-01-03', betaaldag: '2027-01-08',
+    });
+    assert.deepEqual(R.volgendePeriode(betaaldagen, nu, '2027-01-08'), {
+        jaar: 2027, nr: 1, start: '2027-01-04', einde: '2027-01-31', betaaldag: '2027-02-05',
+    });
+});
 test('aansluitende training: één pauze en één reisdag, overlap telt één keer', () => {
     const r = bereken([dienst('2026-09-07T09:30Z', '2026-09-07T10:30Z', 'training'), dienst('2026-09-07T10:30Z', '2026-09-07T15:45Z', 'werk'), dienst('2026-09-07T11:00Z', '2026-09-07T12:00Z', 'dubbel')]);
     assert.equal(r.uren, 5.75); assert.equal(r.regels.length, 1); assert.equal(r.reisdagen, 1);

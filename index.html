@@ -30,7 +30,8 @@
         (function () {
             window.SYNC_KEYS = [
                 'dashboard_manual_shifts', 'sobriety_history', 'arm_history', 'minox_start_date',
-                'dashboard_roster_overrides', 'amber_shifts', 'dashboard_loonstrook', 'dashboard_inkomen_profiel'
+                'dashboard_roster_overrides', 'amber_shifts', 'dashboard_loonstrook', 'dashboard_inkomen_profiel',
+                'dashboard_ontvangen_betaaldag'
             ];
             try {
                 if (!localStorage.getItem('_sync_client_id')) {
@@ -216,7 +217,40 @@
 
         const App = () => {
             const [currentDate, setCurrentDate] = useState(new Date());
+            // De klok mag niet wachten op een roosterverzoek dat traag is of blijft hangen.
+            useEffect(() => {
+                const verversDatum = () => {
+                    if (document.visibilityState === 'visible') setCurrentDate(new Date());
+                };
+                document.addEventListener('visibilitychange', verversDatum);
+                window.addEventListener('focus', verversDatum);
+                window.addEventListener('pageshow', verversDatum);
+                const id = setInterval(verversDatum, 60 * 1000);
+                return () => {
+                    document.removeEventListener('visibilitychange', verversDatum);
+                    window.removeEventListener('focus', verversDatum);
+                    window.removeEventListener('pageshow', verversDatum);
+                    clearInterval(id);
+                };
+            }, []);
             const [showIncomeModal, setShowIncomeModal] = useState(false);
+            const [ontvangenBetaaldag, setOntvangenBetaaldag] = useState(() => {
+                try { return localStorage.getItem('dashboard_ontvangen_betaaldag') || ''; }
+                catch (e) { return ''; }
+            });
+            const [ontvangstFout, setOntvangstFout] = useState('');
+            const bewaarOntvangst = (betaaldag) => {
+                try {
+                    // Ook ongedaan maken als lege waarde opslaan, zodat de sync dat meeneemt.
+                    localStorage.setItem('dashboard_ontvangen_betaaldag', betaaldag);
+                    setOntvangenBetaaldag(betaaldag);
+                    setCurrentDate(new Date());
+                    setOntvangstFout('');
+                    window.__syncRequestPush?.();
+                } catch (e) {
+                    setOntvangstFout('Ontvangst kon niet worden opgeslagen. Probeer het opnieuw.');
+                }
+            };
             const [inkomenProfiel] = useState(() => {
                 try { return JSON.parse(localStorage.getItem('dashboard_inkomen_profiel') || 'null') || window.INKOMEN_PROFIEL || null; }
                 catch (e) { return window.INKOMEN_PROFIEL || null; }
@@ -390,8 +424,19 @@
 
             const inkomsten = useMemo(() => window.Inkomensraming?.bereken({
                 rooster: rosterShifts, overrides: rosterOverrides, profiel: inkomenProfiel,
-                betaaldagen: trigionDays, tabel: window.LOONBELASTING_2026, nu: currentDate,
-            }), [rosterShifts, rosterOverrides, inkomenProfiel, currentDate]);
+                betaaldagen: trigionDays, tabel: window.LOONBELASTING_2026, nu: currentDate, ontvangenBetaaldag,
+            }), [rosterShifts, rosterOverrides, inkomenProfiel, currentDate, ontvangenBetaaldag]);
+            const vandaagAmsterdam = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam', year: 'numeric', month: '2-digit', day: '2-digit' }).format(currentDate);
+            const ontvangstBevestigbaar = inkomsten?.periode?.betaaldag === vandaagAmsterdam;
+            const bevestigdeOntvangst = Object.prototype.hasOwnProperty.call(trigionDays, ontvangenBetaaldag)
+                && ontvangenBetaaldag <= vandaagAmsterdam ? ontvangenBetaaldag : '';
+            const bevestigOntvangst = () => {
+                // Controleer opnieuw bij klikken: de app kan intussen een dag ouder zijn.
+                const nu = new Date();
+                const p = window.Inkomensraming?.volgendePeriode(trigionDays, nu, ontvangenBetaaldag);
+                if (ontvangstBevestigbaar && p?.betaaldag === inkomsten.periode.betaaldag) bewaarOntvangst(p.betaaldag);
+                else setCurrentDate(nu);
+            };
             const euro = (n, decimalen = 2) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: decimalen, maximumFractionDigits: decimalen }).format(n);
             const kortDatum = d => new Date(d + 'T12:00:00Z').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', timeZone: 'Europe/Amsterdam' });
             const aantalUren = n => n.toLocaleString('nl-NL', { maximumFractionDigits: 2 });
@@ -775,7 +820,6 @@
                     console.log("Auto-rooster laadt niet.");
                 } finally {
                     setLoadingShifts(false);
-                    setCurrentDate(new Date());
                 }
             };
 
@@ -1731,16 +1775,19 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                             <span className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-emerald-400 to-teal-400"></span>
                             <span className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-500/40 mb-2"><Banknote size={22}/></span>
                             <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wide">Volgende uitbetaling</h2>
+                            {inkomsten?.periode && <p data-testid="inkomen-periode" className="text-xs text-white mt-1">{kortDatum(inkomsten.periode.betaaldag)} · P{inkomsten.periode.nr}</p>}
                             {inkomsten?.beschikbaar ? (
                                 <>
                                     <p data-testid="inkomen-bedrag" className="text-3xl font-bold font-display text-emerald-300 mt-1">≈ {euro(inkomsten.afgerond, 0)}</p>
                                     <p className="text-[11px] text-slate-300">Geschat netto · incl. reiskosten</p>
-                                    <p className="text-xs text-white mt-1">{kortDatum(inkomsten.periode.betaaldag)} · P{inkomsten.periode.nr}</p>
                                     <p className="text-[11px] text-slate-400">{aantalUren(inkomsten.uren)} betaalde uren geraamd</p>
                                 </>
                             ) : (
                                 <p className="text-xs text-slate-300 mt-2">{loadingShifts ? 'Rooster laden…' : inkomsten?.reden || 'Raming nog niet beschikbaar.'}</p>
                             )}
+                            {inkomsten?.periode && <p className="text-[11px] text-slate-400 mt-1">Uren {kortDatum(inkomsten.periode.start)} t/m {kortDatum(inkomsten.periode.einde)}</p>}
+                            {ontvangstBevestigbaar && <button onClick={bevestigOntvangst} className="mt-2 text-xs font-semibold text-emerald-300 underline underline-offset-4 hover:text-white">Betaling ontvangen</button>}
+                            {ontvangstFout && <p role="alert" className="text-xs text-amber-300 mt-2">{ontvangstFout}</p>}
                             <button onClick={() => setShowIncomeModal(true)} className="mt-2 text-xs font-semibold text-emerald-300 underline underline-offset-4 hover:text-white">Berekening bekijken</button>
                             {loonLaatste && <p className="text-[10px] text-slate-400 mt-2" title={loonLaatste.toelichting}>Laatste looncheck P{loonLaatste.periode}: {loonLaatste.status === 'OK' ? 'klopt' : 'controleren'}</p>}
                         </div>
@@ -1891,6 +1938,12 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                     <div><h2 id="inkomen-titel" className="text-xl font-bold text-white">Je verwachte uitbetaling</h2><p className="text-xs text-slate-400 mt-1">Gebaseerd op je rooster en beschikbare loonstroken</p></div>
                                     <button onClick={() => setShowIncomeModal(false)} aria-label="Berekening sluiten" className="p-2 text-slate-300 hover:text-white"><X size={22}/></button>
                                 </div>
+                                {inkomsten?.periode && <div data-testid="inkomen-periode-uitleg" className="text-sm mb-4">
+                                    <p>Volgende betaling: {kortDatum(inkomsten.periode.betaaldag)} {inkomsten.periode.betaaldag.slice(0,4)} · periode {inkomsten.periode.nr}</p>
+                                    <p className="text-xs text-slate-300 mt-1">Uren van {kortDatum(inkomsten.periode.start)} tot en met {kortDatum(inkomsten.periode.einde)}. Uren na deze einddatum horen bij de volgende loonperiode, ook als ze vóór de betaaldag vallen.</p>
+                                </div>}
+                                {bevestigdeOntvangst && <p className="text-xs text-slate-300 mb-4">Betaling van {kortDatum(bevestigdeOntvangst)} als ontvangen gemarkeerd. <button onClick={() => bewaarOntvangst('')} className="text-emerald-300 underline">Ongedaan maken</button></p>}
+                                {ontvangstFout && <p role="alert" className="text-xs text-amber-300 mb-4">{ontvangstFout}</p>}
                                 {inkomsten?.beschikbaar ? (() => {
                                     const r = inkomsten, p = r.periode, b = r.bedragen;
                                     const loonregels = [
@@ -1903,8 +1956,6 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                     return <>
                                         <div className="rounded-xl bg-emerald-950/70 border border-emerald-700 p-4 mb-4">
                                             <p className="text-3xl font-bold text-emerald-300">≈ {euro(r.afgerond, 0)} netto</p>
-                                            <p className="text-sm mt-1">Verwacht op {kortDatum(p.betaaldag)} {p.betaaldag.slice(0,4)} · periode {p.nr}</p>
-                                            <p className="text-xs text-slate-300 mt-2">Uren van {kortDatum(p.start)} tot en met {kortDatum(p.einde)}. Uren na {kortDatum(p.einde)} horen bij de volgende loonperiode, ook als ze vóór de betaaldag vallen.</p>
                                         </div>
                                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm mb-4">
                                             <div><span className="block text-slate-400 text-xs">Verwacht betaald</span>{aantalUren(r.uren)} uur</div>
