@@ -1841,7 +1841,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                         <div className="glass kpi-card p-4 rounded-2xl flex flex-col items-center verschijn" style={{animationDelay:'0.25s'}}>
                             <span className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-fuchsia-400 to-purple-400"></span>
                             <span className="p-2.5 rounded-xl bg-gradient-to-br from-fuchsia-400 to-purple-500 text-white shadow-lg shadow-fuchsia-500/40 mb-2"><CheckCircle size={22}/></span>
-                            <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wide">Niet masturberen</h2>
+                            <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wide">Dagen niet</h2>
                             <p className="text-lg font-extrabold font-display text-center bg-gradient-to-r from-fuchsia-300 to-purple-300 bg-clip-text text-transparent">{abstinenceDisplay}</p>
                             {abstinenceStartDate > vandaagAmsterdam && <p className="mt-1 text-xs text-slate-300">Start op {new Date(abstinenceStartDate + 'T12:00:00Z').toLocaleDateString('nl-NL', { timeZone: 'Europe/Amsterdam', day: 'numeric', month: 'long' })}</p>}
                             <button onClick={() => {
@@ -2162,7 +2162,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                             <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl text-slate-800">
                                 <div className="flex justify-between items-center mb-4 border-b pb-2">
-                                    <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2"><Settings size={20}/> Niet masturberen: startdatum</h3>
+                                    <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2"><Settings size={20}/> Dagen niet: startdatum</h3>
                                     <button onClick={() => setShowAbstinenceSettingsModal(false)}><X className="text-gray-400 hover:text-gray-600"/></button>
                                 </div>
                                 
