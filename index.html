@@ -29,7 +29,7 @@
     <script>
         (function () {
             window.SYNC_KEYS = [
-                'dashboard_manual_shifts', 'sobriety_history', 'arm_history', 'minox_start_date',
+                'dashboard_manual_shifts', 'sobriety_history', 'arm_history', 'minox_start_date', 'abstinence_start_date',
                 'dashboard_roster_overrides', 'amber_shifts', 'dashboard_loonstrook', 'dashboard_inkomen_profiel',
                 'dashboard_ontvangen_betaaldag'
             ];
@@ -206,7 +206,6 @@
             Settings,
             History,
             RefreshCw,
-            FlaskConical,
             Heart,
             Filter,
             Download,
@@ -314,16 +313,14 @@
             const [newArmStartDate, setNewArmStartDate] = useState(toLocalISOString(activeArmPeriod.start));
             const [newArmCycle, setNewArmCycle] = useState(activeArmPeriod.cycle || 3);
 
-            // --- MINOXIDIL STATE ---
-            const [minoxStartDate, setMinoxStartDate] = useState(() => {
-                const savedDate = localStorage.getItem('minox_start_date');
-                // Neutrale default (privacy): jouw echte startdatum komt uit je JSON-bestand / localStorage
-                return savedDate ? new Date(savedDate) : new Date();
+            // Eigen datum: de oude minoxidil-datum blijft bewaard en wordt niet overgenomen.
+            const [abstinenceStartDate, setAbstinenceStartDate] = useState(() => {
+                return localStorage.getItem('abstinence_start_date') || '';
             });
-            const [minoxDisplay, setMinoxDisplay] = useState("");
-            const [showMinoxSettingsModal, setShowMinoxSettingsModal] = useState(false);
-            const [newMinoxStartDateInput, setNewMinoxStartDateInput] = useState(toLocalISOString(minoxStartDate));
-            
+            const [showAbstinenceSettingsModal, setShowAbstinenceSettingsModal] = useState(false);
+            const [newAbstinenceStartDateInput, setNewAbstinenceStartDateInput] = useState(abstinenceStartDate);
+            const [abstinenceError, setAbstinenceError] = useState('');
+
             // DATA
             const [rosterShifts, setRosterShifts] = useState({});
             const [manualShifts, setManualShifts] = useState({});
@@ -427,6 +424,14 @@
                 betaaldagen: trigionDays, tabel: window.LOONBELASTING_2026, nu: currentDate, ontvangenBetaaldag,
             }), [rosterShifts, rosterOverrides, inkomenProfiel, currentDate, ontvangenBetaaldag]);
             const vandaagAmsterdam = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam', year: 'numeric', month: '2-digit', day: '2-digit' }).format(currentDate);
+            // Kalenderdagen in Amsterdam; zomer-/wintertijd mag geen dag verschil geven.
+            const abstinenceDayCount = abstinenceStartDate
+                ? Math.max(0, Math.round((Date.parse(vandaagAmsterdam + 'T00:00:00Z') - Date.parse(abstinenceStartDate + 'T00:00:00Z')) / 86400000))
+                : null;
+            const abstinenceDisplay = Number.isFinite(abstinenceDayCount)
+                ? `${abstinenceDayCount} ${abstinenceDayCount === 1 ? 'dag' : 'dagen'}`
+                : 'Kies een startdatum';
+
             const ontvangstBevestigbaar = inkomsten?.periode?.betaaldag === vandaagAmsterdam;
             const bevestigdeOntvangst = Object.prototype.hasOwnProperty.call(trigionDays, ontvangenBetaaldag)
                 && ontvangenBetaaldag <= vandaagAmsterdam ? ontvangenBetaaldag : '';
@@ -532,20 +537,9 @@
                     }
                 }
 
-                // 3. Minoxidil Calculation
-                const diffMinox = Math.floor((startOfToday - minoxStartDate) / (1000 * 60 * 60 * 24));
-                if (diffMinox >= 0) {
-                    const weeks = Math.floor(diffMinox / 7);
-                    const days = diffMinox % 7;
-                    setMinoxDisplay(`${weeks} weken, ${days} dagen`);
-                } else {
-                    setMinoxDisplay("Start binnenkort");
-                }
-
                 // Save to local storage
                 localStorage.setItem('sobriety_history', JSON.stringify(sobrietyHistory));
                 localStorage.setItem('arm_history', JSON.stringify(armHistory));
-                localStorage.setItem('minox_start_date', minoxStartDate.toISOString());
 
                 const saved = localStorage.getItem('dashboard_manual_shifts');
                 if (saved) {
@@ -579,7 +573,7 @@
                 }
 
                 fetchAndParseICS();
-            }, [sobrietyHistory, armHistory, minoxStartDate]);
+            }, [sobrietyHistory, armHistory]);
 
             // Save Amber shifts to localStorage + auto-save
             useEffect(() => {
@@ -667,11 +661,22 @@
                 setShowArmSettingsModal(false);
             };
 
-            const handleMinoxDateChange = () => {
-                const newDate = new Date(newMinoxStartDateInput + "T00:00:00");
-                if (isNaN(newDate)) return;
-                setMinoxStartDate(newDate);
-                setShowMinoxSettingsModal(false);
+            const handleAbstinenceDateChange = () => {
+                const value = newAbstinenceStartDateInput;
+                const date = new Date(value + 'T00:00:00Z');
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || isNaN(date) || date.toISOString().slice(0, 10) !== value) {
+                    setAbstinenceError('Kies een geldige startdatum.');
+                    return;
+                }
+                try {
+                    localStorage.setItem('abstinence_start_date', value);
+                    setAbstinenceStartDate(value);
+                    setAbstinenceError('');
+                    window.__syncRequestPush?.();
+                    setShowAbstinenceSettingsModal(false);
+                } catch (e) {
+                    setAbstinenceError('De startdatum kon niet worden opgeslagen. Probeer het opnieuw.');
+                }
             };
 
 
@@ -1832,13 +1837,18 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                             </a>
                         </div>
 
-                        {/* MINOXIDIL KPI */}
+                        {/* DAGEN NIET MASTURBEREN */}
                         <div className="glass kpi-card p-4 rounded-2xl flex flex-col items-center verschijn" style={{animationDelay:'0.25s'}}>
                             <span className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-fuchsia-400 to-purple-400"></span>
-                            <span className="p-2.5 rounded-xl bg-gradient-to-br from-fuchsia-400 to-purple-500 text-white shadow-lg shadow-fuchsia-500/40 mb-2"><FlaskConical size={22}/></span>
-                            <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wide">Minoxidil Voortgang</h2>
-                            <p className="text-lg font-extrabold font-display text-center bg-gradient-to-r from-fuchsia-300 to-purple-300 bg-clip-text text-transparent">{minoxDisplay}</p>
-                            <button onClick={() => setShowMinoxSettingsModal(true)} className="mt-3 inline-flex items-center text-xs font-semibold text-slate-300 hover:text-white transition-colors">
+                            <span className="p-2.5 rounded-xl bg-gradient-to-br from-fuchsia-400 to-purple-500 text-white shadow-lg shadow-fuchsia-500/40 mb-2"><CheckCircle size={22}/></span>
+                            <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wide">Niet masturberen</h2>
+                            <p className="text-lg font-extrabold font-display text-center bg-gradient-to-r from-fuchsia-300 to-purple-300 bg-clip-text text-transparent">{abstinenceDisplay}</p>
+                            {abstinenceStartDate > vandaagAmsterdam && <p className="mt-1 text-xs text-slate-300">Start op {new Date(abstinenceStartDate + 'T12:00:00Z').toLocaleDateString('nl-NL', { timeZone: 'Europe/Amsterdam', day: 'numeric', month: 'long' })}</p>}
+                            <button onClick={() => {
+                                setNewAbstinenceStartDateInput(abstinenceStartDate || vandaagAmsterdam);
+                                setAbstinenceError('');
+                                setShowAbstinenceSettingsModal(true);
+                            }} className="mt-3 inline-flex items-center text-xs font-semibold text-slate-300 hover:text-white transition-colors">
                                 <Settings size={14} className="mr-1"/> Startdatum Aanpassen
                             </button>
                         </div>
@@ -2147,16 +2157,16 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                         </div>
                     )}
 
-                    {/* MODAL: Minoxidil Instellingen */}
-                    {showMinoxSettingsModal && (
+                    {/* MODAL: Startdatum niet masturberen */}
+                    {showAbstinenceSettingsModal && (
                         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                             <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl text-slate-800">
                                 <div className="flex justify-between items-center mb-4 border-b pb-2">
-                                    <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2"><Settings size={20}/> Minoxidil Startdatum</h3>
-                                    <button onClick={() => setShowMinoxSettingsModal(false)}><X className="text-gray-400 hover:text-gray-600"/></button>
+                                    <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2"><Settings size={20}/> Niet masturberen: startdatum</h3>
+                                    <button onClick={() => setShowAbstinenceSettingsModal(false)}><X className="text-gray-400 hover:text-gray-600"/></button>
                                 </div>
                                 
-                                <p className="text-sm text-gray-600 mb-4">Wanneer ben je begonnen met de behandeling?</p>
+                                <p className="text-sm text-gray-600 mb-4">Vanaf welke datum wil je tellen? De startdatum telt als 0 dagen. Kies een nieuwe datum om opnieuw te beginnen.</p>
 
                                 <div className="space-y-4">
                                     <div>
@@ -2164,15 +2174,16 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                         <input 
                                             type="date" 
                                             className="w-full border p-3 rounded text-sm focus:ring-2 focus:ring-purple-500 outline-none" 
-                                            value={newMinoxStartDateInput} 
-                                            onChange={e => setNewMinoxStartDateInput(e.target.value)}
+                                            value={newAbstinenceStartDateInput} 
+                                            onChange={e => setNewAbstinenceStartDateInput(e.target.value)}
                                         />
                                     </div>
                                 </div>
 
+                                {abstinenceError && <p role="alert" className="mt-3 text-sm text-red-600">{abstinenceError}</p>}
                                 <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
-                                    <button onClick={() => setShowMinoxSettingsModal(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Annuleren</button>
-                                    <button onClick={handleMinoxDateChange} className="px-4 py-2 text-sm font-bold bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white rounded-lg hover:brightness-110 shadow-sm flex items-center gap-2 transition-all"><Save size={16}/> Opslaan</button>
+                                    <button onClick={() => setShowAbstinenceSettingsModal(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Annuleren</button>
+                                    <button onClick={handleAbstinenceDateChange} className="px-4 py-2 text-sm font-bold bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white rounded-lg hover:brightness-110 shadow-sm flex items-center gap-2 transition-all"><Save size={16}/> Opslaan</button>
                                 </div>
                             </div>
                         </div>
