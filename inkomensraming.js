@@ -46,13 +46,20 @@
         return { bruto: rond(bruto), pensioen, paww, fba, sociaalFonds, fiscaal, loonheffing, whk, reiskosten, netto: rond(fiscaal - loonheffing - whk + reiskosten) };
     }
     function diensten(rooster, overrides) {
-        const blokken = [], onbekend = [];
+        const blokken = [], onbekend = [], verlof = new Set();
         for (const s of Object.values(rooster || {}).flat()) {
             const ov = (overrides || {})[s.uid] || {};
             if (ov.hidden || s.status === 'CANCELLED') continue;
             const start = +new Date(ov.startISO || s.start), eind = +new Date(ov.endISO || s.end);
             const summary = ov.summary === undefined ? s.summary || '' : ov.summary;
             if (/roostervrij/i.test(summary)) continue;
+            // Een eendaagse verlofboeking heeft kalenderdatums, geen diensttijden.
+            if (/^EC_/.test(s.uid) && /^verlof$/i.test(summary.trim()) &&
+                s.dagStart && s.dagEinde === verschuifDatum(s.dagStart, 1) &&
+                !ov.startISO && !ov.endISO) {
+                verlof.add(s.dagStart);
+                continue;
+            }
             if (!Number.isFinite(start) || !Number.isFinite(eind) || eind <= start) { onbekend.push({ datum: Number.isFinite(start) ? datum(start) : null, reden: 'Dienst zonder geldige tijden' }); continue; }
             if (/verlof|rnvb|vakantie|ziek/i.test(summary)) { onbekend.push({ datum: datum(start), reden: 'Verlof of ziekte: betaalde uren en gemiddelde ORT ontbreken' }); continue; }
             blokken.push({ start, eind, labels: [summary], ids: [s.uid], aangepast: !!Object.keys(ov).length });
@@ -67,7 +74,7 @@
                 vorige.labels.push(...b.labels); vorige.ids.push(...b.ids); vorige.aangepast ||= b.aangepast;
             } else samen.push({ ...b });
         }
-        return { samen, onbekend };
+        return { samen, onbekend, verlof };
     }
     function berekenDienst(d, p, profiel, nu) {
         const lengte = Math.round((d.eind - d.start) / minuut);
@@ -112,31 +119,56 @@
         for (let i = 0; i <= lengte - pauze; i++) { const bedrag = prefix[lengte] - (prefix[i + pauze] - prefix[i]); klein = Math.min(klein, bedrag); groot = Math.max(groot, bedrag); }
         return { datum: startDatum, begin: tijd(d.start), eind: tijd(d.eind), omschrijving: [...new Set(d.labels)].join(' / '), uren: betaald / 60, gepland: gepland / 60, brutoUren: brutoMinuten / 60, pauze: afgetrokken / 60, basis, posten, bruto, minimum: klein, maximum: groot, aangepast: d.aangepast, grensdienst: brutoMinuten !== lengte };
     }
-    function bereken({ rooster, overrides, profiel, betaaldagen, tabel, ontvangenBetaaldag = '', nu = new Date() }) {
+    function bereken({ rooster, overrides, profiel, verlofProfiel = profiel?.verlofRaming, betaaldagen, tabel, ontvangenBetaaldag = '', nu = new Date() }) {
         const p = volgendePeriode(betaaldagen, nu, ontvangenBetaaldag);
         const fout = reden => ({ beschikbaar: false, reden, periode: p });
         if (!p) return fout('Betaalkalender moet worden bijgewerkt.');
         if (!profiel) return fout('Persoonlijke loonbasis nog niet geladen.');
         if (p.start < profiel.geldigVanaf || p.einde > profiel.geldigTot || p.jaar !== 2026) return fout('Loonbasis en belastingtabel voor deze periode moeten worden bijgewerkt.');
-        const { samen, onbekend } = diensten(rooster, overrides);
+        const { samen, onbekend, verlof } = diensten(rooster, overrides);
         const gekozen = samen.filter(d => datum(d.eind - 1) >= p.start && datum(d.start) <= p.einde);
-        if (!gekozen.length) return fout('Nog geen diensten voor deze loonperiode beschikbaar.');
+        const verlofDagen = [...verlof].filter(d => d >= p.start && d <= p.einde).sort();
+        if (!gekozen.length && !verlofDagen.length) return fout('Nog geen diensten voor deze loonperiode beschikbaar.');
         if (onbekend.some(d => !d.datum || (d.datum >= p.start && d.datum <= p.einde))) return fout('Betaalde verlof-/ziekte-uren of geldige diensttijden ontbreken; nog geen volledige raming.');
+        if (verlofDagen.length && (!Number.isInteger(verlofProfiel?.minutenPerDag) ||
+            verlofProfiel.minutenPerDag <= 0 || verlofProfiel.minutenPerDag > 1440 ||
+            verlofProfiel.contractUren !== profiel.contractUren || verlofDagen[0] < verlofProfiel.geldigVanaf ||
+            !Number.isFinite(verlofProfiel.ortPerUur) || verlofProfiel.ortPerUur < 0)) {
+            return fout('Verlof staat in je rooster. De betaalde uren of de gemiddelde verloftoeslag ontbreken.');
+        }
+        if (verlofDagen.some(dag => gekozen.some(d => datum(d.start) <= dag && datum(d.eind - 1) >= dag))) {
+            return fout('Een dienst en een hele verlofdag vallen samen. De betaalde uren voor die dag zijn nog onzeker.');
+        }
         const regels = gekozen.map(d => berekenDienst(d, p, profiel, nu));
         if (regels.some(r => r.grensdienst)) return fout('Een dienst loopt over de periodegrens; pauzeverdeling moet eerst worden bevestigd.');
-        const uren = regels.reduce((a, r) => a + r.uren, 0);
-        if (uren < profiel.contractUren) return fout('Het rooster bevat minder dan je contracturen; verlof, minuren of ontbrekende diensten moeten eerst worden aangevuld.');
+        const werkMinuten = regels.reduce((a, r) => a + Math.round(r.uren * 60), 0);
+        const verlofMinutenPerDag = verlofDagen.length ? verlofProfiel.minutenPerDag : 0;
+        const verlofUren = verlofDagen.length * verlofMinutenPerDag / 60;
+        const uren = (werkMinuten + verlofDagen.length * verlofMinutenPerDag) / 60;
+        if (uren < profiel.contractUren) return fout('De bekende diensten en verlofuren zijn samen lager dan de contracturen. De uitbetaling is nog onzeker.');
         const posten = { basis: rond(regels.reduce((a, r) => a + r.basis, 0)) };
-        for (const k of Object.keys(regels[0].posten)) posten[k] = rond(regels.reduce((a, r) => a + r.posten[k], 0));
+        for (const k of ['nacht', 'avond', 'weekend', 'vroeg', 'feest', 'verschuiving']) posten[k] = rond(regels.reduce((a, r) => a + r.posten[k], 0));
+        if (verlofDagen.length) {
+            posten.verlofBasis = rond(verlofUren * profiel.uurloon);
+            posten.verlofOrt = rond(verlofUren * verlofProfiel.ortPerUur);
+        }
         const bruto = rond(Object.values(posten).reduce((a, b) => a + b, 0));
         if (uren > 152) return fout('Meer dan 152 uur: overwerk en de pensioenraming moeten eerst worden beoordeeld.');
         const reisdagen = new Set(regels.map(r => r.datum)).size;
         const bedragen = brutoNetto(bruto, uren, reisdagen, profiel, tabel);
         if (!bedragen) return fout('Geen toepasselijke belastingtabelregel beschikbaar.');
-        const laag = brutoNetto(rond(regels.reduce((a, r) => a + r.minimum, 0)), uren, reisdagen, profiel, tabel);
-        const hoog = brutoNetto(rond(regels.reduce((a, r) => a + r.maximum, 0)), uren, reisdagen, profiel, tabel);
+        const brutoVerlof = (posten.verlofBasis || 0) + (posten.verlofOrt || 0);
+        const laag = brutoNetto(rond(regels.reduce((a, r) => a + r.minimum, brutoVerlof)), uren, reisdagen, profiel, tabel);
+        const hoog = brutoNetto(rond(regels.reduce((a, r) => a + r.maximum, brutoVerlof)), uren, reisdagen, profiel, tabel);
         if (!laag || !hoog) return fout('De pauzescenario’s vallen buiten de beschikbare belastingtabel.');
-        return { beschikbaar: true, periode: p, regels, uren, gepland: rond(regels.reduce((a, r) => a + r.gepland, 0)), reisdagen, posten, bedragen, minimum: Math.floor(laag.netto / 10) * 10, maximum: Math.ceil(hoog.netto / 10) * 10, afgerond: Math.round(bedragen.netto / 10) * 10 };
+        const geplandVerlof = verlofDagen.filter(dag => dag >= datum(nu)).length * verlofMinutenPerDag / 60;
+        return {
+            beschikbaar: true, periode: p, regels, uren, werkUren: werkMinuten / 60, contractUren: profiel.contractUren,
+            verlofDagen, verlofUren, verlofOrtPerUur: verlofProfiel?.ortPerUur, verlofBron: verlofProfiel?.bron,
+            gepland: rond(regels.reduce((a, r) => a + r.gepland, geplandVerlof)), reisdagen, posten, bedragen,
+            minimum: Math.floor(laag.netto / 10) * 10, maximum: Math.ceil(hoog.netto / 10) * 10,
+            afgerond: Math.round(bedragen.netto / 10) * 10,
+        };
     }
     const api = { bereken, brutoNetto, belasting, periode, volgendePeriode, diensten, berekenDienst };
     if (typeof module !== 'undefined' && module.exports) module.exports = api;

@@ -421,6 +421,7 @@
 
             const inkomsten = useMemo(() => window.Inkomensraming?.bereken({
                 rooster: rosterShifts, overrides: rosterOverrides, profiel: inkomenProfiel,
+                verlofProfiel: inkomenProfiel?.verlofRaming || window.INKOMEN_PROFIEL?.verlofRaming,
                 betaaldagen: trigionDays, tabel: window.LOONBELASTING_2026, nu: currentDate, ontvangenBetaaldag,
             }), [rosterShifts, rosterOverrides, inkomenProfiel, currentDate, ontvangenBetaaldag]);
             const vandaagAmsterdam = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam', year: 'numeric', month: '2-digit', day: '2-digit' }).format(currentDate);
@@ -445,6 +446,13 @@
             const euro = (n, decimalen = 2) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: decimalen, maximumFractionDigits: decimalen }).format(n);
             const kortDatum = d => new Date(d + 'T12:00:00Z').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', timeZone: 'Europe/Amsterdam' });
             const aantalUren = n => n.toLocaleString('nl-NL', { maximumFractionDigits: 2 });
+            const urenEnMinuten = (uren, metTeken = false) => {
+                const minuten = Math.round(uren * 60);
+                const teken = minuten < 0 ? '−' : (metTeken && minuten > 0 ? '+' : '');
+                const duur = Math.abs(minuten);
+                if (duur < 60) return teken + duur + ' min';
+                return teken + Math.floor(duur / 60) + ' u ' + String(duur % 60).padStart(2, '0') + ' min';
+            };
 
             // Helper: Calculate days sober for a specific date based on history
             const getDaySoberCount = (dateToCheck) => {
@@ -785,8 +793,14 @@
                         }
                         currentEvent = null;
                     } else if (currentEvent) {
-                        if (line.startsWith('DTSTART')) currentEvent.start = parseDate(line.split(':')[1]);
-                        else if (line.startsWith('DTEND')) currentEvent.end = parseDate(line.split(':')[1]);
+                        if (line.startsWith('DTSTART') || line.startsWith('DTEND')) {
+                            const startregel = line.startsWith('DTSTART');
+                            const waarde = line.slice(line.indexOf(':') + 1).trim();
+                            currentEvent[startregel ? 'start' : 'end'] = parseDate(waarde);
+                            if (/^\d{8}$/.test(waarde)) {
+                                currentEvent[startregel ? 'dagStart' : 'dagEinde'] = waarde.slice(0, 4) + '-' + waarde.slice(4, 6) + '-' + waarde.slice(6);
+                            }
+                        }
                         else if (line.startsWith('SUMMARY')) currentEvent.summary = line.substring(8);
                         else if (line.startsWith('UID')) currentEvent.uid = line.slice(line.indexOf(':') + 1).trim();
                         else if (line.startsWith('STATUS:')) currentEvent.status = line.slice(7).trim();
@@ -1440,7 +1454,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                             <div className="hidden sm:flex flex-1 min-h-0 flex-col gap-1 overflow-y-auto custom-scrollbar">
                                 {/* Vakantie/verlof uit een notitie: platte tekst (geen gekleurde balk).
                                     Verlof/RNVB uit het rooster heeft verderop zijn eigen dienst-chip. */}
-                                {vakantieEntries.length > 0 && (
+                                {vakantieEntries.length > 0 && !finalRoster.some(s => isVerlofachtig(s.summary)) && (
                                     <div className="flex items-center justify-between gap-1 group/vak">
                                         <span className="flex items-center gap-1 text-[11px] sm:text-xs font-bold text-orange-700 truncate"><Palmtree size={12} className="shrink-0"/> {vrijLabel}</span>
                                         <button onClick={(ev)=>{ev.stopPropagation(); handleRemoveVakantie(dateKey);}} className="touch-zichtbaar opacity-0 group-hover/vak:opacity-100 text-orange-400 hover:text-red-500 shrink-0" title="Vakantie verwijderen"><Trash2 size={11}/></button>
@@ -1720,7 +1734,7 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                         <button onClick={() => { setSelectedDate(d.dateKey); setNewNote(""); setNewEntryType('note'); setVakantieTotEnMet(d.dateKey); setShowAddModal(true); }} className="p-2 rounded-full bg-black text-white shadow-lg shadow-black/40 shrink-0"><Plus size={18}/></button>
                                     </div>
                                     <div className="space-y-1.5">
-                                        {d.vakantieEntries.length > 0 && (
+                                        {d.vakantieEntries.length > 0 && !d.finalRoster.some(s => isVerlofachtig(s.summary)) && (
                                             <div className="flex items-center justify-between text-xs font-bold p-2 rounded-lg bg-gradient-to-r from-orange-400 to-amber-400 text-white">
                                                 <span className="flex items-center gap-1.5"><Palmtree size={14}/> {d.vrijLabel || 'Vakantie'}</span>
                                                 <button onClick={() => handleRemoveVakantie(d.dateKey)} className="text-white/80 hover:text-white"><Trash2 size={14}/></button>
@@ -1794,7 +1808,12 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                 <>
                                     <p data-testid="inkomen-bedrag" className="text-3xl font-bold font-display text-emerald-300 mt-1">≈ {euro(inkomsten.afgerond, 0)}</p>
                                     <p className="text-[11px] text-slate-300">Geschat netto · incl. reiskosten</p>
-                                    <p className="text-[11px] text-slate-400">{aantalUren(inkomsten.uren)} betaalde uren geraamd</p>
+                                    {inkomsten.verlofUren > 0 ? (
+                                        <div className="text-[11px] text-slate-300 mt-1">
+                                            <p>{urenEnMinuten(inkomsten.uren)} incl. betaald verlof</p>
+                                            <p>Contract {aantalUren(inkomsten.contractUren)} uur · saldo {urenEnMinuten(inkomsten.uren - inkomsten.contractUren, true)}</p>
+                                        </div>
+                                    ) : <p className="text-[11px] text-slate-400">{aantalUren(inkomsten.uren)} betaalde uren geraamd</p>}
                                 </>
                             ) : (
                                 <p className="text-xs text-slate-300 mt-2">{loadingShifts ? 'Rooster laden…' : inkomsten?.reden || 'Raming nog niet beschikbaar.'}</p>
@@ -1966,7 +1985,9 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                 {inkomsten?.beschikbaar ? (() => {
                                     const r = inkomsten, p = r.periode, b = r.bedragen;
                                     const loonregels = [
-                                        ['Basisloon', r.posten.basis], ['Nacht 20%', r.posten.nacht], ['Avond 10%', r.posten.avond],
+                                        ['Basisloon diensten', r.posten.basis],
+                                        ['Basisloon betaald verlof', r.posten.verlofBasis || 0], ['ORT betaald verlof (raming)', r.posten.verlofOrt || 0],
+                                        ['Nacht 20%', r.posten.nacht], ['Avond 10%', r.posten.avond],
                                         ['Weekend 35%', r.posten.weekend], ['Vroege opkomst 35%', r.posten.vroeg], ['Feestdagen 50%', r.posten.feest],
                                         ['Toegezegde verschuivingstoeslagen', r.posten.verschuiving], ['Brutoloon', b.bruto],
                                         ['Pensioen (raming)', -b.pensioen], ['PAWW', -b.paww], ['FBA + Sociaal Fonds', -b.fba - b.sociaalFonds],
@@ -1977,10 +1998,15 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                             <p className="text-3xl font-bold text-emerald-300">≈ {euro(r.afgerond, 0)} netto</p>
                                         </div>
                                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm mb-4">
-                                            <div><span className="block text-slate-400 text-xs">Verwacht betaald</span>{aantalUren(r.uren)} uur</div>
-                                            <div><span className="block text-slate-400 text-xs">Waarvan nog gepland</span>{aantalUren(r.gepland)} uur</div>
+                                            <div><span className="block text-slate-400 text-xs">Verwacht betaald</span>{urenEnMinuten(r.uren)}</div>
+                                            <div><span className="block text-slate-400 text-xs">Waarvan nog gepland</span>{urenEnMinuten(r.gepland)}</div>
                                             <div><span className="block text-slate-400 text-xs">Reisdagen</span>{r.reisdagen}</div>
                                         </div>
+                                        {r.verlofUren > 0 && <div className="text-sm mb-4">
+                                            <p>{urenEnMinuten(r.werkUren)} diensten + {urenEnMinuten(r.verlofUren)} betaald verlof = {urenEnMinuten(r.uren)}.</p>
+                                            <p>Contract {aantalUren(r.contractUren)} uur · gepland saldo {urenEnMinuten(r.uren - r.contractUren, true)}.</p>
+                                            <p className="text-xs text-slate-300 mt-1">Verlof op {r.verlofDagen.map(kortDatum).join(', ')}. Per dag {urenEnMinuten(r.verlofUren / r.verlofDagen.length)}. Reiskosten gelden alleen voor werkdagen.</p>
+                                        </div>}
                                         <h3 className="font-bold text-white mb-2">Van uren naar netto</h3>
                                         <dl className="text-sm space-y-1 mb-4">
                                             {loonregels.filter(([, n]) => n !== 0).map(([label, n]) => <div key={label} className={`flex justify-between gap-4 py-1 ${label === 'Brutoloon' ? 'border-t border-slate-600 font-bold' : ''}`}><dt>{label}</dt><dd className="whitespace-nowrap tabular-nums">{euro(n)}</dd></div>)}
@@ -1990,18 +2016,19 @@ Als je geen rooster of codes kunt vinden, antwoord dan alleen: GEEN_DATA`
                                         <details className="mb-4"><summary className="cursor-pointer font-bold text-white py-2">Alle {r.regels.length} diensten en uren</summary>
                                             <div className="overflow-x-auto"><table className="w-full text-xs text-left mt-2 whitespace-nowrap"><thead><tr className="text-slate-400 border-b border-slate-600"><th className="p-2">Datum / tijd</th><th className="p-2 text-right">Duur</th><th className="p-2 text-right">Pauze</th><th className="p-2 text-right">Betaald</th><th className="p-2 text-right">Bruto incl. toeslag</th></tr></thead><tbody>
                                                 {r.regels.map((d, i) => <tr key={i} className="border-b border-slate-800"><td className="p-2"><span className="block">{kortDatum(d.datum)} · {d.begin}–{d.eind}{d.aangepast ? ' · aangepast' : ''}</span><span className="block text-slate-400 whitespace-normal max-w-[200px]">{d.omschrijving}</span></td><td className="p-2 text-right">{aantalUren(d.brutoUren)}</td><td className="p-2 text-right">{aantalUren(d.pauze)}</td><td className="p-2 text-right">{aantalUren(d.uren)}</td><td className="p-2 text-right">{euro(d.bruto)}</td></tr>)}
-                                            </tbody><tfoot><tr className="font-bold"><td className="p-2">Totaal</td><td></td><td></td><td className="p-2 text-right">{aantalUren(r.uren)}</td><td className="p-2 text-right">{euro(b.bruto)}</td></tr></tfoot></table></div>
+                                            </tbody><tfoot><tr className="font-bold"><td className="p-2">Totaal diensten</td><td></td><td></td><td className="p-2 text-right">{urenEnMinuten(r.regels.reduce((som, d) => som + d.uren, 0))}</td><td className="p-2 text-right">{euro(r.regels.reduce((som, d) => som + d.bruto, 0))}</td></tr></tfoot></table></div>
                                             <p className="text-xs text-slate-400 mt-2">Aansluitende werk- en trainingsblokken zijn samengevoegd. Overlap telt één keer. Afronding per dienst kan enkele centen afwijken van de totaalsom per loonpost.</p>
                                         </details>
                                         <h3 className="font-bold text-white mb-2">Uitgangspunten en bronnen</h3>
                                         <ul className="list-disc pl-5 text-xs text-slate-300 space-y-2">
-                                            <li>Uurloon {euro(inkomenProfiel.uurloon)} inclusief Schipholtoeslag. {inkomenProfiel.loonbron}. Gecontroleerd op {kortDatum(inkomenProfiel.bewijsDatum)} {inkomenProfiel.bewijsDatum.slice(0,4)}; nieuwere stroken ontbreken.</li>
+                                            {r.verlofUren > 0 && <li>De geraamde onregelmatigheidstoeslag voor verlof is {euro(r.verlofOrtPerUur)} per verlofuur. {r.verlofBron}</li>}
+                                            <li>Uurloon {euro(inkomenProfiel.uurloon)} inclusief Schipholtoeslag. {inkomenProfiel.loonbron}. Gecontroleerd op {kortDatum(inkomenProfiel.bewijsDatum)} {inkomenProfiel.bewijsDatum.slice(0,4)}.</li>
                                             <li>30 minuten onbetaalde pauze bij een aaneengesloten dienst langer dan 5,5 uur, volgens de geobserveerde loonpraktijk. Het midden van de dienst is het gekozen pauzemoment; de werkelijke pauze ontbreekt.</li>
                                             <li>Toeslagen per betaalde minuut volgens <a className="underline text-emerald-300" href="https://www.beveiligingsbranche.nl/wp-content/uploads/CAO-PB-18-dec-2024-27-dec-2026-versie-3-juli-2026-.pdf" target="_blank" rel="noreferrer">cao art. 40–44 en Schipholafspraak vroege opkomst</a>. Voor vroege opkomst geldt een dienststart vóór 05:30 en betaling tot 06:00.</li>
                                             {(inkomenProfiel.verschuivingen || []).filter(v => v.datum >= p.start && v.datum <= p.einde).map(v => <li key={v.datum}>{kortDatum(v.datum)}: {v.bron}. Alleen de betaalde minuten binnen de afgesproken tijd tellen mee.</li>)}
                                             <li>Pensioen circa {euro(inkomenProfiel.pensioenPerUur)} per betaald uur, afgeleid uit P6–P8. PAWW 0,10%; FBA 0,0374%; Sociaal Fonds 0,06125%; Whk 0,21% volgens de beschikbare stroken. De cumulatieve pensioenberekening is niet volledig bekend.</li>
                                             <li>Loonheffing volgens de <a className="underline text-emerald-300" href="https://download.belastingdienst.nl/belastingdienst/dl/rekenhulpen/loonheffing/2026/v01/pdf/wit_4wk_nl_std_20260101.pdf" target="_blank" rel="noreferrer">witte vierwekentabel 2026</a>, jonger dan AOW en met loonheffingskorting, zoals op je strook. Reiskosten: {euro(inkomenProfiel.reiskostenPerDag)} per werkdag, op basis van P8.</li>
-                                            <li>Vakantiegeldopbouw, eindejaarsuitkering, onbekende declaraties en mogelijke nabetalingen zijn niet meegerekend. Verlof of te weinig bekende uren blokkeert een volledige raming. Een rooster bewijst geen aanwezigheid of bankontvangst.</li>
+                                            <li>Vakantiegeldopbouw, eindejaarsuitkering, onbekende declaraties en mogelijke nabetalingen zijn niet meegerekend. Een rooster bewijst geen aanwezigheid of bankontvangst.</li>
                                         </ul>
                                     </>;
                                 })() : <p className="text-sm">{inkomsten?.reden || 'Raming nog niet beschikbaar.'}</p>}

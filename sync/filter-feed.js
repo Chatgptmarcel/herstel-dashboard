@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Filtert de RostarCAS ICS-feed tot ALLEEN de echte werkdiensten.
+ * Filtert de RostarCAS ICS-feed op werkdiensten en geregistreerde verlofdagen.
  *
  * Gebruik: node filter-feed.js <input.ics> <output.ics>
  *
@@ -12,22 +12,32 @@
  *   - "TV 04" / "TV 07"        -> UID "E_...",  geen LOCATION
  *   - een "Yes"-marker         -> UID "P_...",  geen LOCATION
  *
- * Alleen de echte dienst is relevant voor het dashboard. We behouden een VEVENT
- * dus als het een dienst-UID (T_) heeft OF een ingevulde LOCATION. Al het andere
- * (toeslagen, markers, roostervrij) valt weg.
+ * We behouden werkdiensten (T_ of LOCATION) en eendaagse EC_-verlofregistraties.
+ * Overige markers, toeslagen en roostervrij vallen weg.
  *
  * Vangnet: levert de filter onverhoopt 0 diensten op terwijl de feed wel events
  * had, dan geven we de ONGEFILTERDE feed terug (liever ruis dan een leeg rooster).
  */
 const fs = require('fs');
 
+// RostarCAS registreert een hele betaalde verlofdag apart van werk en toeslagen.
+function isVerlofdag(lines) {
+  if (!lines.includes('SUMMARY:Verlof')) return false;
+  const dag = veld => {
+    const regel = lines.find(l => l.startsWith(veld + ';VALUE=DATE:'));
+    const datum = regel?.slice(veld.length + ';VALUE=DATE:'.length);
+    if (!/^\d{8}$/.test(datum)) return NaN;
+    return Date.UTC(+datum.slice(0, 4), +datum.slice(4, 6) - 1, +datum.slice(6));
+  };
+  return dag('DTEND') - dag('DTSTART') === 86400000;
+}
 function isRealShift(blockLines) {
   let uid = '', location = '';
   for (const l of blockLines) {
     if (l.startsWith('UID:')) uid = l.slice(4).trim();
     else if (l.startsWith('LOCATION:')) location = l.slice(9).trim();
   }
-  return uid.startsWith('T_') || location.length > 0;
+  return uid.startsWith('T_') || location.length > 0 || (uid.startsWith('EC_') && isVerlofdag(blockLines));
 }
 
 function filterFeed(ics) {
